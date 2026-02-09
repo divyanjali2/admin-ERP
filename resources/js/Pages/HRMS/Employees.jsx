@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, router, useForm } from "@inertiajs/react";
 
+
 import {
   AppBar,
   Box,
@@ -27,13 +28,17 @@ import {
 
 import { DataGrid } from "@mui/x-data-grid";
 
-import MenuIcon from "@mui/icons-material/Menu";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
+import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 
 const drawerWidth = 260;
 
@@ -45,6 +50,11 @@ const navItems = [
 export default function Employees({ auth, employees = [] }) {
   const isMdUp = useMediaQuery("(min-width:900px)");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [userMenuAnchor, setUserMenuAnchor] = useState(null);
+const userMenuOpen = Boolean(userMenuAnchor);
+
+const openUserMenu = (e) => setUserMenuAnchor(e.currentTarget);
+const closeUserMenu = () => setUserMenuAnchor(null);
 
   // dialogs
   const [openForm, setOpenForm] = useState(false);
@@ -192,18 +202,18 @@ export default function Employees({ auth, employees = [] }) {
     []
   );
 
-  function EmployeesGridToolbar() {
-  return (
-    <GridToolbarContainer sx={{ p: 1, gap: 1 }}>
-      <GridToolbarColumnsButton />
-      <GridToolbarFilterButton />
-      <GridToolbarDensitySelector />
-      <GridToolbarExport />
-      <Box sx={{ flex: 1 }} />
-      <GridToolbarQuickFilter debounceMs={300} />
-    </GridToolbarContainer>
-  );
-}
+//   function EmployeesGridToolbar() {
+//   return (
+//     <GridToolbarContainer sx={{ p: 1, gap: 1 }}>
+//       <GridToolbarColumnsButton />
+//       <GridToolbarFilterButton />
+//       <GridToolbarDensitySelector />
+//       <GridToolbarExport />
+//       <Box sx={{ flex: 1 }} />
+//       <GridToolbarQuickFilter debounceMs={300} />
+//     </GridToolbarContainer>
+//   );
+// }
 
 
   const Sidebar = (
@@ -239,12 +249,67 @@ export default function Employees({ auth, employees = [] }) {
       </List>
 
       <Box sx={{ flex: 1 }} />
+        <Box sx={{ p: 2, borderTop: "1px solid", borderColor: "divider" }}>
+        {/* clickable user row */}
+        <Button
+            onClick={openUserMenu}
+            fullWidth
+            sx={{
+            justifyContent: "space-between",
+            textTransform: "none",
+            color: "#0B1C2D",
+            px: 1,
+            py: 1,
+            borderRadius: 2,
+            "&:hover": { backgroundColor: "rgba(11, 28, 45, 0.06)" },
+            }}
+            endIcon={<KeyboardArrowDownIcon />}
+        >
+            <Box sx={{ textAlign: "left" }}>
+            <Typography fontWeight={700} sx={{ lineHeight: 1.1 }}>
+                {auth?.user?.name ?? "User"}
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.1 }}>
+                {auth?.user?.email ?? ""}
+            </Typography>
+            </Box>
+        </Button>
 
-      <Box sx={{ p: 2 }}>
-        <Typography variant="caption" color="text.secondary">
-          Logged in as {auth?.user?.name ?? "User"}
-        </Typography>
-      </Box>
+        {/* dropdown */}
+        <Menu
+            anchorEl={userMenuAnchor}
+            open={userMenuOpen}
+            onClose={closeUserMenu}
+            anchorOrigin={{ vertical: "top", horizontal: "left" }}
+            transformOrigin={{ vertical: "bottom", horizontal: "left" }}
+            PaperProps={{ sx: { borderRadius: 2, minWidth: 200 } }}
+        >
+            <MenuItem
+            component={Link}
+            href={route("profile.edit")}
+            onClick={closeUserMenu}
+            >
+            <ListItemIcon sx={{ minWidth: 36 }}>
+                <PersonOutlineOutlinedIcon fontSize="small" />
+            </ListItemIcon>
+            Profile
+            </MenuItem>
+
+             <MenuItem
+                onClick={() => {
+                    closeUserMenu();
+                    router.post(route("logout"));
+                }}
+                >
+                <ListItemIcon sx={{ minWidth: 36 }}>
+                    <LogoutOutlinedIcon fontSize="small" />
+                </ListItemIcon>
+                Log Out
+            </MenuItem>
+
+
+        </Menu>
+        </Box>
     </Box>
   );
 
@@ -268,7 +333,7 @@ export default function Employees({ auth, employees = [] }) {
           <Toolbar>
             {!isMdUp && (
               <IconButton edge="start" onClick={toggleMobile} sx={{ mr: 1, color: "#0B1C2D" }}>
-                <MenuIcon />
+                {/* <MenuIcon /> */}
               </IconButton>
             )}
             <Typography fontWeight={900}>Employees</Typography>
