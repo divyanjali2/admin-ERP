@@ -37,4 +37,8 @@ Route::get('/hrms', function () {
 })->middleware(['auth', 'verified'])->name('hrms');
 
 
+Route::get('/hrms/employees', function () {
+    return Inertia::render('HRMS/Employees');
+})->middleware(['auth', 'verified'])->name('hrms.employees');
+
 require __DIR__.'/auth.php';
