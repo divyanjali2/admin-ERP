@@ -15,7 +15,7 @@ class Employee extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'employee_id','employee_code','employment_status','date_created',
+        'employee_id','employee_code','employment_status','date_created','surname',
         'first_name','middle_name','last_name',
         'date_of_birth','gender','marital_status',
         'nationality','blood_group','epf_number',

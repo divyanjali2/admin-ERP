@@ -14,6 +14,7 @@ return new class extends Migration {
             $table->string('employment_status', 20); 
             $table->dateTime('date_created');
 
+            $table->string('surname', 100);
             $table->string('first_name', 100);
             $table->string('middle_name', 100)->nullable();
             $table->string('last_name', 100);
@@ -28,7 +29,6 @@ return new class extends Migration {
             $table->string('epf_number', 50)->nullable();
 
             $table->string('attendance_type', 20); 
-
             $table->char('created_by', 36);
             $table->char('last_updated_by', 36);
             $table->dateTime('last_updated_date');

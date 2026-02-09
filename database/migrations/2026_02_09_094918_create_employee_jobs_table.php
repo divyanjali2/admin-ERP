@@ -13,15 +13,13 @@ return new class extends Migration {
             $table->unsignedBigInteger('department_id');
             $table->unsignedBigInteger('job_title_id');
 
-            $table->string('employment_type', 20);  // Full-Time/Part-Time/Contract
-            $table->string('employment_level', 20); // Probation/Confirmed
+            $table->string('employment_type', 20);  
+            $table->string('employment_level', 20); 
 
             $table->date('date_of_joining');
             $table->date('probation_end_date')->nullable();
 
             $table->char('reporting_manager_id', 36)->nullable();
-            $table->unsignedBigInteger('work_location_id'); // (future table)
-
             $table->foreign('employee_id')->references('employee_id')->on('employees')->cascadeOnDelete();
             $table->foreign('department_id')->references('department_id')->on('departments')->restrictOnDelete();
             $table->foreign('job_title_id')->references('job_title_id')->on('job_titles')->restrictOnDelete();
