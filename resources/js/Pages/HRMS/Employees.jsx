@@ -317,7 +317,7 @@ export default function Employees({ auth, employees = [] }) {
           sx={{
             flexGrow: 1,
             width: { md: `calc(100% - ${drawerWidth}px)` },
-            pt: 10,
+            pt: 5,
             pb: 3,
           }}
         >
@@ -325,7 +325,7 @@ export default function Employees({ auth, employees = [] }) {
             <Box
               sx={{
                 border: "2px solid #0B1C2D",
-                borderRadius: 3,
+                // borderRadius: 3,
                 overflow: "hidden",
                 width: "100%",
               }}
