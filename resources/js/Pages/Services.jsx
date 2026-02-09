@@ -36,21 +36,23 @@ function ServiceCard({ item }) {
     : { component: Link, href: item.href };
 
   return (
-    <Card
-      elevation={0}
-      sx={{
-        borderRadius: 3,
-        border: "1px solid",
-        borderColor: "divider",
-        height: "100%",
-        transition: "all 0.2s ease",
-        "&:hover": {
-          transform: "translateY(-4px)",
-          boxShadow: 4,
-          borderColor: "primary.main",
-        },
-      }}
-    >
+        <Card
+        elevation={0}
+        sx={{
+            width: 320,                
+            maxWidth: "100%",       
+            borderRadius: 3,
+            border: "1px solid",
+            borderColor: "divider",
+            transition: "all 0.2s ease",
+            "&:hover": {
+            transform: "translateY(-4px)",
+            boxShadow: 4,
+            borderColor: "primary.main",
+            },
+        }}
+        >
+
       <CardActionArea {...actionProps} sx={{ height: "100%" }}>
         <CardContent>
           <Stack spacing={2} alignItems="center" textAlign="center">
@@ -61,7 +63,7 @@ function ServiceCard({ item }) {
               alt={item.title}
               sx={{
                 width: "100%",
-                maxWidth: 160,
+                maxHeight: 160,
                 height: "auto",
                 borderRadius: 2,
                 objectFit: "contain",
@@ -73,7 +75,7 @@ function ServiceCard({ item }) {
               {item.title}
             </Typography>
 
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="text.secondary" fontWeight={500}>
               {item.description}
             </Typography>
 
@@ -113,7 +115,12 @@ export default function Services({ auth }) {
 
           <Grid container spacing={3} justifyContent="center">
             {services.map((service) => (
-              <Grid item xs={12} sm={6} key={service.title}>
+                <Grid item key={service.title}
+                    sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                    }}
+                >
                 <ServiceCard item={service} />
               </Grid>
             ))}
