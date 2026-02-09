@@ -15,9 +15,14 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+Route::get('/services', function () {
+    return Inertia::render('Services');
+})->middleware(['auth', 'verified'])->name('services');
+
+
 // Dashboard (protected)
 Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
+    return redirect()->route('services');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // Profile routes (protected)
@@ -26,5 +31,10 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+Route::get('/hrms', function () {
+    return Inertia::render('HRMS');
+})->middleware(['auth', 'verified'])->name('hrms');
+
 
 require __DIR__.'/auth.php';
