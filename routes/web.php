@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\EmployeeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,8 +38,14 @@ Route::get('/hrms', function () {
 })->middleware(['auth', 'verified'])->name('hrms');
 
 
-Route::get('/hrms/employees', function () {
-    return Inertia::render('HRMS/Employees');
-})->middleware(['auth', 'verified'])->name('hrms.employees');
+
+Route::prefix('hrms')->middleware(['auth'])->group(function () {
+    Route::get('/employees', [EmployeeController::class, 'index'])->name('hrms.employees.index');
+    Route::get('/employees/create', [EmployeeController::class, 'create'])->name('hrms.create');
+    Route::post('/employees', [EmployeeController::class, 'store'])->name('hrms.employees.store');
+    Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('hrms.employees.destroy');
+});
+
+
 
 require __DIR__.'/auth.php';

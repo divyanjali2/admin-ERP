@@ -74,7 +74,7 @@ const closeUserMenu = () => setUserMenuAnchor(null);
     last_name: "",
     work_email: "",
     department: "",
-    status: "Active",
+    // status: "Active",
   });
 
   const toggleMobile = () => setMobileOpen((v) => !v);
@@ -91,8 +91,11 @@ const closeUserMenu = () => setUserMenuAnchor(null);
       department: "",
       status: "Active",
     });
-    setOpenForm(true);
   };
+
+      const goCreate = () => {
+      router.get("/hrms/employees/create");
+    };
 
   const openEdit = (row) => {
     setMode("edit");
@@ -159,7 +162,7 @@ const closeUserMenu = () => setUserMenuAnchor(null);
       { field: "last_name", headerName: "Last Name", flex: 1, minWidth: 150 },
       { field: "work_email", headerName: "Work Email", flex: 1.4, minWidth: 240 },
       { field: "department", headerName: "Department", flex: 1, minWidth: 160 },
-      { field: "status", headerName: "Status", flex: 0.8, minWidth: 130 },
+      // { field: "status", headerName: "Status", flex: 0.8, minWidth: 130 },
       {
         field: "actions",
         headerName: "Actions",
@@ -343,7 +346,7 @@ const closeUserMenu = () => setUserMenuAnchor(null);
             <Button
               variant="contained"
               startIcon={<AddOutlinedIcon />}
-              onClick={openCreate}
+              onClick={goCreate}
               sx={{ backgroundColor: "#0B1C2D", "&:hover": { backgroundColor: "#0F2A44" } }}
             >
               Create
@@ -510,7 +513,7 @@ const closeUserMenu = () => setUserMenuAnchor(null);
               <Typography><b>Name:</b> {(viewRow?.first_name ?? "") + " " + (viewRow?.last_name ?? "")}</Typography>
               <Typography><b>Work Email:</b> {viewRow?.work_email ?? "-"}</Typography>
               <Typography><b>Department:</b> {viewRow?.department ?? "-"}</Typography>
-              <Typography><b>Status:</b> {viewRow?.status ?? "-"}</Typography>
+              {/* <Typography><b>Status:</b> {viewRow?.status ?? "-"}</Typography> */}
             </Stack>
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 2 }}>
