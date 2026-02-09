@@ -39,16 +39,16 @@ function ServiceCard({ item }) {
         <Card
         elevation={0}
         sx={{
-            width: 320,                
-            maxWidth: "100%",       
-            borderRadius: 3,
-            border: "1px solid",
-            borderColor: "divider",
+            width: 320,
+            maxWidth: "100%",
+            borderRadius: 5,
+            border: "3px solid #000035",          
+            backgroundColor: "#ffffff",
             transition: "all 0.2s ease",
             "&:hover": {
             transform: "translateY(-4px)",
-            boxShadow: 4,
-            borderColor: "primary.main",
+            boxShadow: "0 8px 24px rgba(11, 28, 45, 0.25)", 
+            borderColor: "#0F2A44",                     
             },
         }}
         >
