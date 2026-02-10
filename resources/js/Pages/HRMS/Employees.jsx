@@ -174,23 +174,26 @@ const closeUserMenu = () => setUserMenuAnchor(null);
         sortable: false,
         filterable: false,
         minWidth: 300,
+        align: "center",
+        headerAlign: "center",
+        cellClassName: "actions-cell",   
         renderCell: (params) => (
           <Stack direction="row" spacing={0.5} alignItems="center">
             <Tooltip title="View">
-              <IconButton size="small" onClick={() => openViewDialog(params.row)} sx={{ color: "#0B1C2D" }}>
-                <VisibilityOutlinedIcon fontSize="small" />
-              </IconButton>
+              <IconButton size="small" onClick={() => openViewDialog(params.row)} sx={{ color: "#0c7a2b" }}>
+                <VisibilityOutlinedIcon fontSize="medium" />
+              </IconButton> 
             </Tooltip>
 
             <Tooltip title="Edit">
-              <IconButton size="small" onClick={() => openEdit(params.row)} sx={{ color: "#0B1C2D" }}>
-                <EditOutlinedIcon fontSize="small" />
+              <IconButton size="small" onClick={() => openEdit(params.row)} sx={{ color: "#074e96" }}>
+                <EditOutlinedIcon fontSize="medium" />
               </IconButton>
             </Tooltip>
 
             <Tooltip title="Delete">
-              <IconButton size="small" onClick={() => askDelete(params.row)} sx={{ color: "#0B1C2D" }}>
-                <DeleteOutlineOutlinedIcon fontSize="small" />
+              <IconButton size="small" onClick={() => askDelete(params.row)} sx={{ color: "#8a0606" }}>
+                <DeleteOutlineOutlinedIcon fontSize="medium" />
               </IconButton>
             </Tooltip>
           </Stack>
@@ -199,20 +202,6 @@ const closeUserMenu = () => setUserMenuAnchor(null);
     ],
     []
   );
-
-//   function EmployeesGridToolbar() {
-//   return (
-//     <GridToolbarContainer sx={{ p: 1, gap: 1 }}>
-//       <GridToolbarColumnsButton />
-//       <GridToolbarFilterButton />
-//       <GridToolbarDensitySelector />
-//       <GridToolbarExport />
-//       <Box sx={{ flex: 1 }} />
-//       <GridToolbarQuickFilter debounceMs={300} />
-//     </GridToolbarContainer>
-//   );
-// }
-
 
   const Sidebar = (
     <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
@@ -394,37 +383,37 @@ const closeUserMenu = () => setUserMenuAnchor(null);
               }}
             >
               <Box sx={{ height: "calc(100vh - 170px)", backgroundColor: "white" }}>
-<DataGrid
-  rows={employees}
-  columns={columns}
-  disableRowSelectionOnClick
-  checkboxSelection
-  pagination
-  pageSizeOptions={[10, 25, 50, 100]}
-  initialState={{ pagination: { paginationModel: { pageSize: 25, page: 0 } } }}
+                <DataGrid
+                  rows={employees}
+                  columns={columns}
+                  disableRowSelectionOnClick
+                  checkboxSelection
+                  pagination
+                  pageSizeOptions={[10, 25, 50, 100]}
+                  initialState={{ pagination: { paginationModel: { pageSize: 25, page: 0 } } }}
                   showToolbar
-                                  slotProps={{
-                    toolbar: {
-                    showQuickFilter: true,
-                    quickFilterProps: { debounceMs: 300 },
+                  slotProps={{
+                  toolbar: {
+                      showQuickFilter: true,
+                      quickFilterProps: { debounceMs: 300 },
                     },
                 }}
 
-  sx={{
-    "& .MuiDataGrid-columnHeaders": {
-      backgroundColor: "rgba(11, 28, 45, 0.06)",
-      borderBottom: "2px solid #0B1C2D",
-    },
-    "& .MuiDataGrid-columnHeaderTitle": {
-      fontWeight: 900,
-      color: "#0B1C2D",
-    },
-    "& .MuiDataGrid-cell": {
-      alignItems: "center",
-    },
-  }}
-/>
-
+                    sx={{
+                      "& .MuiDataGrid-columnHeaders": {
+                        backgroundColor: "rgba(11, 28, 45, 0.06)",
+                        borderBottom: "2px solid #0B1C2D",
+                      },
+                      "& .MuiDataGrid-columnHeaderTitle": {
+                        fontWeight: 900,
+                        color: "#0B1C2D",
+                      },
+                      "& .MuiDataGrid-cell": {
+                        alignItems: "center",
+                        display: "flex",
+                      },
+                    }}
+                  />
               </Box>
             </Box>
           </Container>
