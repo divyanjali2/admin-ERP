@@ -7,19 +7,16 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Employee extends Model
 {
-    use HasUuids;
-
     protected $primaryKey = 'employee_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
+    public $incrementing = true;
+    protected $keyType = 'int';
     public $timestamps = false;
 
     protected $fillable = [
-        'employee_id','employee_code','employment_status','date_created','surname',
-        'first_name','middle_name','last_name',
+        'employee_code','employment_status','date_created',
+        'surname','first_name','middle_name','last_name',
         'date_of_birth','gender','marital_status',
-        'nationality','blood_group','epf_number',
-        'attendance_type',
+        'nationality','blood_group','epf_number','attendance_type',
         'created_by','last_updated_by','last_updated_date',
     ];
 

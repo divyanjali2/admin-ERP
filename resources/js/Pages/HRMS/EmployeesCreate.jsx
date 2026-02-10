@@ -39,6 +39,7 @@ export default function EmployeesCreate({
     // employees
     employee_code: "",
     employment_status: "Active",
+    surname: "",
     first_name: "",
     middle_name: "",
     last_name: "",
@@ -87,10 +88,6 @@ export default function EmployeesCreate({
     // emergency contacts
     emergency_contacts: [
       { name: "", relationship: "", phone: "", address: "" },
-    ],
-
-    experience: [
-      { previous_employer: "", total_years: "" },
     ],
 
     employee_documents: [
@@ -300,10 +297,10 @@ export default function EmployeesCreate({
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
               <TextField
                 label="Surname"
-                value={data.first_name}
+                value={data.surname}
                 onChange={(e) => setData("surname", e.target.value)}
-                error={!!errors.first_name}
-                helperText={errors.first_name}
+                error={!!errors.surname}
+                helperText={errors.surname}
                 fullWidth
               />
               <TextField

@@ -8,8 +8,8 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('employees', function (Blueprint $table) {
-            $table->char('employee_id', 36)->primary(); 
-            $table->string('employee_code', 50)->unique();
+            $table->bigIncrements('employee_id');
+            $table->string('employee_code', 50)->nullable()->unique();
 
             $table->string('employment_status', 20); 
             $table->dateTime('date_created');

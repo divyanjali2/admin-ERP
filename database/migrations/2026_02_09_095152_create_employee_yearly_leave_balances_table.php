@@ -8,19 +8,25 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('employee_yearly_leave_balance', function (Blueprint $table) {
-            $table->char('employee_id', 36);
+            $table->unsignedBigInteger('employee_id');       // NOT nullable
             $table->unsignedBigInteger('leave_policy_id');
 
-            $table->integer('annual_leave_balance');
-            $table->integer('sick_leave_balance');
+            $table->integer('annual_leave_balance')->default(0);
+            $table->integer('sick_leave_balance')->default(0);
 
             $table->primary(['employee_id', 'leave_policy_id']);
 
-            $table->foreign('employee_id')->references('employee_id')->on('employees')->cascadeOnDelete();
-            $table->foreign('leave_policy_id')->references('leave_policy_id')->on('leave_policies')->restrictOnDelete();
+            $table->foreign('employee_id')
+                ->references('employee_id')->on('employees')
+                ->onDelete('cascade');
+
+            $table->foreign('leave_policy_id')
+                ->references('leave_policy_id')->on('leave_policies')
+                ->onDelete('restrict');
 
             $table->index('leave_policy_id');
         });
+
     }
 
     public function down(): void

@@ -9,12 +9,14 @@ return new class extends Migration {
     {
         Schema::create('employee_experience', function (Blueprint $table) {
             $table->id('experience_id');
-            $table->char('employee_id', 36);
+            $table->unsignedBigInteger('employee_id')->nullable();
 
             $table->string('previous_employer', 150);
             $table->decimal('total_years', 5, 2)->nullable();
 
-            $table->foreign('employee_id')->references('employee_id')->on('employees')->cascadeOnDelete();
+            $table->foreign('employee_id')
+                ->references('employee_id')->on('employees')
+                ->nullOnDelete();
             $table->index('employee_id', 'idx_exp_emp');
         });
     }

@@ -9,14 +9,16 @@ return new class extends Migration {
     {
         Schema::create('employee_emergency_contacts', function (Blueprint $table) {
             $table->id('emergency_contact_id');
-            $table->char('employee_id', 36);
+            $table->unsignedBigInteger('employee_id')->nullable();
 
             $table->string('name', 150);
             $table->string('relationship', 100);
             $table->string('phone', 30);
             $table->string('address', 255)->nullable();
 
-            $table->foreign('employee_id')->references('employee_id')->on('employees')->cascadeOnDelete();
+            $table->foreign('employee_id')
+                ->references('employee_id')->on('employees')
+                ->nullOnDelete();
             $table->index('employee_id', 'idx_emg_emp');
         });
     }

@@ -9,7 +9,7 @@ return new class extends Migration {
     {
         Schema::create('employee_compensation', function (Blueprint $table) {
             $table->id('comp_id');
-            $table->char('employee_id', 36);
+            $table->unsignedBigInteger('employee_id')->nullable();
 
             $table->char('salary_currency', 3); // ISO
             $table->string('pay_frequency', 10); // Monthly/Weekly
@@ -17,7 +17,9 @@ return new class extends Migration {
             $table->date('effective_from');
             $table->date('effective_to')->nullable();
 
-            $table->foreign('employee_id')->references('employee_id')->on('employees')->cascadeOnDelete();
+            $table->foreign('employee_id')
+                ->references('employee_id')->on('employees')
+                ->nullOnDelete();
 
             $table->index('employee_id', 'idx_comp_emp');
             $table->index(['employee_id', 'effective_from'], 'idx_comp_effective');

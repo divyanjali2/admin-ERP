@@ -10,7 +10,7 @@ return new class extends Migration {
         Schema::create('employee_leave_balances', function (Blueprint $table) {
             $table->id('leave_balance_id');
 
-            $table->char('employee_id', 36);
+            $table->unsignedBigInteger('employee_id')->nullable();
             $table->unsignedBigInteger('leave_policy_id');
 
             $table->decimal('total_taken', 5, 2)->default(0);
@@ -18,8 +18,10 @@ return new class extends Migration {
 
             $table->dateTime('updated_at');
 
-            $table->foreign('employee_id')->references('employee_id')->on('employees')->cascadeOnDelete();
-            $table->foreign('leave_policy_id')->references('leave_policy_id')->on('leave_policies')->restrictOnDelete();
+            $table->foreign('employee_id')
+                ->references('employee_id')->on('employees')
+                ->nullOnDelete();
+            $table->foreign('leave_policy_id')->references('leave_policy_id')->on('leave_policies')->onDelete('restrict');
 
             $table->index('employee_id', 'idx_lb_employee');
             $table->index('leave_policy_id', 'idx_lb_policy');

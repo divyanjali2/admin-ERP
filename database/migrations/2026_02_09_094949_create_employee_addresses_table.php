@@ -9,7 +9,7 @@ return new class extends Migration {
     {
         Schema::create('employee_addresses', function (Blueprint $table) {
             $table->id('employee_address_id');
-            $table->char('employee_id', 36);
+            $table->unsignedBigInteger('employee_id')->nullable();
 
             $table->string('address_type', 20); // Residential/Emergency/Other
             $table->string('address_line_1', 255);
@@ -21,7 +21,9 @@ return new class extends Migration {
 
             $table->boolean('is_current')->default(true);
 
-            $table->foreign('employee_id')->references('employee_id')->on('employees')->cascadeOnDelete();
+            $table->foreign('employee_id')
+                ->references('employee_id')->on('employees')
+                ->nullOnDelete();            
             $table->index('employee_id', 'idx_addr_emp');
         });
     }

@@ -9,14 +9,14 @@ class EmployeeJob extends Model
     protected $table = 'employee_job';
     protected $primaryKey = 'employee_id';
     public $incrementing = false;
-    protected $keyType = 'string';
+    protected $keyType = 'int';
     public $timestamps = false;
 
     protected $fillable = [
         'employee_id','department_id','job_title_id',
         'employment_type','employment_level',
         'date_of_joining','probation_end_date',
-        'reporting_manager_id','work_location_id'
+        'reporting_manager_id'
     ];
 
     protected $casts = [
