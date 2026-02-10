@@ -695,6 +695,12 @@ export default function EmployeesCreate({
                     onChange={(e) => setBank(idx, "bank_account_number", e.target.value)}
                     fullWidth
                   />
+                  <TextField
+                    label="Bank Branch Name"
+                    value={b.bank_branch_name}
+                    onChange={(e) => setBank(idx, "bank_branch_name", e.target.value)}
+                    fullWidth
+                  />
                   <IconButton onClick={() => removeBank(idx)} aria-label="remove-bank">
                     <DeleteOutlineOutlinedIcon />
                   </IconButton>

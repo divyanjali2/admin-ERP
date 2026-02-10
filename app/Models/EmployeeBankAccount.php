@@ -10,7 +10,7 @@ class EmployeeBankAccount extends Model
     protected $primaryKey = 'bank_account_id';
     public $timestamps = false;
 
-    protected $fillable = ['employee_id','bank_name','bank_account_number'];
+    protected $fillable = ['employee_id','bank_name','bank_account_number','bank_branch_name'];
 
     public function employee()
     {

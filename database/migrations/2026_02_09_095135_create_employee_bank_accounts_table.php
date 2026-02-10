@@ -12,6 +12,7 @@ return new class extends Migration {
             $table->char('employee_id', 36);
 
             $table->string('bank_name', 150);
+            $table->string('bank_branch_name', 150);
             $table->string('bank_account_number', 50);
 
             $table->foreign('employee_id')->references('employee_id')->on('employees')->cascadeOnDelete();
