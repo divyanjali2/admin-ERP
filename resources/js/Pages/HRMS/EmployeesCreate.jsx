@@ -26,6 +26,7 @@ const ADDRESS_TYPE = ["Residential", "Emergency", "Other"];
 const CONTACT_TYPE = ["Personal_Email", "Work_Email", "Phone", "Alternate_Phone"];
 const PAY_FREQUENCY = ["Monthly", "Weekly"];
 const SALARY_CURRENCY = ["LKR", "USD", "EUR", "GBP", "AUD", "CAD", "SGD", "INR"];
+const DOC_TYPES = ["Profile_Photo","Resume_File","ID_Proof","Offer_Letter","Employment_Contract","Certificates","Other"];
 
 export default function EmployeesCreate({
   auth,
@@ -88,9 +89,24 @@ export default function EmployeesCreate({
       { name: "", relationship: "", phone: "", address: "" },
     ],
 
+    experience: [
+      { previous_employer: "", total_years: "" },
+    ],
+
+    employee_documents: [
+      {
+        doc_type: "ID_Proof",
+        file: null, 
+      },
+    ],
+
+    experience: [
+      { previous_employer: "", total_years: "" },
+    ],
+
     // bank accounts
     bank_accounts: [
-      { bank_name: "", bank_account_number: "" },
+      { bank_name: "", bank_account_number: "", bank_branch_name: "" },
     ],
 
     // compensation
@@ -114,7 +130,7 @@ export default function EmployeesCreate({
 
   const submit = (e) => {
     e.preventDefault();
-    post("/hrms/employees", { preserveScroll: true });
+    post("/hrms/employees", { preserveScroll: true, forceFormData: true, });
   };
 
   const setContact = (idx, key, value) => {
@@ -218,6 +234,39 @@ export default function EmployeesCreate({
   const removeCompComponent = (idx) => {
     const next = data.compensation.components.filter((_, i) => i !== idx);
     setComp("components", next);
+  };
+
+    // ===== DOCUMENTS =====
+  const setDocument = (idx, key, value) => {
+    const next = [...data.employee_documents];
+    next[idx] = { ...next[idx], [key]: value };
+    setData("employee_documents", next);
+  };
+
+  const addDocument = () => {
+    setData("employee_documents", [
+      ...data.employee_documents,
+      { doc_type: "Other", file: null },
+    ]);
+  };
+
+  const removeDocument = (idx) => {
+    setData("employee_documents", data.employee_documents.filter((_, i) => i !== idx));
+  };
+
+  // ===== EXPERIENCE =====
+  const setExperience = (idx, key, value) => {
+    const next = [...data.experience];
+    next[idx] = { ...next[idx], [key]: value };
+    setData("experience", next);
+  };
+
+  const addExperience = () => {
+    setData("experience", [...data.experience, { previous_employer: "", total_years: "" }]);
+  };
+
+  const removeExperience = (idx) => {
+    setData("experience", data.experience.filter((_, i) => i !== idx));
   };
 
   return (
@@ -501,13 +550,44 @@ export default function EmployeesCreate({
                   </MenuItem>
                 ))}
               </TextField>
+            </Stack>
 
-              <TextField
-                label="Work Location ID"
-                value={data.work_location_id}
-                onChange={(e) => setData("work_location_id", e.target.value)}
-                fullWidth
-              />
+            <Divider />
+
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Typography fontWeight={900}>Experience</Typography>
+              <Button startIcon={<AddOutlinedIcon />} onClick={addExperience}>
+                Add Experience
+              </Button>
+            </Stack>
+
+            <Stack spacing={2}>
+              {data.experience.map((x, idx) => (
+                <Stack
+                  key={idx}
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={2}
+                  alignItems="center"
+                >
+                  <TextField
+                    label="Previous Employer"
+                    value={x.previous_employer}
+                    onChange={(e) => setExperience(idx, "previous_employer", e.target.value)}
+                    fullWidth
+                  />
+                  <TextField
+                    label="Total Years"
+                    type="number"
+                    inputProps={{ step: "0.25" }}
+                    value={x.total_years}
+                    onChange={(e) => setExperience(idx, "total_years", e.target.value)}
+                    fullWidth
+                  />
+                  <IconButton onClick={() => removeExperience(idx)} aria-label="remove-experience">
+                    <DeleteOutlineOutlinedIcon />
+                  </IconButton>
+                </Stack>
+              ))}
             </Stack>
 
             <Divider />
@@ -852,6 +932,58 @@ export default function EmployeesCreate({
                 }
                 fullWidth
               />
+            </Stack>
+
+            <Divider />
+
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Typography fontWeight={900}>Documents</Typography>
+              <Button startIcon={<AddOutlinedIcon />} onClick={addDocument}>
+                Add Document
+              </Button>
+            </Stack>
+
+            <Stack spacing={2}>
+              {data.employee_documents.map((d, idx) => (
+                <Stack
+                  key={idx}
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={2}
+                  alignItems="center"
+                >
+                  <TextField
+                    select
+                    label="Document Type"
+                    value={d.doc_type}
+                    onChange={(e) => setDocument(idx, "doc_type", e.target.value)}
+                    fullWidth
+                  >
+                    {DOC_TYPES.map((t) => (
+                      <MenuItem key={t} value={t}>
+                        {t}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+
+                  <Button
+                    variant="outlined"
+                    component="label"
+                    fullWidth
+                    sx={{ justifyContent: "flex-start" }}
+                  >
+                    {d.file ? d.file.name : "Choose File"}
+                    <input
+                      type="file"
+                      hidden
+                      onChange={(e) => setDocument(idx, "file", e.target.files?.[0] ?? null)}
+                    />
+                  </Button>
+
+                  <IconButton onClick={() => removeDocument(idx)} aria-label="remove-document">
+                    <DeleteOutlineOutlinedIcon />
+                  </IconButton>
+                </Stack>
+              ))}
             </Stack>
 
             <Divider />
