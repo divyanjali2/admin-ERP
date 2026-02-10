@@ -8,6 +8,7 @@ use App\Models\Employee;
 use App\Models\EmployeeAddress;
 use App\Models\EmployeeContact;
 use App\Models\EmployeeJob;
+use App\Models\LeavePolicy;
 use App\Models\JobTitle;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -65,8 +66,10 @@ class EmployeeController extends Controller
     public function create()
     {
         return Inertia::render('HRMS/EmployeesCreate', [
-            'departments' => Department::query()->orderBy('name')->get(['department_id', 'name']),
-            'jobTitles'   => JobTitle::query()->orderBy('name')->get(['job_title_id', 'name']),
+        'departments' => Department::orderBy('name')->get(['department_id','name']),
+        'jobTitles' => JobTitle::orderBy('name')->get(['job_title_id','name']),
+        'leavePolicies' => LeavePolicy::orderBy('name')->get(['leave_policy_id','name']),
+        'employees' => Employee::orderBy('first_name')->get(['employee_id','employee_code','first_name','last_name']),
         ]);
     }
 
