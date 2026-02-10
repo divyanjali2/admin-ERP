@@ -81,4 +81,14 @@ class Employee extends Model
     {
         return $this->hasMany(EmployeeLeaveBalance::class, 'employee_id', 'employee_id');
     }
+
+public function yearlyLeaveBalances()
+{
+    return $this->hasMany(
+        \App\Models\EmployeeYearlyLeaveBalance::class,
+        'employee_id',
+        'employee_id'
+    )->with('policy'); // so we can show policy name
+}
+
 }

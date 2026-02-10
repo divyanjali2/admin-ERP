@@ -43,4 +43,5 @@ class EmployeeJob extends Model
     {
         return $this->belongsTo(Employee::class, 'reporting_manager_id', 'employee_id');
     }
+    
 }

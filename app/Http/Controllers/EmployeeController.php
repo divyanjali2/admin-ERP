@@ -383,15 +383,17 @@ class EmployeeController extends Controller
         $employee->load([
             'job.department',
             'job.jobTitle',
+            'job.reportingManager',
             'contacts',
             'addresses',
             'emergencyContacts',
             'bankAccounts',
             'experiences',
             'documents',
-            'leaveBalances',    
-            'compensations.components', 
+            'yearlyLeaveBalances.policy',     // ✅ this
+            'compensations.components',
         ]);
+
 
         return inertia('HRMS/EmployeesShow', [
             'employee' => $employee,

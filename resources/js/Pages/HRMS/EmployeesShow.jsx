@@ -1,209 +1,318 @@
-import React from "react";
+import React, { useMemo } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, router } from "@inertiajs/react";
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Box,
   Button,
   Container,
   Divider,
-  Stack,
+  Grid,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
   Typography,
 } from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+
+const fmt = (v) => (v === null || v === undefined || v === "" ? "-" : String(v));
+const asArray = (v) => (Array.isArray(v) ? v : v ? [v] : []);
 
 export default function EmployeeShow({ auth, employee }) {
-  const job = employee?.job;
-  const contacts = employee?.contacts ?? [];
-  const addresses = employee?.addresses ?? [];
-  const emergencyContacts = employee?.emergency_contacts ?? employee?.emergencyContacts ?? [];
-  const bankAccounts = employee?.bank_accounts ?? employee?.bankAccounts ?? [];
-  const experiences = employee?.experience ?? employee?.experiences ?? [];
-  const documents = employee?.employee_documents ?? employee?.documents ?? [];
-  const compensations = employee?.compensations ?? [];
-  const leaveBalances = employee?.leave_balances ?? employee?.leaveBalances ?? [];
+  const job = employee?.job ?? employee?.employee_job ?? null;
+  const contacts = employee?.contacts ?? employee?.employee_contacts ?? [];
+  const addresses = employee?.addresses ?? employee?.employee_addresses ?? [];
+  const emergencyContacts =
+    employee?.emergencyContacts ?? employee?.emergency_contacts ?? employee?.employee_emergency_contacts ?? [];
+  const bankAccounts = employee?.bankAccounts ?? employee?.bank_accounts ?? employee?.employee_bank_accounts ?? [];
+  const experiences = employee?.experiences ?? employee?.experience ?? employee?.employee_experiences ?? [];
+  const documents = employee?.documents ?? employee?.employee_documents ?? employee?.employeeDocuments ?? [];
+  const compensations = employee?.compensations ?? employee?.employee_compensations ?? employee?.employeeCompensations ?? [];
+  const yearlyLeaveBalances =
+    employee?.yearlyLeaveBalances ??
+    employee?.employee_yearly_leave_balance ??
+    employee?.leaveBalances ??
+    employee?.leave_balances ??
+    [];
+
+  const fullName = useMemo(() => {
+    return `${employee?.first_name ?? ""} ${employee?.last_name ?? ""}`.trim() || "-";
+  }, [employee]);
+
+  const onlyDate = (v) => {
+  if (!v) return "-";
+  // handles "2026-02-10 12:30:00" or ISO strings
+  const s = String(v);
+  const datePart = s.split("T")[0].split(" ")[0];
+  return datePart || "-";
+};
+
+const managerName = (job) => {
+  const m = job?.reportingManager ?? job?.reporting_manager ?? null;
+  if (!m) return fmt(job?.reporting_manager_id);
+  const name = `${m.first_name ?? ""} ${m.last_name ?? ""}`.trim();
+  return name || fmt(job?.reporting_manager_id);
+};
+
+const jobTitleName =
+  job?.jobTitle?.name ??
+  job?.job_title?.name ??
+  job?.job_title_name ??
+  "-";
+
+  const Section = ({ title, children, defaultExpanded = false }) => (
+    <Accordion
+      defaultExpanded={defaultExpanded}
+      disableGutters
+      elevation={0}
+      sx={{
+        border: "1px solid",
+        borderColor: "divider",
+        "&:before": { display: "none" },
+      }}
+    >
+      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+        <Typography fontWeight={900} sx={{ color: "#0B1C2D" }}>
+          {title}
+        </Typography>
+      </AccordionSummary>
+      <AccordionDetails>{children}</AccordionDetails>
+    </Accordion>
+  );
+
+  // ✅ 4-by-4 grid on desktop: xs=12, sm=6 (2 cols), md=3 (4 cols)
+  const KVGrid = ({ items }) => (
+    <Grid container spacing={2}>
+      {items.map(({ k, v }, idx) => (
+        <Grid key={idx} item xs={12} sm={6} md={3}>
+          <Box sx={{ border: "1px solid", borderColor: "divider", p: 1.5 }}>
+            <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 0.5 }}>
+              {k}
+            </Typography>
+            <Typography fontWeight={800}>{fmt(v)}</Typography>
+          </Box>
+        </Grid>
+      ))}
+    </Grid>
+  );
+
+  const SimpleTable = ({ columns, rows, emptyText = "No records" }) => {
+    const safeRows = asArray(rows);
+    return safeRows.length === 0 ? (
+      <Typography color="text.secondary">{emptyText}</Typography>
+    ) : (
+      <Table size="small" sx={{ border: "1px solid", borderColor: "divider" }}>
+        <TableHead>
+          <TableRow>
+            {columns.map((c) => (
+              <TableCell key={c.key} sx={{ fontWeight: 900, color: "#0B1C2D" }}>
+                {c.label}
+              </TableCell>
+            ))}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {safeRows.map((r, i) => (
+            <TableRow key={i}>
+              {columns.map((c) => (
+                <TableCell key={c.key}>
+                  {fmt(typeof c.get === "function" ? c.get(r) : r?.[c.key])}
+                </TableCell>
+              ))}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    );
+  };
 
   return (
     <AuthenticatedLayout user={auth.user}>
       <Head title={`Employee - ${employee?.employee_code ?? ""}`} />
 
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-          <Typography variant="h5" fontWeight={900} sx={{ color: "#0B1C2D" }}>
-            Employee Details
-          </Typography>
+      {/* ✅ Fluid container */}
+      <Container maxWidth={false} disableGutters sx={{ py: 4, px: { xs: 2, md: 3 } }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+          <Box>
+            <Typography variant="h5" fontWeight={900} sx={{ color: "#0B1C2D" }}>
+              Employee Details
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {fmt(employee?.employee_code)} • {fullName}
+            </Typography>
+          </Box>
 
           <Button variant="outlined" onClick={() => router.get("/hrms/employees")}>
             Back
           </Button>
-        </Stack>
+        </Box>
 
-        <Box sx={{ border: "2px solid #0B1C2D", p: 3, backgroundColor: "white" }}>
-          {/* BASIC */}
-          <Typography fontWeight={900} sx={{ mb: 1 }}>Basic</Typography>
-          <Stack spacing={0.75}>
-            <Typography><b>Employee Code:</b> {employee?.employee_code ?? "-"}</Typography>
-            <Typography><b>Name:</b> {(employee?.first_name ?? "") + " " + (employee?.last_name ?? "")}</Typography>
-            <Typography><b>Employment Status:</b> {employee?.employment_status ?? "-"}</Typography>
-            <Typography><b>Attendance Type:</b> {employee?.attendance_type ?? "-"}</Typography>
-            <Typography><b>EPF Number:</b> {employee?.epf_number ?? "-"}</Typography>
-          </Stack>
+        <Box sx={{ border: "2px solid #0B1C2D", p: 2.5, backgroundColor: "white" }}>
+          <Box sx={{ display: "grid", gap: 1.5 }}>
+            {/* BASIC */}
+            <Section title="Basic" defaultExpanded>
+              <KVGrid
+                items={[
+                  { k: "Employee Code", v: employee?.employee_code },
+                  { k: "Name", v: fullName },
+                  { k: "Surname", v: employee?.surname },
+                  { k: "DOB", v: employee?.date_of_birth },
+                  { k: "Gender", v: employee?.gender },
+                  { k: "Marital Status", v: employee?.marital_status },
+                  { k: "Nationality", v: employee?.nationality },
+                  { k: "Blood Group", v: employee?.blood_group },
+                  { k: "EPF Number", v: employee?.epf_number },
+                  { k: "Employment Status", v: employee?.employment_status },
+                  { k: "Attendance Type", v: employee?.attendance_type },
+                ]}
+              />
+            </Section>
 
-          <Divider sx={{ my: 2 }} />
+            {/* JOB */}
+            <Section title="Job">
+              <KVGrid
+                items={[
+                  { k: "Department", v: job?.department?.name ?? job?.department_name },
+                  { k: "Job Title", v: jobTitleName },
+                  { k: "Employment Type", v: job?.employment_type },
+                  { k: "Employment Level", v: job?.employment_level },
+                  { k: "Date of Joining", v: onlyDate(job?.date_of_joining) },
+                  { k: "Probation End", v: onlyDate(job?.probation_end_date) },
+                  { k: "Reporting Manager", v: managerName(job) },
+                ]}
+              />
+            </Section>
 
-          {/* JOB */}
-          <Typography fontWeight={900} sx={{ mb: 1 }}>Job</Typography>
-          <Stack spacing={0.75}>
-            <Typography><b>Department:</b> {job?.department?.name ?? "-"}</Typography>
-            <Typography><b>Job Title:</b> {job?.jobTitle?.name ?? "-"}</Typography>
-            <Typography><b>Employment Type:</b> {job?.employment_type ?? "-"}</Typography>
-            <Typography><b>Employment Level:</b> {job?.employment_level ?? "-"}</Typography>
-            <Typography><b>Date of Joining:</b> {job?.date_of_joining ?? "-"}</Typography>
-            <Typography><b>Probation End:</b> {job?.probation_end_date ?? "-"}</Typography>
-          </Stack>
 
-          <Divider sx={{ my: 2 }} />
+            {/* CONTACTS */}
+            <Section title={`Contacts (${contacts.length})`}>
+              <SimpleTable
+                columns={[
+                  { key: "contact_type", label: "Type" },
+                  { key: "contact_value", label: "Value" },
+                ]}
+                rows={contacts}
+                emptyText="No contacts"
+              />
+            </Section>
 
-          {/* CONTACTS */}
-          <Typography fontWeight={900} sx={{ mb: 1 }}>Contacts</Typography>
-          <Stack spacing={0.75}>
-            {contacts.length === 0 ? (
-              <Typography color="text.secondary">No contacts</Typography>
-            ) : (
-              contacts.map((c, i) => (
-                <Typography key={i}>
-                  <b>{c.contact_type}:</b> {c.contact_value} {c.is_primary ? "(Primary)" : ""}
-                </Typography>
-              ))
-            )}
-          </Stack>
+            {/* ADDRESSES */}
+            <Section title={`Addresses (${addresses.length})`}>
+              <SimpleTable
+                columns={[
+                  { key: "address_type", label: "Type" },
+                  { key: "address_line_1", label: "Line 1" },
+                  { key: "address_line_2", label: "Line 2" },
+                  { key: "city", label: "City" },
+                  { key: "state", label: "State" },
+                  { key: "country", label: "Country" },
+                  { key: "postal_code", label: "Postal Code" },
+                ]}
+                rows={addresses}
+                emptyText="No addresses"
+              />
+            </Section>
 
-          <Divider sx={{ my: 2 }} />
+            {/* EMERGENCY */}
+            <Section title={`Emergency Contacts (${emergencyContacts.length})`}>
+              <SimpleTable
+                columns={[
+                  { key: "name", label: "Name" },
+                  { key: "relationship", label: "Relationship" },
+                  { key: "phone", label: "Phone" },
+                  { key: "address", label: "Address" },
+                ]}
+                rows={emergencyContacts}
+                emptyText="No emergency contacts"
+              />
+            </Section>
 
-          {/* ADDRESSES */}
-          <Typography fontWeight={900} sx={{ mb: 1 }}>Addresses</Typography>
-          <Stack spacing={1}>
-            {addresses.length === 0 ? (
-              <Typography color="text.secondary">No addresses</Typography>
-            ) : (
-              addresses.map((a, i) => (
-                <Box key={i} sx={{ p: 1.5, border: "1px solid", borderColor: "divider" }}>
-                  <Typography><b>Type:</b> {a.address_type}</Typography>
-                  <Typography>
-                    <b>Address:</b> {a.address_line_1}{a.address_line_2 ? `, ${a.address_line_2}` : ""},{" "}
-                    {a.city}, {a.state}, {a.country} - {a.postal_code}
-                  </Typography>
-                </Box>
-              ))
-            )}
-          </Stack>
+            {/* BANK */}
+            <Section title={`Bank Accounts (${bankAccounts.length})`}>
+              <SimpleTable
+                columns={[
+                  { key: "bank_name", label: "Bank" },
+                  { key: "bank_account_number", label: "Account No." },
+                  { key: "bank_branch_name", label: "Branch" },
+                ]}
+                rows={bankAccounts}
+                emptyText="No bank accounts"
+              />
+            </Section>
 
-          <Divider sx={{ my: 2 }} />
+            {/* EXPERIENCE */}
+            <Section title={`Experience (${experiences.length})`}>
+              <SimpleTable
+                columns={[
+                  { key: "previous_employer", label: "Previous Employer" },
+                  { key: "total_years", label: "Total Years" },
+                ]}
+                rows={experiences}
+                emptyText="No experience"
+              />
+            </Section>
 
-          {/* EMERGENCY */}
-          <Typography fontWeight={900} sx={{ mb: 1 }}>Emergency Contacts</Typography>
-          <Stack spacing={0.75}>
-            {emergencyContacts.length === 0 ? (
-              <Typography color="text.secondary">No emergency contacts</Typography>
-            ) : (
-              emergencyContacts.map((e, i) => (
-                <Typography key={i}>
-                  <b>{e.name}</b> ({e.relationship}) - {e.phone}
-                </Typography>
-              ))
-            )}
-          </Stack>
+            {/* COMPENSATION */}
+            <Section title={`Compensation (${compensations.length})`}>
+              {asArray(compensations).length === 0 ? (
+                <Typography color="text.secondary">No compensation records</Typography>
+              ) : (
+                asArray(compensations).map((c, idx) => (
+                  <Box key={idx} sx={{ mb: 2 }}>
+                    <KVGrid
+                      items={[
+                        { k: "Currency", v: c?.salary_currency },
+                        { k: "Pay Frequency", v: c?.pay_frequency },
+                        { k: "Effective From", v: onlyDate(c?.effective_from) },
+                        { k: "Effective To", v: onlyDate(c?.effective_to) },
+                      ]}
+                    />
+                    <Divider sx={{ my: 1.5 }} />
+                    <Typography fontWeight={900} sx={{ mb: 1, color: "#0B1C2D" }}>
+                      Components
+                    </Typography>
+                    <SimpleTable
+                      columns={[
+                        { key: "component_type", label: "Type" },
+                        { key: "component_name", label: "Name" },
+                        { key: "amount", label: "Amount" },
+                      ]}
+                      rows={c?.components ?? c?.compensation_components ?? []}
+                      emptyText="No components"
+                    />
+                  </Box>
+                ))
+              )}
+            </Section>
 
-          <Divider sx={{ my: 2 }} />
+            {/* LEAVE */}
+            <Section title={`Leave Balances (${yearlyLeaveBalances.length})`}>
+              <SimpleTable
+                columns={[
+                  { key: "policy", label: "Policy", get: (r) => r?.policy?.name ?? r?.leave_policy_id },
+                  { key: "leave_entitlement", label: "Entitlement" },
+                ]}
+                rows={yearlyLeaveBalances}
+                emptyText="No leave balances"
+              />
+            </Section>
 
-          {/* BANK */}
-          <Typography fontWeight={900} sx={{ mb: 1 }}>Bank Accounts</Typography>
-          <Stack spacing={0.75}>
-            {bankAccounts.length === 0 ? (
-              <Typography color="text.secondary">No bank accounts</Typography>
-            ) : (
-              bankAccounts.map((b, i) => (
-                <Typography key={i}>
-                  <b>{b.bank_name}:</b> {b.bank_account_number} {b.bank_branch_name ? `(${b.bank_branch_name})` : ""}
-                </Typography>
-              ))
-            )}
-          </Stack>
-
-          <Divider sx={{ my: 2 }} />
-
-          {/* EXPERIENCE */}
-          <Typography fontWeight={900} sx={{ mb: 1 }}>Experience</Typography>
-          <Stack spacing={0.75}>
-            {experiences.length === 0 ? (
-              <Typography color="text.secondary">No experience</Typography>
-            ) : (
-              experiences.map((x, i) => (
-                <Typography key={i}>
-                  <b>{x.previous_employer}</b> - {x.total_years ?? 0} years
-                </Typography>
-              ))
-            )}
-          </Stack>
-
-          <Divider sx={{ my: 2 }} />
-
-          {/* COMPENSATION */}
-          <Typography fontWeight={900} sx={{ mb: 1 }}>Compensation</Typography>
-          <Stack spacing={1}>
-            {compensations.length === 0 ? (
-              <Typography color="text.secondary">No compensation records</Typography>
-            ) : (
-              compensations.map((c, i) => (
-                <Box key={i} sx={{ p: 1.5, border: "1px solid", borderColor: "divider" }}>
-                  <Typography><b>Currency:</b> {c.salary_currency} | <b>Frequency:</b> {c.pay_frequency}</Typography>
-                  <Typography><b>Effective:</b> {c.effective_from ?? "-"} to {c.effective_to ?? "-"}</Typography>
-                  <Divider sx={{ my: 1 }} />
-                  <Typography fontWeight={800}>Components</Typography>
-                  {(c.components ?? []).length === 0 ? (
-                    <Typography color="text.secondary">No components</Typography>
-                  ) : (
-                    (c.components ?? []).map((cc, idx) => (
-                      <Typography key={idx}>
-                        {cc.component_type} - {cc.component_name}: {cc.amount}
-                      </Typography>
-                    ))
-                  )}
-                </Box>
-              ))
-            )}
-          </Stack>
-
-          <Divider sx={{ my: 2 }} />
-
-          {/* LEAVE */}
-          <Typography fontWeight={900} sx={{ mb: 1 }}>Leave Balances</Typography>
-          <Stack spacing={0.75}>
-            {leaveBalances.length === 0 ? (
-              <Typography color="text.secondary">No leave balances</Typography>
-            ) : (
-              leaveBalances.map((lb, i) => (
-                <Typography key={i}>
-                  <b>Policy:</b> {lb.leave_policy_id} | <b>Annual:</b> {lb.annual_leave_balance} | <b>Sick:</b>{" "}
-                  {lb.sick_leave_balance}
-                </Typography>
-              ))
-            )}
-          </Stack>
-
-          <Divider sx={{ my: 2 }} />
-
-          {/* DOCUMENTS */}
-          <Typography fontWeight={900} sx={{ mb: 1 }}>Documents</Typography>
-          <Stack spacing={0.75}>
-            {documents.length === 0 ? (
-              <Typography color="text.secondary">No documents</Typography>
-            ) : (
-              documents.map((d, i) => (
-                <Typography key={i}>
-                  <b>{d.doc_type}:</b> {d.file_path ?? d.file ?? "Uploaded"}
-                </Typography>
-              ))
-            )}
-          </Stack>
+            {/* DOCUMENTS */}
+            <Section title={`Documents (${documents.length})`}>
+              <SimpleTable
+                columns={[
+                  { key: "doc_type", label: "Type" },
+                  { key: "file_path", label: "Path" },
+                ]}
+                rows={documents}
+                emptyText="No documents"
+              />
+            </Section>
+          </Box>
         </Box>
       </Container>
     </AuthenticatedLayout>
