@@ -13,7 +13,7 @@ class EmployeeYearlyLeaveBalance extends Model
 
     protected $fillable = [
         'employee_id','leave_policy_id',
-        'annual_leave_balance','sick_leave_balance'
+        'leave_entitlement'
     ];
 
     public function employee()

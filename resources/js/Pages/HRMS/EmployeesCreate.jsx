@@ -120,8 +120,7 @@ export default function EmployeesCreate({
     // yearly leave balance (simple)
     yearly_leave: {
       leave_policy_id: "",
-      annual_leave_balance: 0,
-      sick_leave_balance: 0,
+      leave_entitlement: 0,
     },
   });
 
@@ -908,23 +907,11 @@ export default function EmployeesCreate({
               <TextField
                 label="Annual Leave Balance"
                 type="number"
-                value={data.yearly_leave.annual_leave_balance}
+                value={data.yearly_leave.leave_entitlment}
                 onChange={(e) =>
                   setData("yearly_leave", {
                     ...data.yearly_leave,
-                    annual_leave_balance: e.target.value,
-                  })
-                }
-                fullWidth
-              />
-              <TextField
-                label="Sick Leave Balance"
-                type="number"
-                value={data.yearly_leave.sick_leave_balance}
-                onChange={(e) =>
-                  setData("yearly_leave", {
-                    ...data.yearly_leave,
-                    sick_leave_balance: e.target.value,
+                    leave_entitlement: e.target.value,
                   })
                 }
                 fullWidth

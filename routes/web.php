@@ -44,6 +44,9 @@ Route::prefix('hrms')->middleware(['auth'])->group(function () {
     Route::get('/employees/create', [EmployeeController::class, 'create'])->name('hrms.create');
     Route::post('/employees', [EmployeeController::class, 'store'])->name('hrms.employees.store');
     Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('hrms.employees.destroy');
+    Route::get('/employees/{employee}', [EmployeeController::class, 'show'])
+    ->name('hrms.employees.show');
+
 });
 
 

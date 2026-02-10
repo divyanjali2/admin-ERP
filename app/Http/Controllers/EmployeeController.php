@@ -166,8 +166,7 @@ class EmployeeController extends Controller
 
                 'yearly_leave' => ['nullable', 'array'],
                 'yearly_leave.leave_policy_id' => ['nullable', 'integer', 'exists:leave_policies,leave_policy_id'],
-                'yearly_leave.annual_leave_balance' => ['nullable', 'integer'],
-                'yearly_leave.sick_leave_balance' => ['nullable', 'integer'],
+                'yearly_leave.leave_entitlement' => ['nullable', 'integer'],
 
                 'employee_documents' => ['nullable', 'array'],
                 'employee_documents.*.doc_type' => ['required_with:employee_documents', 'string', 'max:30'],
@@ -260,11 +259,8 @@ class EmployeeController extends Controller
                     [
                         'employee_id'     => $employee->employee_id,
                         'leave_policy_id' => $validated['yearly_leave']['leave_policy_id'],
+                        'leave_entitlement' => (int)($validated['yearly_leave']['leave_entitlement'] ?? 0),
                     ],
-                    [
-                        'annual_leave_balance' => (int)($validated['yearly_leave']['annual_leave_balance'] ?? 0),
-                        'sick_leave_balance'   => (int)($validated['yearly_leave']['sick_leave_balance'] ?? 0),
-                    ]
                 );
             }
 
@@ -381,6 +377,27 @@ class EmployeeController extends Controller
             throw $e; // keep it so you see the error in dev
         }
     }
+
+    public function show(Employee $employee)
+{
+    $employee->load([
+        'job.department',
+        'job.jobTitle',
+        'contacts',
+        'addresses',
+        'emergencyContacts',
+        'bankAccounts',
+        'experiences',
+        'documents',
+        'leaveBalances',      // adjust name if different
+        'compensations.components', // adjust if different relationship
+    ]);
+
+    return inertia('HRMS/Employees/Show', [
+        'employee' => $employee,
+    ]);
+}
+
 
     public function destroy(Employee $employee)
     {

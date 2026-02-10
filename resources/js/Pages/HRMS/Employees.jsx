@@ -59,9 +59,7 @@ const closeUserMenu = () => setUserMenuAnchor(null);
 
   // dialogs
   const [openForm, setOpenForm] = useState(false);
-  const [mode, setMode] = useState("create"); // "create" | "edit"
-  const [openView, setOpenView] = useState(false);
-  const [viewRow, setViewRow] = useState(null);
+  const [mode, setMode] = useState("create"); 
 
   // delete
   const [openDelete, setOpenDelete] = useState(false);
@@ -109,11 +107,6 @@ const closeUserMenu = () => setUserMenuAnchor(null);
       status: row.status ?? "Active",
     });
     setOpenForm(true);
-  };
-
-  const openViewDialog = (row) => {
-    setViewRow(row);
-    setOpenView(true);
   };
 
   const saveForm = () => {
@@ -180,7 +173,7 @@ const closeUserMenu = () => setUserMenuAnchor(null);
         renderCell: (params) => (
           <Stack direction="row" spacing={0.5} alignItems="center">
             <Tooltip title="View">
-              <IconButton size="small" onClick={() => openViewDialog(params.row)} sx={{ color: "#0c7a2b" }}>
+              <IconButton size="small" onClick={() => router.get(`/hrms/employees/${params.row.employee_id}`)} sx={{ color: "#0c7a2b" }}>
                 <VisibilityOutlinedIcon fontSize="medium" />
               </IconButton> 
             </Tooltip>
@@ -420,7 +413,7 @@ const closeUserMenu = () => setUserMenuAnchor(null);
         </Box>
 
         {/* Create/Edit Dialog */}
-        <Dialog open={openForm} onClose={() => setOpenForm(false)} fullWidth maxWidth="sm">
+        {/* <Dialog open={openForm} onClose={() => setOpenForm(false)} fullWidth maxWidth="sm">
           <DialogTitle sx={{ fontWeight: 900 }}>
             {mode === "create" ? "Create Employee" : "Edit Employee"}
           </DialogTitle>
@@ -499,24 +492,7 @@ const closeUserMenu = () => setUserMenuAnchor(null);
               Save
             </Button>
           </DialogActions>
-        </Dialog>
-
-        {/* View Dialog */}
-        <Dialog open={openView} onClose={() => setOpenView(false)} fullWidth maxWidth="sm">
-          <DialogTitle sx={{ fontWeight: 900 }}>Employee Details</DialogTitle>
-          <DialogContent>
-            <Stack spacing={1.5} sx={{ mt: 1 }}>
-              <Typography><b>Employee Code:</b> {viewRow?.employee_code ?? "-"}</Typography>
-              <Typography><b>Name:</b> {(viewRow?.first_name ?? "") + " " + (viewRow?.last_name ?? "")}</Typography>
-              <Typography><b>Work Email:</b> {viewRow?.work_email ?? "-"}</Typography>
-              <Typography><b>Department:</b> {viewRow?.department ?? "-"}</Typography>
-              {/* <Typography><b>Status:</b> {viewRow?.status ?? "-"}</Typography> */}
-            </Stack>
-          </DialogContent>
-          <DialogActions sx={{ px: 3, pb: 2 }}>
-            <Button onClick={() => setOpenView(false)}>Close</Button>
-          </DialogActions>
-        </Dialog>
+        </Dialog> */}
 
         {/* Delete confirm */}
         <Dialog open={openDelete} onClose={() => setOpenDelete(false)} fullWidth maxWidth="xs">
