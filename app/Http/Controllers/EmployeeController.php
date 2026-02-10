@@ -62,7 +62,8 @@ class EmployeeController extends Controller
                     'work_email' => $workEmail,
                     'department' => optional(optional($e->job)->department)->name,
                     'job_title' => optional(optional($e->job)->jobTitle)->name,
-                    'employment_status' => $e->employment_status,
+                                    'employment_level' => $e->job->employment_level ?? null,
+
                 ];
             });
 

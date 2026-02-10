@@ -24,6 +24,7 @@ import {
   Toolbar,
   Typography,
   useMediaQuery,
+  Tooltip,
 } from "@mui/material";
 
 import { DataGrid } from "@mui/x-data-grid";
@@ -74,7 +75,6 @@ const closeUserMenu = () => setUserMenuAnchor(null);
     last_name: "",
     work_email: "",
     department: "",
-    // status: "Active",
   });
 
   const toggleMobile = () => setMobileOpen((v) => !v);
@@ -157,47 +157,42 @@ const closeUserMenu = () => setUserMenuAnchor(null);
 
   const columns = useMemo(
     () => [
-      { field: "employee_code", headerName: "Employee Code", flex: 1, minWidth: 160 },
-      { field: "first_name", headerName: "First Name", flex: 1, minWidth: 150 },
-      { field: "last_name", headerName: "Last Name", flex: 1, minWidth: 150 },
-      { field: "work_email", headerName: "Work Email", flex: 1.4, minWidth: 240 },
+      { field: "employee_code", headerName: "EMP Code", flex: 1, minWidth: 160 },
+      {
+        field: "name",
+        headerName: "Full Name",
+        flex: 1.2,
+        minWidth: 220,
+        valueGetter: (value, row) => `${row?.first_name ?? ""} ${row?.last_name ?? ""}`.trim(),
+        sortComparator: (v1, v2) => (v1 ?? "").localeCompare(v2 ?? ""),
+      },
       { field: "department", headerName: "Department", flex: 1, minWidth: 160 },
-      // { field: "status", headerName: "Status", flex: 0.8, minWidth: 130 },
+      { field: "employment_level", headerName: "Status", flex: 0.8, minWidth: 130 },
       {
         field: "actions",
         headerName: "Actions",
         sortable: false,
         filterable: false,
-        minWidth: 320,
+        minWidth: 300,
         renderCell: (params) => (
-          <Stack direction="row" spacing={1}>
-            <Button
-              size="small"
-              variant="outlined"
-              startIcon={<VisibilityOutlinedIcon />}
-              onClick={() => openViewDialog(params.row)}
-              sx={{ borderColor: "#0B1C2D", color: "#0B1C2D" }}
-            >
-              View
-            </Button>
-            <Button
-              size="small"
-              variant="outlined"
-              startIcon={<EditOutlinedIcon />}
-              onClick={() => openEdit(params.row)}
-              sx={{ borderColor: "#0B1C2D", color: "#0B1C2D" }}
-            >
-              Edit
-            </Button>
-            <Button
-              size="small"
-              variant="outlined"
-              startIcon={<DeleteOutlineOutlinedIcon />}
-              onClick={() => askDelete(params.row)}
-              sx={{ borderColor: "#0B1C2D", color: "#0B1C2D" }}
-            >
-              Remove
-            </Button>
+          <Stack direction="row" spacing={0.5} alignItems="center">
+            <Tooltip title="View">
+              <IconButton size="small" onClick={() => openViewDialog(params.row)} sx={{ color: "#0B1C2D" }}>
+                <VisibilityOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+
+            <Tooltip title="Edit">
+              <IconButton size="small" onClick={() => openEdit(params.row)} sx={{ color: "#0B1C2D" }}>
+                <EditOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+
+            <Tooltip title="Delete">
+              <IconButton size="small" onClick={() => askDelete(params.row)} sx={{ color: "#0B1C2D" }}>
+                <DeleteOutlineOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
           </Stack>
         ),
       },
@@ -399,24 +394,37 @@ const closeUserMenu = () => setUserMenuAnchor(null);
               }}
             >
               <Box sx={{ height: "calc(100vh - 170px)", backgroundColor: "white" }}>
-                <DataGrid
-                rows={employees}
-                columns={columns}
-                disableRowSelectionOnClick
-                checkboxSelection
-                pagination
-                pageSizeOptions={[10, 25, 50, 100]}
-                initialState={{
-                    pagination: { paginationModel: { pageSize: 25, page: 0 } },
-                }}
-                showToolbar
-                slotProps={{
+<DataGrid
+  rows={employees}
+  columns={columns}
+  disableRowSelectionOnClick
+  checkboxSelection
+  pagination
+  pageSizeOptions={[10, 25, 50, 100]}
+  initialState={{ pagination: { paginationModel: { pageSize: 25, page: 0 } } }}
+                  showToolbar
+                                  slotProps={{
                     toolbar: {
                     showQuickFilter: true,
                     quickFilterProps: { debounceMs: 300 },
                     },
                 }}
-                />
+
+  sx={{
+    "& .MuiDataGrid-columnHeaders": {
+      backgroundColor: "rgba(11, 28, 45, 0.06)",
+      borderBottom: "2px solid #0B1C2D",
+    },
+    "& .MuiDataGrid-columnHeaderTitle": {
+      fontWeight: 900,
+      color: "#0B1C2D",
+    },
+    "& .MuiDataGrid-cell": {
+      alignItems: "center",
+    },
+  }}
+/>
+
               </Box>
             </Box>
           </Container>
