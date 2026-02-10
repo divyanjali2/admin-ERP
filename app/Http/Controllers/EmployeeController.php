@@ -379,25 +379,24 @@ class EmployeeController extends Controller
     }
 
     public function show(Employee $employee)
-{
-    $employee->load([
-        'job.department',
-        'job.jobTitle',
-        'contacts',
-        'addresses',
-        'emergencyContacts',
-        'bankAccounts',
-        'experiences',
-        'documents',
-        'leaveBalances',      // adjust name if different
-        'compensations.components', // adjust if different relationship
-    ]);
+    {
+        $employee->load([
+            'job.department',
+            'job.jobTitle',
+            'contacts',
+            'addresses',
+            'emergencyContacts',
+            'bankAccounts',
+            'experiences',
+            'documents',
+            'leaveBalances',    
+            'compensations.components', 
+        ]);
 
-    return inertia('HRMS/Employees/Show', [
-        'employee' => $employee,
-    ]);
-}
-
+        return inertia('HRMS/EmployeesShow', [
+            'employee' => $employee,
+        ]);
+    }
 
     public function destroy(Employee $employee)
     {

@@ -173,7 +173,7 @@ const closeUserMenu = () => setUserMenuAnchor(null);
         renderCell: (params) => (
           <Stack direction="row" spacing={0.5} alignItems="center">
             <Tooltip title="View">
-              <IconButton size="small" onClick={() => router.get(`/hrms/employees/${params.row.employee_id}`)} sx={{ color: "#0c7a2b" }}>
+              <IconButton size="small" onClick={() => router.get(`/hrms/employees/${params.row.id}`)} sx={{ color: "#0c7a2b" }}>
                 <VisibilityOutlinedIcon fontSize="medium" />
               </IconButton> 
             </Tooltip>

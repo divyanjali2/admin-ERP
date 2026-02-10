@@ -117,7 +117,6 @@ export default function EmployeesCreate({
       ],
     },
 
-    // yearly leave balance (simple)
     yearly_leave: {
       leave_policy_id: "",
       leave_entitlement: 0,
@@ -283,15 +282,6 @@ export default function EmployeesCreate({
           <Stack spacing={3}>
             {/* ================= BASIC ================= */}
             <Typography fontWeight={900}>Basic Details</Typography>
-
-            {/* <TextField
-              label="Employee Code"
-              value={data.employee_code}
-              onChange={(e) => setData("employee_code", e.target.value)}
-              error={!!errors.employee_code}
-              helperText={errors.employee_code}
-              fullWidth
-            /> */}
 
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
               <TextField
