@@ -32,6 +32,7 @@ const CONTACT_TYPE = ["Personal_Email", "Work_Email", "Phone", "Alternate_Phone"
 const PAY_FREQUENCY = ["Monthly", "Weekly"];
 const SALARY_CURRENCY = ["LKR", "USD", "EUR", "GBP", "AUD", "CAD", "SGD", "INR"];
 const DOC_TYPES = ["Profile_Photo","Resume_File","ID_Proof","Offer_Letter","Employment_Contract","Certificates","Other"];
+const BLOOD_GROUPS = ["A+","A-","B+","B-","AB+","AB-","O+","O-",];
 
 export default function EmployeesCreate({
   auth,
@@ -418,11 +419,19 @@ export default function EmployeesCreate({
                 fullWidth
               />
               <TextField
+                select
                 label="Blood Group"
                 value={data.blood_group}
                 onChange={(e) => setData("blood_group", e.target.value)}
                 fullWidth
-              />
+              >
+                <MenuItem value="">Select Blood Group</MenuItem>
+                {BLOOD_GROUPS.map((bg) => (
+                  <MenuItem key={bg} value={bg}>
+                    {bg}
+                  </MenuItem>
+                ))}
+              </TextField>
             </Stack>
 
             <Divider />
