@@ -8,11 +8,10 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('employee_yearly_leave_balance', function (Blueprint $table) {
-            $table->unsignedBigInteger('employee_id');       // NOT nullable
+            $table->unsignedBigInteger('employee_id'); 
             $table->unsignedBigInteger('leave_policy_id');
 
-            $table->integer('annual_leave_balance')->default(0);
-            $table->integer('sick_leave_balance')->default(0);
+            $table->integer('leave_entitlement')->default(0);
 
             $table->primary(['employee_id', 'leave_policy_id']);
 

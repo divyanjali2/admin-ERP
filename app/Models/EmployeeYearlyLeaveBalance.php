@@ -8,8 +8,6 @@ class EmployeeYearlyLeaveBalance extends Model
 {
     protected $table = 'employee_yearly_leave_balance';
     public $timestamps = false;
-    public $incrementing = false;
-    protected $primaryKey = null;
 
     protected $fillable = [
         'employee_id','leave_policy_id',

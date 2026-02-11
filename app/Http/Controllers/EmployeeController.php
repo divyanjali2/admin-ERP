@@ -611,17 +611,35 @@ class EmployeeController extends Controller
             }
 
             // yearly leave upsert
-            foreach ($validated['yearly_leave'] ?? [] as $yl) {
-                EmployeeYearlyLeaveBalance::updateOrCreate(
-                    [
-                        'employee_id' => $employee->employee_id,
-                        'leave_policy_id' => $yl['leave_policy_id'],
-                    ],
-                    [
-                        'leave_entitlement' => $yl['leave_entitlement'],
-                    ]
+            $rows = collect($validated['yearly_leave'] ?? [])
+                ->filter(fn ($yl) => !empty($yl['leave_policy_id']))
+                ->map(fn ($yl) => [
+                    'employee_id' => $employee->employee_id,
+                    'leave_policy_id' => (int) $yl['leave_policy_id'],
+                    'leave_entitlement' => (int) ($yl['leave_entitlement'] ?? 0),
+                ])
+                ->values()
+                ->all();
+
+            if (!empty($rows)) {
+                DB::table('employee_yearly_leave_balance')->upsert(
+                    $rows,
+                    ['employee_id', 'leave_policy_id'],   // conflict columns (matches your PK)
+                    ['leave_entitlement']                 // columns to update
                 );
             }
+
+            $policyIds = array_column($rows, 'leave_policy_id');
+
+            DB::table('employee_yearly_leave_balance')
+                ->where('employee_id', $employee->employee_id)
+                ->whereNotIn('leave_policy_id', $policyIds)
+                ->delete();
+
+            Log::info('YEARLY LEAVE saved count', [
+                'count' => EmployeeYearlyLeaveBalance::where('employee_id', $employee->employee_id)->count()
+                ]);
+
 
             // compensation latest + components
             if (!empty($validated['compensation'] ?? null)) {
@@ -680,7 +698,7 @@ class EmployeeController extends Controller
         });
 
         return redirect()
-            ->route('hrms.employees.index', $employee->employee_id)
+            ->route('hrms.employees.index')
             ->with('success', 'Employee updated successfully.');
     }
 

@@ -125,7 +125,10 @@ export default function EmployeesCreate({
     },
 
     yearly_leave: [
-      { leave_policy_id: "", leave_entitlement: 0 },
+      {
+        leave_policy_id: "",
+        leave_entitlement: 0,
+      },
     ],
   });
 
@@ -284,7 +287,10 @@ export default function EmployeesCreate({
   };
 
   const removeYearlyLeave = (idx) => {
-    setData("yearly_leave", data.yearly_leave.filter((_, i) => i !== idx));
+    setData(
+      "yearly_leave",
+      data.yearly_leave.filter((_, i) => i !== idx)
+    );
   };
 
   return (
@@ -946,7 +952,10 @@ export default function EmployeesCreate({
                   >
                     <MenuItem value="">Select policy</MenuItem>
                     {leavePolicies.map((lp) => (
-                      <MenuItem key={lp.leave_policy_id} value={lp.leave_policy_id}>
+                      <MenuItem
+                        key={lp.leave_policy_id}
+                        value={lp.leave_policy_id}
+                      >
                         {lp.name}
                       </MenuItem>
                     ))}
@@ -955,12 +964,9 @@ export default function EmployeesCreate({
                   <TextField
                     label="Annual Leave Balance"
                     type="number"
-                    value={data.yearly_leave.leave_entitlement}
+                    value={yl.leave_entitlement}
                     onChange={(e) =>
-                      setData("yearly_leave", {
-                        ...data.yearly_leave,
-                        leave_entitlement: e.target.value,
-                      })
+                      setYearlyLeave(idx, "leave_entitlement", e.target.value)
                     }
                     fullWidth
                   />
@@ -971,6 +977,7 @@ export default function EmployeesCreate({
                 </Stack>
               ))}
             </Stack>
+
 
             <Divider />
 
