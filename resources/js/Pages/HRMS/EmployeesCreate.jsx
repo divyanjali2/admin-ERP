@@ -31,7 +31,7 @@ const ADDRESS_TYPE = ["Residential", "Emergency", "Other"];
 const CONTACT_TYPE = ["Personal Email", "Work Email", "Phone", "Alternate Phone"];
 const PAY_FREQUENCY = ["Monthly", "Weekly"];
 const SALARY_CURRENCY = ["LKR", "USD", "EUR", "GBP", "AUD", "CAD", "SGD", "INR"];
-const DOC_TYPES = ["Profile_Photo","Resume_File","ID_Proof","Offer_Letter","Employment_Contract","Certificates","Other"];
+const DOC_TYPES = ["Profile Photo","Resume File","ID Proof","Offer Letter","Employment Contract","Certificates"];
 const BLOOD_GROUPS = ["A+","A-","B+","B-","AB+","AB-","O+","O-",];
 const BANKS = ["Nations Trust Bank","Commercial Bank","Bank of Ceylon","People's Bank","Sampath Bank","Hatton National Bank","DFCC Bank","Pan Asia Bank","Union Bank"];
 
@@ -99,7 +99,7 @@ export default function EmployeesCreate({
 
     employee_documents: [
       {
-        doc_type: "ID_Proof",
+        doc_type: "ID Proof",
         file: null, 
       },
     ],
