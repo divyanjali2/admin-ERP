@@ -406,6 +406,7 @@ class EmployeeController extends Controller
     public function edit(Employee $employee)
     {
         $employee->load([
+            'user:id,email',
             'job.department',
             'job.jobTitle',
             'job.reportingManager',
@@ -418,6 +419,8 @@ class EmployeeController extends Controller
             'yearlyLeaveBalances.policy',
             'compensations.components',
         ]);
+
+        $employee->load('user:id,email,employee_id');
 
         return Inertia::render('HRMS/EmployeesEdit', [
             'employee' => $employee,

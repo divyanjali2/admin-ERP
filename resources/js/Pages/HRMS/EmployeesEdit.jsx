@@ -204,7 +204,7 @@ export default function EmployeesEdit({
           <Typography variant="h5" fontWeight={900} sx={{ color: "#0B1C2D" }}>
             Edit Employee
           </Typography>
-          <Button variant="outlined" onClick={() => router.get(`/hrms/employees/${employee.employee_id}`)}>
+          <Button variant="outlined" onClick={() => router.get(`/hrms/employees`)}>
             Back
           </Button>
         </Stack>
