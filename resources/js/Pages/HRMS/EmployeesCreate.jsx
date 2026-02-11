@@ -322,7 +322,7 @@ export default function EmployeesCreate({
               />
             </Stack>
 
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={4}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
                   label="Date of Birth"
@@ -357,10 +357,8 @@ export default function EmployeesCreate({
                   </MenuItem>
                 ))}
               </TextField>
-            </Stack>
 
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <TextField
+                   <TextField
                 select
                 label="Marital Status"
                 value={data.marital_status}
@@ -389,7 +387,7 @@ export default function EmployeesCreate({
               </TextField>
             </Stack>
 
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={4}>
               <TextField
                 label="Nationality"
                 value={data.nationality}
@@ -409,9 +407,6 @@ export default function EmployeesCreate({
                   </MenuItem>
                 ))}
               </TextField>
-            </Stack>
-
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
               <TextField
                 label="EPF Number"
                 value={data.epf_number}
@@ -463,7 +458,7 @@ export default function EmployeesCreate({
             {/* ================= JOB ================= */}
             <Typography fontWeight={900}>Job Details</Typography>
 
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={4}>
               <TextField
                 select
                 label="Department"
@@ -495,9 +490,7 @@ export default function EmployeesCreate({
                   </MenuItem>
                 ))}
               </TextField>
-            </Stack>
-
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+              
               <TextField
                 select
                 label="Employment Type"
@@ -527,7 +520,7 @@ export default function EmployeesCreate({
               </TextField>
             </Stack>
 
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={3}>
               <TextField
                 label="Date of Joining"
                 type="date"
@@ -544,9 +537,6 @@ export default function EmployeesCreate({
                 onChange={(e) => setData("probation_end_date", e.target.value)}
                 fullWidth
               />
-            </Stack>
-
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
               <TextField
                 select
                 label="Reporting Manager"
@@ -655,8 +645,8 @@ export default function EmployeesCreate({
             <Stack spacing={2}>
               {data.addresses.map((a, idx) => (
                 <Box key={idx} sx={{ p: 2, border: "1px solid", borderColor: "divider" }}>
-                  <Stack spacing={2}>
-                    <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="center">
+                  <Stack spacing={4}>
+                    <Stack direction={{ xs: "column", sm: "row" }} spacing={4} alignItems="center">
                       <TextField
                         select
                         label="Address Type"
@@ -671,41 +661,40 @@ export default function EmployeesCreate({
                         ))}
                       </TextField>
 
+                      <TextField
+                        label="Address Line 1"
+                        value={a.address_line_1}
+                        onChange={(e) => setAddress(idx, "address_line_1", e.target.value)}
+                        fullWidth
+                      />
+                      <TextField
+                        label="Address Line 2"
+                        value={a.address_line_2}
+                        onChange={(e) => setAddress(idx, "address_line_2", e.target.value)}
+                        fullWidth
+                      />
+
+                        <TextField
+                          label="City"
+                          value={a.city}
+                          onChange={(e) => setAddress(idx, "city", e.target.value)}
+                          fullWidth
+                        />
+
                       <IconButton onClick={() => removeAddress(idx)} aria-label="remove-address">
                         <DeleteOutlineOutlinedIcon />
                       </IconButton>
                     </Stack>
 
-                    <TextField
-                      label="Address Line 1"
-                      value={a.address_line_1}
-                      onChange={(e) => setAddress(idx, "address_line_1", e.target.value)}
-                      fullWidth
-                    />
-                    <TextField
-                      label="Address Line 2"
-                      value={a.address_line_2}
-                      onChange={(e) => setAddress(idx, "address_line_2", e.target.value)}
-                      fullWidth
-                    />
-
-                    <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-                      <TextField
-                        label="City"
-                        value={a.city}
-                        onChange={(e) => setAddress(idx, "city", e.target.value)}
-                        fullWidth
-                      />
+                    <Stack direction={{ xs: "column", sm: "row" }} spacing={4}>
+                  
                       <TextField
                         label="State"
                         value={a.state}
                         onChange={(e) => setAddress(idx, "state", e.target.value)}
                         fullWidth
                       />
-                    </Stack>
-
-                    <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-                      <TextField
+                       <TextField
                         label="Country"
                         value={a.country}
                         onChange={(e) => setAddress(idx, "country", e.target.value)}
@@ -804,7 +793,7 @@ export default function EmployeesCreate({
             {/* ================= COMPENSATION ================= */}
             <Typography fontWeight={900}>Compensation</Typography>
 
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={4}>
               <TextField
                 select
                 label="Salary Currency"
@@ -832,9 +821,6 @@ export default function EmployeesCreate({
                   </MenuItem>
                 ))}
               </TextField>
-            </Stack>
-
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
               <TextField
                 label="Effective From"
                 type="date"
@@ -900,37 +886,38 @@ export default function EmployeesCreate({
 
             {/* ================= LEAVE POLICY / YEARLY ================= */}
             <Typography fontWeight={900}>Yearly Leave Balance</Typography>
-
-            <TextField
-              select
-              label="Leave Policy"
-              value={data.yearly_leave.leave_policy_id}
-              onChange={(e) =>
-                setData("yearly_leave", { ...data.yearly_leave, leave_policy_id: e.target.value })
-              }
-              fullWidth
-            >
-              <MenuItem value="">Select policy</MenuItem>
-              {leavePolicies.map((lp) => (
-                <MenuItem key={lp.leave_policy_id} value={lp.leave_policy_id}>
-                  {lp.name}
-                </MenuItem>
-              ))}
-            </TextField>
-
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+
               <TextField
-                label="Annual Leave Balance"
-                type="number"
-                value={data.yearly_leave.leave_entitlment}
+                select
+                label="Leave Policy"
+                value={data.yearly_leave.leave_policy_id}
                 onChange={(e) =>
-                  setData("yearly_leave", {
-                    ...data.yearly_leave,
-                    leave_entitlement: e.target.value,
-                  })
+                  setData("yearly_leave", { ...data.yearly_leave, leave_policy_id: e.target.value })
                 }
                 fullWidth
-              />
+              >
+                <MenuItem value="">Select policy</MenuItem>
+                {leavePolicies.map((lp) => (
+                  <MenuItem key={lp.leave_policy_id} value={lp.leave_policy_id}>
+                    {lp.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                  label="Annual Leave Balance"
+                  type="number"
+                  value={data.yearly_leave.leave_entitlment}
+                  onChange={(e) =>
+                    setData("yearly_leave", {
+                      ...data.yearly_leave,
+                      leave_entitlement: e.target.value,
+                    })
+                  }
+                  fullWidth
+                />
+
+        
             </Stack>
 
             <Divider />
