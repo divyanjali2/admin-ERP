@@ -1,6 +1,11 @@
 import React from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, router, useForm } from "@inertiajs/react";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs from "dayjs";
+
 import {
   Box,
   Button,
@@ -317,16 +322,27 @@ export default function EmployeesCreate({
             </Stack>
 
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <TextField
-                label="Date of Birth"
-                type="date"
-                InputLabelProps={{ shrink: true }}
-                value={data.date_of_birth}
-                onChange={(e) => setData("date_of_birth", e.target.value)}
-                error={!!errors.date_of_birth}
-                helperText={errors.date_of_birth}
-                fullWidth
-              />
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  label="Date of Birth"
+                  value={data.date_of_birth ? dayjs(data.date_of_birth) : null}
+                  onChange={(newValue) =>
+                    setData("date_of_birth", newValue ? newValue.format("YYYY-MM-DD") : "")
+                  }
+                  disableFuture
+                  maxDate={dayjs().subtract(6, "year")}
+                  views={["year", "month", "day"]}
+                  openTo="year"
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      error: !!errors.date_of_birth,
+                      helperText: errors.date_of_birth,
+                    },
+                  }}
+                />
+              </LocalizationProvider>
+
               <TextField
                 select
                 label="Gender"
