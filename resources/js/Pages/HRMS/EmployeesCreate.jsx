@@ -5,6 +5,10 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
+import Alert from "@mui/material/Alert";
+import Collapse from "@mui/material/Collapse";
+import { usePage } from "@inertiajs/react";
+import { useEffect, useState } from "react";
 
 import {
   Box,
@@ -134,7 +138,13 @@ export default function EmployeesCreate({
 
   const submit = (e) => {
     e.preventDefault();
-    post("/hrms/employees", { preserveScroll: true, forceFormData: true, });
+
+    post("/hrms/employees", {
+      preserveScroll: true,
+      forceFormData: true,
+      onSuccess: () => setAlert({ type: "success", message: "Employee saved successfully.", open: true }),
+      onError: () => setAlert({ type: "error", message: "Please fix the errors and try again.", open: true }),
+    });
   };
 
   const setContact = (idx, key, value) => {
@@ -293,9 +303,32 @@ export default function EmployeesCreate({
     );
   };
 
+const { flash } = usePage().props;
+const [alert, setAlert] = useState({ type: "", message: "", open: false });
+
+useEffect(() => {
+  if (flash?.success) setAlert({ type: "success", message: flash.success, open: true });
+  else if (flash?.error) setAlert({ type: "error", message: flash.error, open: true });
+}, [flash]);
+
+useEffect(() => {
+  if (Object.keys(errors || {}).length) {
+    setAlert({ type: "error", message: "Please fix the highlighted fields.", open: true });
+  }
+}, [errors]);
+
+
   return (
     <AuthenticatedLayout user={auth.user}>
       <Head title="Create Employee" />
+      <Collapse in={alert.open} sx={{ mb: 2 }}>
+        <Alert
+          severity={alert.type || "info"}
+          onClose={() => setAlert((p) => ({ ...p, open: false }))}
+        >
+          {alert.message}
+        </Alert>
+      </Collapse>
 
       <Container maxWidth="false" sx={{ py: 4 }}>
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
