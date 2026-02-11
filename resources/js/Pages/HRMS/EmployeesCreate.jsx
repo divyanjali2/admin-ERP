@@ -33,6 +33,7 @@ const PAY_FREQUENCY = ["Monthly", "Weekly"];
 const SALARY_CURRENCY = ["LKR", "USD", "EUR", "GBP", "AUD", "CAD", "SGD", "INR"];
 const DOC_TYPES = ["Profile_Photo","Resume_File","ID_Proof","Offer_Letter","Employment_Contract","Certificates","Other"];
 const BLOOD_GROUPS = ["A+","A-","B+","B-","AB+","AB-","O+","O-",];
+const BANKS = ["Nations Trust Bank","Commercial Bank","Bank of Ceylon","People's Bank","Sampath Bank","Hatton National Bank","DFCC Bank","Pan Asia Bank","Union Bank"];
 
 export default function EmployeesCreate({
   auth,
@@ -772,11 +773,21 @@ export default function EmployeesCreate({
               {data.bank_accounts.map((b, idx) => (
                 <Stack key={idx} direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="center">
                   <TextField
+                    select
                     label="Bank Name"
                     value={b.bank_name}
                     onChange={(e) => setBank(idx, "bank_name", e.target.value)}
                     fullWidth
-                  />
+                  >
+                    <MenuItem value="">Select Bank</MenuItem>
+                    {BANKS.map((bank) => (
+                      <MenuItem key={bank} value={bank}>
+                        {bank}
+                      </MenuItem>
+                    ))}
+                    
+                  </TextField>
+
                   <TextField
                     label="Bank Account Number"
                     value={b.bank_account_number}
