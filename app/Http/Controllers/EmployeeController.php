@@ -30,7 +30,11 @@ class EmployeeController extends Controller
 {
     public function index()
     {
-        $employees = Employee::query()
+        $employees = Employee::with([
+                'contacts:contact_id,employee_id,contact_type,contact_value,is_primary',
+                'job.department:department_id,name',
+                'job.jobTitle:job_title_id,name',
+            ])
             ->select([
                 'employee_id',
                 'employee_code',
@@ -38,33 +42,21 @@ class EmployeeController extends Controller
                 'last_name',
                 'employment_status',
             ])
-            ->with([
-                // Work email from contacts
-                'contacts' => function ($q) {
-                    $q->select('contact_id', 'employee_id', 'contact_type', 'contact_value', 'is_primary');
-                },
-                // Department/Job title from employee_job
-                'job.department:department_id,name',
-                'job.jobTitle:job_title_id,name',
-            ])
-            ->orderBy('last_updated_date', 'desc')
+            ->latest('last_updated_date')
             ->get()
-            ->map(function ($e) {
-                $workEmail = optional(
-                    $e->contacts->firstWhere('contact_type', 'Work_Email')
-                )->contact_value;
-
-                return [
-                    'id' => $e->employee_id, 
-                    'employee_code' => $e->employee_code,
-                    'first_name' => $e->first_name,
-                    'last_name' => $e->last_name,
-                    'work_email' => $workEmail,
-                    'department' => optional(optional($e->job)->department)->name,
-                    'job_title' => optional(optional($e->job)->jobTitle)->name,
-                    'employment_level' => $e->job->employment_level ?? null,
-                ];
-            });
+            ->map(fn ($e) => [
+                'id' => $e->employee_id,
+                'employee_code' => $e->employee_code,
+                'first_name' => $e->first_name,
+                'last_name' => $e->last_name,                
+                'employment_status' => $e->employment_status,
+                'work_email' => $e->contacts
+                    ->firstWhere('contact_type', 'Work_Email')
+                    ?->contact_value,
+                'department' => $e->job?->department?->name,
+                'job_title' => $e->job?->jobTitle?->name,
+                'employment_level' => $e->job?->employment_level,
+            ]);
 
         return Inertia::render('HRMS/Employees', [
             'employees' => $employees,
