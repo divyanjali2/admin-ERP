@@ -17,7 +17,7 @@ return new class extends Migration {
             $table->string('city', 100);
             $table->string('state', 100);
             $table->string('country', 100);
-            $table->string('postal_code', 20);
+            $table->string('postal_code', 20)->nullable();
 
             $table->boolean('is_current')->default(true);
 

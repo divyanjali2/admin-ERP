@@ -136,7 +136,7 @@ class EmployeeController extends Controller
                 'addresses.*.city' => ['required', 'string', 'max:100'],
                 'addresses.*.state' => ['required', 'string', 'max:100'],
                 'addresses.*.country' => ['required', 'string', 'max:100'],
-                'addresses.*.postal_code' => ['required', 'string', 'max:20'],
+                'addresses.*.postal_code' => ['nullable', 'string', 'max:20'],
                 'addresses.*.is_current' => ['nullable', 'boolean'],
 
                 'emergency_contacts' => ['nullable', 'array'],
@@ -482,7 +482,7 @@ class EmployeeController extends Controller
             'addresses.*.city' => ['required','string','max:100'],
             'addresses.*.state' => ['required','string','max:100'],
             'addresses.*.country' => ['required','string','max:100'],
-            'addresses.*.postal_code' => ['required','string','max:20'],
+            'addresses.*.postal_code' => ['nullable','string','max:20'],
             'addresses.*.is_current' => ['nullable','boolean'],
 
             // emergency (tolerant)

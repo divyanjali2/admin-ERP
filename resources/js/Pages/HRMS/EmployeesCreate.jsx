@@ -28,7 +28,7 @@ const ATTENDANCE_TYPE = ["Fingerprint","Biometric", "Manual"];
 const EMPLOYMENT_TYPE = ["Full-Time","Contract"];
 const EMPLOYMENT_LEVEL = ["Probation", "Confirmed"];
 const ADDRESS_TYPE = ["Residential", "Emergency", "Other"];
-const CONTACT_TYPE = ["Personal_Email", "Work_Email", "Phone", "Alternate_Phone"];
+const CONTACT_TYPE = ["Personal Email", "Work Email", "Phone", "Alternate Phone"];
 const PAY_FREQUENCY = ["Monthly", "Weekly"];
 const SALARY_CURRENCY = ["LKR", "USD", "EUR", "GBP", "AUD", "CAD", "SGD", "INR"];
 const DOC_TYPES = ["Profile_Photo","Resume_File","ID_Proof","Offer_Letter","Employment_Contract","Certificates","Other"];
@@ -73,7 +73,7 @@ export default function EmployeesCreate({
 
     // contacts (multiple)
     contacts: [
-      { contact_type: "Work_Email", contact_value: "", is_primary: true },
+      { contact_type: "Work Email", contact_value: "", is_primary: true },
       { contact_type: "Phone", contact_value: "", is_primary: true },
     ],
 
@@ -490,7 +490,7 @@ export default function EmployeesCreate({
                   </MenuItem>
                 ))}
               </TextField>
-              
+
               <TextField
                 select
                 label="Employment Type"
@@ -521,22 +521,30 @@ export default function EmployeesCreate({
             </Stack>
 
             <Stack direction={{ xs: "column", sm: "row" }} spacing={3}>
-              <TextField
-                label="Date of Joining"
-                type="date"
-                InputLabelProps={{ shrink: true }}
-                value={data.date_of_joining}
-                onChange={(e) => setData("date_of_joining", e.target.value)}
-                fullWidth
-              />
-              <TextField
-                label="Probation End Date"
-                type="date"
-                InputLabelProps={{ shrink: true }}
-                value={data.probation_end_date}
-                onChange={(e) => setData("probation_end_date", e.target.value)}
-                fullWidth
-              />
+                <TextField
+                  label="Date of Joining"
+                  type="date"
+                  InputLabelProps={{ shrink: true }}
+                  value={data.date_of_joining}
+                  onChange={(e) => setData("date_of_joining", e.target.value)}
+                  inputProps={{
+                    max: new Date().toISOString().split("T")[0], 
+                  }}
+                  fullWidth
+                />
+
+                <TextField
+                  label="Probation End Date"
+                  type="date"
+                  InputLabelProps={{ shrink: true }}
+                  value={data.probation_end_date}
+                  onChange={(e) => setData("probation_end_date", e.target.value)}
+                  inputProps={{
+                    min: new Date().toISOString().split("T")[0], 
+                  }}
+                  fullWidth
+                />
+
               <TextField
                 select
                 label="Reporting Manager"
