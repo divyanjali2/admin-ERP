@@ -95,19 +95,8 @@ const closeUserMenu = () => setUserMenuAnchor(null);
       router.get("/hrms/employees/create");
     };
 
-  const openEdit = (row) => {
-    setMode("edit");
-    setData({
-      id: row.id,
-      employee_code: row.employee_code ?? "",
-      first_name: row.first_name ?? "",
-      last_name: row.last_name ?? "",
-      work_email: row.work_email ?? "",
-      department: row.department ?? "",
-      status: row.status ?? "Active",
-    });
-    setOpenForm(true);
-  };
+const openEdit = (row) => router.get(`/hrms/employees/${row.id}/edit`);
+
 
   const saveForm = () => {
     if (!data.employee_code || !data.first_name || !data.last_name) return;

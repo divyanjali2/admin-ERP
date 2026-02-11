@@ -208,6 +208,9 @@ class EmployeeController extends Controller
                 'last_updated_date' => now(),
             ]);
 
+            $user->employee_id = $employee->employee_id;
+            $user->save();
+
             EmployeeJob::create([
                 'employee_id' => $employee->employee_id,
                 'department_id' => $validated['department_id'],
@@ -398,6 +401,295 @@ class EmployeeController extends Controller
         return inertia('HRMS/EmployeesShow', [
             'employee' => $employee,
         ]);
+    }
+
+    public function edit(Employee $employee)
+    {
+        $employee->load([
+            'job.department',
+            'job.jobTitle',
+            'job.reportingManager',
+            'contacts',
+            'addresses',
+            'emergencyContacts',
+            'bankAccounts',
+            'experiences',
+            'documents',
+            'yearlyLeaveBalances.policy',
+            'compensations.components',
+        ]);
+
+        return Inertia::render('HRMS/EmployeesEdit', [
+            'employee' => $employee,
+            'departments' => Department::orderBy('name')->get(['department_id','name']),
+            'jobTitles' => JobTitle::orderBy('name')->get(['job_title_id','name']),
+            'leavePolicies' => LeavePolicy::orderBy('name')->get(['leave_policy_id','name']),
+            'employees' => Employee::orderBy('first_name')->get(['employee_id','employee_code','first_name','last_name']),
+        ]);
+    }
+
+    public function update(Request $request, Employee $employee)
+    {
+        Log::info('EMPLOYEE UPDATE: incoming', [
+            'content_type' => $request->header('Content-Type'),
+            'all_keys' => array_keys($request->all()),
+        ]);
+
+        $validated = $request->validate([
+            'employment_status' => ['required','string','max:20'],
+            'surname' => ['required','string','max:100'],
+            'first_name' => ['required','string','max:100'],
+            'middle_name' => ['nullable','string','max:100'],
+            'last_name' => ['required','string','max:100'],
+            'date_of_birth' => ['required','date'],
+            'gender' => ['required','string','max:10'],
+            'marital_status' => ['nullable','string','max:10'],
+            'nationality' => ['nullable','string','max:100'],
+            'blood_group' => ['nullable','string','max:10'],
+            'epf_number' => [
+                'nullable','string','max:50',
+                Rule::unique('employees','epf_number')->ignore($employee->employee_id,'employee_id')
+            ],
+            'attendance_type' => ['required','string','max:20'],
+
+            // user fields (optional)
+            'user_email' => ['nullable','email','max:255'],
+            'user_password' => ['nullable','string','min:6'],
+
+            // job
+            'department_id' => ['required','integer','exists:departments,department_id'],
+            'job_title_id' => ['required','integer','exists:job_titles,job_title_id'],
+            'employment_type' => ['required','string','max:20'],
+            'employment_level' => ['required','string','max:20'],
+            'date_of_joining' => ['required','date'],
+            'probation_end_date' => ['nullable','date','after_or_equal:date_of_joining'],
+            'reporting_manager_id' => ['nullable','integer','exists:employees,employee_id'],
+
+            // contacts
+            'contacts' => ['required','array','min:1'],
+            'contacts.*.contact_type' => ['required','string','max:30'],
+            'contacts.*.contact_value' => ['required','string','max:255'],
+            'contacts.*.is_primary' => ['nullable','boolean'],
+
+            // addresses
+            'addresses' => ['required','array','min:1'],
+            'addresses.*.address_type' => ['required','string','max:20'],
+            'addresses.*.address_line_1' => ['required','string','max:255'],
+            'addresses.*.address_line_2' => ['nullable','string','max:255'],
+            'addresses.*.city' => ['required','string','max:100'],
+            'addresses.*.state' => ['required','string','max:100'],
+            'addresses.*.country' => ['required','string','max:100'],
+            'addresses.*.postal_code' => ['required','string','max:20'],
+            'addresses.*.is_current' => ['nullable','boolean'],
+
+            // emergency (tolerant)
+            'emergency_contacts' => ['nullable','array'],
+            'emergency_contacts.*.name' => ['nullable','string','max:150'],
+            'emergency_contacts.*.relationship' => ['nullable','string','max:100'],
+            'emergency_contacts.*.phone' => ['nullable','string','max:30'],
+            'emergency_contacts.*.address' => ['nullable','string','max:255'],
+
+            // experience (tolerant)
+            'experience' => ['nullable','array'],
+            'experience.*.previous_employer' => ['nullable','string','max:150'],
+            'experience.*.total_years' => ['nullable','numeric'],
+
+            // bank (tolerant)
+            'bank_accounts' => ['nullable','array'],
+            'bank_accounts.*.bank_name' => ['nullable','string','max:150'],
+            'bank_accounts.*.bank_account_number' => ['nullable','string','max:50'],
+            'bank_accounts.*.bank_branch_name' => ['nullable','string','max:150'],
+
+            // comp
+            'compensation' => ['nullable','array'],
+            'compensation.salary_currency' => ['nullable','string','size:3'],
+            'compensation.pay_frequency' => ['nullable','string','max:10'],
+            'compensation.effective_from' => ['nullable','date'],
+            'compensation.effective_to' => ['nullable','date','after_or_equal:compensation.effective_from'],
+            'compensation.components' => ['nullable','array'],
+            'compensation.components.*.component_type' => ['nullable','string','max:10'],
+            'compensation.components.*.component_name' => ['nullable','string','max:120'],
+            'compensation.components.*.amount' => ['nullable','numeric'],
+
+            // yearly leave
+            'yearly_leave' => ['nullable','array'],
+            'yearly_leave.leave_policy_id' => ['nullable','integer','exists:leave_policies,leave_policy_id'],
+            'yearly_leave.leave_entitlement' => ['nullable','integer'],
+
+            // docs
+            'employee_documents' => ['nullable','array'],
+            'employee_documents.*.doc_type' => ['nullable','string','max:30'],
+            'employee_documents.*.file' => ['nullable','file','max:10240'],
+        ]);
+
+        DB::transaction(function () use ($employee, $validated) {
+
+            $employee->update([
+                'employment_status' => $validated['employment_status'],
+                'surname' => $validated['surname'],
+                'first_name' => $validated['first_name'],
+                'middle_name' => $validated['middle_name'] ?? null,
+                'last_name' => $validated['last_name'],
+                'date_of_birth' => $validated['date_of_birth'],
+                'gender' => $validated['gender'],
+                'marital_status' => $validated['marital_status'] ?? null,
+                'nationality' => $validated['nationality'] ?? null,
+                'blood_group' => $validated['blood_group'] ?? null,
+                'epf_number' => $validated['epf_number'] ?? null,
+                'attendance_type' => $validated['attendance_type'],
+                'last_updated_by' => auth()->id(),
+                'last_updated_date' => now(),
+            ]);
+
+            // job
+            EmployeeJob::updateOrCreate(
+                ['employee_id' => $employee->employee_id],
+                [
+                    'department_id' => $validated['department_id'],
+                    'job_title_id' => $validated['job_title_id'],
+                    'employment_type' => $validated['employment_type'],
+                    'employment_level' => $validated['employment_level'],
+                    'date_of_joining' => $validated['date_of_joining'],
+                    'probation_end_date' => $validated['probation_end_date'] ?? null,
+                    'reporting_manager_id' => $validated['reporting_manager_id'] ?? null,
+                ]
+            );
+
+            // contacts replace
+            EmployeeContact::where('employee_id', $employee->employee_id)->delete();
+            foreach ($validated['contacts'] as $c) {
+                EmployeeContact::create([
+                    'employee_id' => $employee->employee_id,
+                    'contact_type' => $c['contact_type'],
+                    'contact_value' => $c['contact_value'],
+                    'is_primary' => (bool)($c['is_primary'] ?? false),
+                ]);
+            }
+
+            // addresses replace
+            EmployeeAddress::where('employee_id', $employee->employee_id)->delete();
+            foreach ($validated['addresses'] as $a) {
+                EmployeeAddress::create([
+                    'employee_id' => $employee->employee_id,
+                    'address_type' => $a['address_type'],
+                    'address_line_1' => $a['address_line_1'],
+                    'address_line_2' => $a['address_line_2'] ?? null,
+                    'city' => $a['city'],
+                    'state' => $a['state'],
+                    'country' => $a['country'],
+                    'postal_code' => $a['postal_code'],
+                    'is_current' => (bool)($a['is_current'] ?? false),
+                ]);
+            }
+
+            // emergency replace (skip empty)
+            EmployeeEmergencyContact::where('employee_id', $employee->employee_id)->delete();
+            foreach (($validated['emergency_contacts'] ?? []) as $ec) {
+                if (empty($ec['name']) && empty($ec['phone']) && empty($ec['relationship']) && empty($ec['address'])) continue;
+                EmployeeEmergencyContact::create([
+                    'employee_id' => $employee->employee_id,
+                    'name' => $ec['name'] ?? '',
+                    'relationship' => $ec['relationship'] ?? '',
+                    'phone' => $ec['phone'] ?? '',
+                    'address' => $ec['address'] ?? null,
+                ]);
+            }
+
+            // experience replace (skip empty)
+            EmployeeExperience::where('employee_id', $employee->employee_id)->delete();
+            foreach (($validated['experience'] ?? []) as $ex) {
+                if (empty($ex['previous_employer']) && empty($ex['total_years'])) continue;
+                EmployeeExperience::create([
+                    'employee_id' => $employee->employee_id,
+                    'previous_employer' => $ex['previous_employer'] ?? '',
+                    'total_years' => $ex['total_years'] ?? null,
+                ]);
+            }
+
+            // bank replace (skip empty)
+            EmployeeBankAccount::where('employee_id', $employee->employee_id)->delete();
+            foreach (($validated['bank_accounts'] ?? []) as $b) {
+                if (empty($b['bank_name']) && empty($b['bank_account_number']) && empty($b['bank_branch_name'])) continue;
+                EmployeeBankAccount::create([
+                    'employee_id' => $employee->employee_id,
+                    'bank_name' => $b['bank_name'] ?? '',
+                    'bank_account_number' => $b['bank_account_number'] ?? '',
+                    'bank_branch_name' => $b['bank_branch_name'] ?? null,
+                ]);
+            }
+
+            // yearly leave upsert
+            if (!empty($validated['yearly_leave']['leave_policy_id'] ?? null)) {
+                EmployeeYearlyLeaveBalance::updateOrCreate(
+                    [
+                        'employee_id' => $employee->employee_id,
+                        'leave_policy_id' => $validated['yearly_leave']['leave_policy_id'],
+                    ],
+                    [
+                        'leave_entitlement' => (int)($validated['yearly_leave']['leave_entitlement'] ?? 0),
+                    ]
+                );
+            }
+
+            // compensation latest + components
+            if (!empty($validated['compensation'] ?? null)) {
+                $comp = $validated['compensation'];
+
+                $existing = EmployeeCompensation::where('employee_id', $employee->employee_id)
+                    ->latest('comp_id')
+                    ->first();
+
+                $compensation = $existing
+                    ? tap($existing)->update([
+                        'salary_currency' => $comp['salary_currency'] ?? 'LKR',
+                        'pay_frequency' => $comp['pay_frequency'] ?? 'Monthly',
+                        'effective_from' => $comp['effective_from'] ?? null,
+                        'effective_to' => $comp['effective_to'] ?? null,
+                    ])
+                    : EmployeeCompensation::create([
+                        'employee_id' => $employee->employee_id,
+                        'salary_currency' => $comp['salary_currency'] ?? 'LKR',
+                        'pay_frequency' => $comp['pay_frequency'] ?? 'Monthly',
+                        'effective_from' => $comp['effective_from'] ?? null,
+                        'effective_to' => $comp['effective_to'] ?? null,
+                    ]);
+
+                EmployeeCompensationComponent::where('comp_id', $compensation->comp_id)->delete();
+
+                foreach (($comp['components'] ?? []) as $cc) {
+                    if (empty($cc['component_name']) || !isset($cc['amount']) || $cc['amount'] === '') continue;
+                    EmployeeCompensationComponent::create([
+                        'comp_id' => $compensation->comp_id,
+                        'component_type' => $cc['component_type'] ?? 'Allowance',
+                        'component_name' => $cc['component_name'],
+                        'amount' => $cc['amount'],
+                    ]);
+                }
+            }
+
+            // docs append only
+            foreach (($validated['employee_documents'] ?? []) as $doc) {
+                $file = $doc['file'] ?? null;
+                if (!$file) continue;
+
+                $path = $file->store("employees/{$employee->employee_id}/documents", 'public');
+
+                EmployeeDocument::create([
+                    'employee_id' => $employee->employee_id,
+                    'doc_type' => $doc['doc_type'] ?? 'Other',
+                    'file_name' => $doc['doc_type'] ?? 'Other',
+                    'file_path' => $path,
+                    'original_name' => $file->getClientOriginalName(),
+                    'mime_type' => $file->getClientMimeType(),
+                    'file_size_bytes' => $file->getSize(),
+                    'uploaded_at' => now(),
+                ]);
+            }
+        });
+
+        return redirect()
+            ->route('hrms.employees.index', $employee->employee_id)
+            ->with('success', 'Employee updated successfully.');
     }
 
     public function destroy(Employee $employee)
