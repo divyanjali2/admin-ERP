@@ -55,15 +55,14 @@ class EmployeeController extends Controller
                 )->contact_value;
 
                 return [
-                    'id' => $e->employee_id, // DataGrid needs "id"
+                    'id' => $e->employee_id, 
                     'employee_code' => $e->employee_code,
                     'first_name' => $e->first_name,
                     'last_name' => $e->last_name,
                     'work_email' => $workEmail,
                     'department' => optional(optional($e->job)->department)->name,
                     'job_title' => optional(optional($e->job)->jobTitle)->name,
-                                    'employment_level' => $e->job->employment_level ?? null,
-
+                    'employment_level' => $e->job->employment_level ?? null,
                 ];
             });
 
@@ -348,12 +347,10 @@ class EmployeeController extends Controller
                 ]);
             }
 
-            $employee->employee_code = 'EPF-' . str_pad((string)$employee->employee_id, 6, '0', STR_PAD_LEFT);
+            $employee->employee_code = 'EV-' . str_pad((string)$employee->employee_id, 6, '0', STR_PAD_LEFT);
             $employee->save();
 
             Log::channel('single')->info('EMPLOYEE STORE: employee created', ['employee_id' => $employee->employee_id]);
-
-            // ... keep the rest of your creates as-is ...
 
             DB::commit();
 
@@ -516,8 +513,8 @@ class EmployeeController extends Controller
 
             // yearly leave
             'yearly_leave' => ['nullable','array'],
-            'yearly_leave.leave_policy_id' => ['nullable','integer','exists:leave_policies,leave_policy_id'],
-            'yearly_leave.leave_entitlement' => ['nullable','integer'],
+            'yearly_leave.*.leave_policy_id' => ['required','integer','exists:leave_policies,leave_policy_id'],
+            'yearly_leave.*.leave_entitlement' => ['required','integer'],
 
             // docs
             'employee_documents' => ['nullable','array'],
@@ -622,14 +619,14 @@ class EmployeeController extends Controller
             }
 
             // yearly leave upsert
-            if (!empty($validated['yearly_leave']['leave_policy_id'] ?? null)) {
+            foreach ($validated['yearly_leave'] ?? [] as $yl) {
                 EmployeeYearlyLeaveBalance::updateOrCreate(
                     [
                         'employee_id' => $employee->employee_id,
-                        'leave_policy_id' => $validated['yearly_leave']['leave_policy_id'],
+                        'leave_policy_id' => $yl['leave_policy_id'],
                     ],
                     [
-                        'leave_entitlement' => (int)($validated['yearly_leave']['leave_entitlement'] ?? 0),
+                        'leave_entitlement' => $yl['leave_entitlement'],
                     ]
                 );
             }

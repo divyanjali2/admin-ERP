@@ -124,10 +124,9 @@ export default function EmployeesCreate({
       ],
     },
 
-    yearly_leave: {
-      leave_policy_id: "",
-      leave_entitlement: 0,
-    },
+    yearly_leave: [
+      { leave_policy_id: "", leave_entitlement: 0 },
+    ],
   });
 
   const submit = (e) => {
@@ -269,6 +268,23 @@ export default function EmployeesCreate({
 
   const removeExperience = (idx) => {
     setData("experience", data.experience.filter((_, i) => i !== idx));
+  };
+
+  const setYearlyLeave = (idx, key, value) => {
+    const next = [...data.yearly_leave];
+    next[idx] = { ...next[idx], [key]: value };
+    setData("yearly_leave", next);
+  };
+
+  const addYearlyLeave = () => {
+    setData("yearly_leave", [
+      ...data.yearly_leave,
+      { leave_policy_id: "", leave_entitlement: 0 },
+    ]);
+  };
+
+  const removeYearlyLeave = (idx) => {
+    setData("yearly_leave", data.yearly_leave.filter((_, i) => i !== idx));
   };
 
   return (
@@ -904,39 +920,56 @@ export default function EmployeesCreate({
             <Divider />
 
             {/* ================= LEAVE POLICY / YEARLY ================= */}
-            <Typography fontWeight={900}>Yearly Leave Balance</Typography>
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Typography fontWeight={800}>Yearly Balance</Typography>
+              <Button startIcon={<AddOutlinedIcon />} onClick={addYearlyLeave}>
+                Add Leave Policy
+              </Button>
+            </Stack>
 
-              <TextField
-                select
-                label="Leave Policy"
-                value={data.yearly_leave.leave_policy_id}
-                onChange={(e) =>
-                  setData("yearly_leave", { ...data.yearly_leave, leave_policy_id: e.target.value })
-                }
-                fullWidth
-              >
-                <MenuItem value="">Select policy</MenuItem>
-                {leavePolicies.map((lp) => (
-                  <MenuItem key={lp.leave_policy_id} value={lp.leave_policy_id}>
-                    {lp.name}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <TextField
-                  label="Annual Leave Balance"
-                  type="number"
-                  value={data.yearly_leave.leave_entitlment}
-                  onChange={(e) =>
-                    setData("yearly_leave", {
-                      ...data.yearly_leave,
-                      leave_entitlement: e.target.value,
-                    })
-                  }
-                  fullWidth
-                />
+            <Stack spacing={2}>
+              {data.yearly_leave.map((yl, idx) => (
+                <Stack
+                  key={idx}
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={2}
+                  alignItems="center"
+                >
+                  <TextField
+                    select
+                    label="Leave Policy"
+                    value={yl.leave_policy_id}
+                    onChange={(e) =>
+                      setYearlyLeave(idx, "leave_policy_id", e.target.value)
+                    }
+                    fullWidth
+                  >
+                    <MenuItem value="">Select policy</MenuItem>
+                    {leavePolicies.map((lp) => (
+                      <MenuItem key={lp.leave_policy_id} value={lp.leave_policy_id}>
+                        {lp.name}
+                      </MenuItem>
+                    ))}
+                  </TextField>
 
-        
+                  <TextField
+                    label="Annual Leave Balance"
+                    type="number"
+                    value={data.yearly_leave.leave_entitlement}
+                    onChange={(e) =>
+                      setData("yearly_leave", {
+                        ...data.yearly_leave,
+                        leave_entitlement: e.target.value,
+                      })
+                    }
+                    fullWidth
+                  />
+
+                  <IconButton onClick={() => removeYearlyLeave(idx)}>
+                    <DeleteOutlineOutlinedIcon />
+                  </IconButton>
+                </Stack>
+              ))}
             </Stack>
 
             <Divider />
