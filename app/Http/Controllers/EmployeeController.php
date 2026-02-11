@@ -686,14 +686,9 @@ class EmployeeController extends Controller
 
     public function destroy(Employee $employee)
     {
-        // Deletes employee + cascades to: job/contacts/addresses/etc if FK cascadeOnDelete exists
         DB::transaction(function () use ($employee) {
-            // Optionally delete linked user too (only if you want that behavior)
-            // $userId = $employee->user_id;
 
             $employee->delete();
-
-            // if ($userId) User::whereKey($userId)->delete();
         });
 
         return redirect()->back()->with('success', 'Employee removed successfully.');
