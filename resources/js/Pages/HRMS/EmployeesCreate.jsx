@@ -268,7 +268,7 @@ export default function EmployeesCreate({
     <AuthenticatedLayout user={auth.user}>
       <Head title="Create Employee" />
 
-      <Container maxWidth="md" sx={{ py: 4 }}>
+      <Container maxWidth="false" sx={{ py: 4 }}>
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
           <Typography variant="h5" fontWeight={900} sx={{ color: "#0B1C2D" }}>
             Create Employee
