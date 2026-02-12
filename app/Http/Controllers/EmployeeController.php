@@ -25,6 +25,7 @@ use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 
 class EmployeeController extends Controller
 {
@@ -159,9 +160,10 @@ class EmployeeController extends Controller
                 'yearly_leave.leave_policy_id' => ['nullable', 'integer', 'exists:leave_policies,leave_policy_id'],
                 'yearly_leave.leave_entitlement' => ['nullable', 'integer'],
 
-                'employee_documents' => ['nullable', 'array'],
-                'employee_documents.*.doc_type' => ['required_with:employee_documents', 'string', 'max:30'],
-                'employee_documents.*.file' => ['nullable', 'file', 'max:10240'],
+                'employee_documents' => ['nullable','array'],
+                'employee_documents.*.doc_type' => ['required','string','max:30'],
+                'employee_documents.*.files' => ['nullable','array'],
+                'employee_documents.*.files.*' => ['file','max:10240'],
             ]);
 
             Log::channel('single')->info('EMPLOYEE STORE: validation ok', [
@@ -282,37 +284,33 @@ class EmployeeController extends Controller
                 }
             }
 
-            foreach (($validated['employee_documents'] ?? []) as $i => $doc) {
-                /** @var \Illuminate\Http\UploadedFile|null $file */
-                $file = $doc['file'] ?? null;
+            foreach (($validated['employee_documents'] ?? []) as $doc) {
+                $files = $doc['files'] ?? [];
 
-                // skip empty row
-                if (empty($doc['doc_type']) && !$file) continue;
+                if (count($files) === 0) continue;
 
-                $path = null;
-                $originalName = null;
-                $mime = null;
-                $size = null;
+                foreach ($files as $file) {
+                    $empFolder = Str::slug(trim(($employee->first_name ?? '').' '.($employee->last_name ?? '')));
+                    $docFolder = Str::slug($doc['doc_type'] ?? 'other');
 
-                if ($file) {
-                    $path = $file->store("employees/{$employee->employee_id}/documents", 'public');
-                    $originalName = $file->getClientOriginalName();
-                    $mime = $file->getClientMimeType();
-                    $size = $file->getSize();
+                    if ($empFolder === '') $empFolder = 'employee-'.$employee->employee_id;
+
+                    // store path
+                    $dir = "employees/{$empFolder}/{$docFolder}";
+
+                    $path = $file->store($dir, 'public');
+
+                    EmployeeDocument::create([
+                        'employee_id' => $employee->employee_id,
+                        'doc_type' => $doc['doc_type'],
+                        'file_name' => $file->getClientOriginalName(),
+                        'file_path' => $path,
+                        'mime_type' => $file->getClientMimeType(),
+                        'file_size_bytes' => $file->getSize(),
+                        'uploaded_at' => now(),
+                    ]);
                 }
-
-                EmployeeDocument::create([
-                    'employee_id'    => $employee->employee_id,
-                    'doc_type'       => $doc['doc_type'],
-                    'file_name'      => $doc['doc_type'],        
-                    'file_path'      => $path,         
-                    'original_name'  => $originalName, 
-                    'mime_type'      => $mime,         
-                    'file_size_bytes' => $size,      
-                    'uploaded_at'      => now(),          
-                ]);
             }
-
 
             // Contacts (normalized)
             foreach ($validated['contacts'] as $c) {
@@ -510,8 +508,10 @@ class EmployeeController extends Controller
 
             // docs
             'employee_documents' => ['nullable','array'],
-            'employee_documents.*.doc_type' => ['nullable','string','max:30'],
-            'employee_documents.*.file' => ['nullable','file','max:10240'],
+            'employee_documents.*.doc_type' => ['required','string','max:30'],
+            'employee_documents.*.files' => ['nullable','array'],
+            'employee_documents.*.files.*' => ['file','max:10240'],
+
         ]);
 
         DB::transaction(function () use ($employee, $validated) {
@@ -679,22 +679,35 @@ class EmployeeController extends Controller
 
             // docs append only
             foreach (($validated['employee_documents'] ?? []) as $doc) {
-                $file = $doc['file'] ?? null;
-                if (!$file) continue;
+                $files = $doc['files'] ?? [];
 
-                $path = $file->store("employees/{$employee->employee_id}/documents", 'public');
+                // ✅ Skip doc row if no files selected
+                if (count($files) === 0) continue;
 
-                EmployeeDocument::create([
-                    'employee_id' => $employee->employee_id,
-                    'doc_type' => $doc['doc_type'] ?? 'Other',
-                    'file_name' => $doc['doc_type'] ?? 'Other',
-                    'file_path' => $path,
-                    'original_name' => $file->getClientOriginalName(),
-                    'mime_type' => $file->getClientMimeType(),
-                    'file_size_bytes' => $file->getSize(),
-                    'uploaded_at' => now(),
-                ]);
+                foreach ($files as $file) {
+                    $path = $file->store("employees/{$employee->employee_id}/documents", 'public');
+
+                    Log::info('DOC SAVE', [
+                    'doc_type' => $doc['doc_type'] ?? null,
+                    'file_class' => is_object($file) ? get_class($file) : gettype($file),
+                    'original' => is_object($file) ? $file->getClientOriginalName() : null,
+                    'path' => $path ?? null,
+                    ]);
+
+
+                    EmployeeDocument::create([
+                        'employee_id' => $employee->employee_id,
+                        'doc_type' => $doc['doc_type'],
+                        'file_name' => $file->getClientOriginalName(),
+                        'file_path' => $path,
+                        'mime_type' => $file->getClientMimeType(),
+                        'file_size_bytes' => $file->getSize(),
+                        'uploaded_at' => now(),
+                    ]);
+                }
             }
+
+
         });
 
         return redirect()

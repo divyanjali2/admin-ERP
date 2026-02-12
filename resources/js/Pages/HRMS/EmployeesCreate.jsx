@@ -104,7 +104,7 @@ export default function EmployeesCreate({
     employee_documents: [
       {
         doc_type: "ID Proof",
-        file: null, 
+        files: [], 
       },
     ],
 
@@ -260,7 +260,7 @@ export default function EmployeesCreate({
   const addDocument = () => {
     setData("employee_documents", [
       ...data.employee_documents,
-      { doc_type: "Other", file: null },
+      { doc_type: "Other", files: null },
     ]);
   };
 
@@ -1044,18 +1044,29 @@ useEffect(() => {
                   </TextField>
 
                   <Button
-                    variant="outlined"
-                    component="label"
-                    fullWidth
-                    sx={{ justifyContent: "flex-start" }}
-                  >
-                    {d.file ? d.file.name : "Choose File"}
-                    <input
-                      type="file"
-                      hidden
-                      onChange={(e) => setDocument(idx, "file", e.target.files?.[0] ?? null)}
-                    />
-                  </Button>
+                      variant="outlined"
+                      component="label"
+                      fullWidth
+                      sx={{ justifyContent: "flex-start" }}
+                    >
+                      {d.files?.length
+                        ? `${d.files.length} file(s) selected`
+                        : "Choose Files"}
+
+                      <input
+                        type="file"
+                        hidden
+                        multiple
+                        onChange={(e) =>
+                          setDocument(
+                            idx,
+                            "files",
+                            Array.from(e.target.files || [])
+                          )
+                        }
+                      />
+                    </Button>
+
 
                   <IconButton onClick={() => removeDocument(idx)} aria-label="remove-document">
                     <DeleteOutlineOutlinedIcon />
