@@ -46,6 +46,10 @@ Route::prefix('hrms')->name('hrms.')->middleware(['auth', 'verified'])->group(fu
     Route::resource('employees', EmployeeController::class);
 });
 
+Route::get('/hrms/emp-dashboard', [EmployeeController::class, 'empDashboard'])
+  ->middleware(['auth'])
+  ->name('emp-dashboard');
+
 
 // Route::prefix('hrms')->middleware(['auth'])->group(function () {
 //     Route::get('/employees', [EmployeeController::class, 'index'])->name('hrms.employees.index');
