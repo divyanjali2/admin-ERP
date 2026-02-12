@@ -95,13 +95,12 @@ export default function Services({ auth }) {
       <Head title="Services" />
 
       <Container
-        maxWidth="md"
+        maxWidth="false"
         sx={{
-          minHeight: "70vh",
+          minHeight: "100vh",
+          backgroundColor: "#a7c4e50f", 
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
-          py: 4,
         }}
       >
         <Box sx={{ width: "100%" }}>
