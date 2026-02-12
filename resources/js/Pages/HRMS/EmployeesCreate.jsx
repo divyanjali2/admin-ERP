@@ -9,7 +9,7 @@ import Alert from "@mui/material/Alert";
 import Collapse from "@mui/material/Collapse";
 import { usePage } from "@inertiajs/react";
 import Swal from "sweetalert2";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 import {
   Box,
@@ -39,6 +39,7 @@ const SALARY_CURRENCY = ["LKR", "USD", "EUR", "GBP", "AUD", "CAD", "SGD", "INR"]
 const DOC_TYPES = ["Profile Photo","Resume File","ID Proof","Offer Letter","Employment Contract","Certificates"];
 const BLOOD_GROUPS = ["A+","A-","B+","B-","AB+","AB-","O+","O-",];
 const BANKS = ["Nations Trust Bank","Commercial Bank","Bank of Ceylon","People's Bank","Sampath Bank","Hatton National Bank","DFCC Bank","Pan Asia Bank","Union Bank"];
+
 
 export default function EmployeesCreate({
   auth,
@@ -134,8 +135,23 @@ export default function EmployeesCreate({
         leave_entitlement: "",
       },
     ],
+    
   });
 
+const workEmail = useMemo(() => {
+  const w = data.contacts.find((c) => c.contact_type === "Work Email");
+  return (w?.contact_value || "").trim();
+}, [data.contacts]);
+
+useEffect(() => {
+  if (workEmail) {
+    setData((prev) => ({
+      ...prev,
+      user_email: workEmail,
+      user_password: "Test@123",
+    }));
+  }
+}, [workEmail]);
 
   const submit = (e) => {
     e.preventDefault();
@@ -173,9 +189,10 @@ export default function EmployeesCreate({
   const addContact = () => {
     setData("contacts", [
       ...data.contacts,
-      { contact_type: "Personal_Email", contact_value: "", is_primary: false },
+      { contact_type: "Personal Email", contact_value: "", is_primary: false },
     ]);
   };
+
 
   const removeContact = (idx) => {
     const next = data.contacts.filter((_, i) => i !== idx);
@@ -511,30 +528,6 @@ export default function EmployeesCreate({
 
             <Divider />
 
-            {/* ================= USER ================= */}
-            <Typography fontWeight={900}>Login (User)</Typography>
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <TextField
-                label="User Email"
-                value={data.user_email}
-                onChange={(e) => setData("user_email", e.target.value)}
-                error={!!errors.user_email}
-                helperText={errors.user_email}
-                fullWidth
-              />
-              <TextField
-                label="User Password"
-                type="password"
-                value={data.user_password}
-                onChange={(e) => setData("user_password", e.target.value)}
-                error={!!errors.user_password}
-                helperText={errors.user_password}
-                fullWidth
-              />
-            </Stack>
-
-            <Divider />
-
             {/* ================= JOB ================= */}
             <Typography fontWeight={900}>Job Details</Typography>
 
@@ -713,16 +706,53 @@ export default function EmployeesCreate({
                     value={c.contact_value}
                     onChange={(e) => setContact(idx, "contact_value", e.target.value)}
                     fullWidth
-                    error={!!errors[`contacts.${idx}.contact_value`]}
-                    helperText={errors[`contacts.${idx}.contact_value`]}
+                    error={
+                      !!errors[`contacts.${idx}.contact_value`] ||
+                      (c.contact_type === "Work Email" &&
+                        c.contact_value &&
+                        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.contact_value))
+                    }
+                    helperText={
+                      errors[`contacts.${idx}.contact_value`] ||
+                      (c.contact_type === "Work Email" &&
+                        c.contact_value &&
+                        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.contact_value)
+                        ? "Enter a valid email address"
+                        : "")
+                    }
                   />
-
-
+                  
                   <IconButton onClick={() => removeContact(idx)} aria-label="remove-contact">
                     <DeleteOutlineOutlinedIcon />
                   </IconButton>
                 </Stack>
               ))}
+            </Stack>
+
+            <Divider />
+
+            {/* ================= USER ================= */}
+            <Typography fontWeight={900}>Login (User)</Typography>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+              <TextField
+                label="User Email"
+                value={data.user_email}
+                disabled
+                error={!!errors.user_email}
+                helperText={errors.user_email}
+                fullWidth
+              />
+
+              <TextField
+                label="User Password"
+                type="password"
+                value={data.user_password}
+                disabled
+                error={!!errors.user_password}
+                helperText={errors.user_password}
+                fullWidth
+              />
+
             </Stack>
 
             <Divider />

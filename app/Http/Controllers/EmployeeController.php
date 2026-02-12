@@ -106,7 +106,7 @@ class EmployeeController extends Controller
                 'attendance_type' => ['required', 'string', 'max:20'],
 
                 'user_email' => ['required', 'email', 'max:255', 'unique:users,email'],
-                'user_password' => ['required', 'string', 'min:8'],
+                'user_password' => ['required', 'string', 'min:5'],
 
                 'department_id' => ['required', 'integer', 'exists:departments,department_id'],
                 'job_title_id' => ['required', 'integer', 'exists:job_titles,job_title_id'],
