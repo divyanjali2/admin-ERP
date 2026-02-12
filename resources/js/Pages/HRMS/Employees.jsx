@@ -29,6 +29,7 @@ import {
 import { DataGrid } from "@mui/x-data-grid";
 
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
@@ -43,7 +44,8 @@ import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 const drawerWidth = 260;
 
 const navItems = [
-  { label: "HRMS Home", href: "/hrms", icon: <DashboardOutlinedIcon /> },
+  { label: "HRMS Home", href: "/hrms", icon: <HomeOutlinedIcon /> },
+  { label: "Dashboard", href: "/hrms/emp-dashboard", icon: <DashboardOutlinedIcon /> },
   { label: "Employees", href: "/hrms/employees", icon: <PeopleAltOutlinedIcon /> },
 ];
 

@@ -37,6 +37,14 @@ Route::get('/hrms', function () {
     return Inertia::render('HRMS');
 })->middleware(['auth', 'verified'])->name('hrms');
 
+Route::prefix('hrms')->name('hrms.')->middleware(['auth', 'verified'])->group(function () {
+
+    Route::get('/emp-dashboard', function () {
+        return Inertia::render('HRMS/EmpDashboard');
+    })->name('emp-dashboard');
+
+    Route::resource('employees', EmployeeController::class);
+});
 
 
 // Route::prefix('hrms')->middleware(['auth'])->group(function () {

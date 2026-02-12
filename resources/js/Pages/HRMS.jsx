@@ -16,7 +16,7 @@ const modules = [
   {
     title: "Employee Data",
     description: "Profiles, departments, documents, and employee records.",
-    href: "/hrms/employees",
+    href: "/hrms/emp-dashboard",
     image: "/images/hrms-employee.webp",
   },
   {
