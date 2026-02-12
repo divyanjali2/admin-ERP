@@ -61,6 +61,7 @@ class EmployeeController extends Controller
 
         return Inertia::render('HRMS/Employees', [
             'employees' => $employees,
+            'isAdmin' => auth()->user()?->name === 'Admin',
         ]);
     }
 
@@ -697,6 +698,9 @@ class EmployeeController extends Controller
     public function destroy(Employee $employee)
     {
         DB::transaction(function () use ($employee) {
+        if (auth()->user()?->name !== 'Admin') {
+            abort(403, 'Unauthorized');
+        }
 
             $employee->delete();
         });

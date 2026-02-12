@@ -2,7 +2,6 @@ import React, { useMemo, useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, router, useForm } from "@inertiajs/react";
 
-
 import {
   AppBar,
   Box,
@@ -48,7 +47,7 @@ const navItems = [
   { label: "Employees", href: "/hrms/employees", icon: <PeopleAltOutlinedIcon /> },
 ];
 
-export default function Employees({ auth, employees = [] }) {
+export default function Employees({ auth, employees, isAdmin  = [] }) {
   const isMdUp = useMediaQuery("(min-width:900px)");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuAnchor, setUserMenuAnchor] = useState(null);
@@ -173,11 +172,14 @@ const openEdit = (row) => router.get(`/hrms/employees/${row.id}/edit`);
               </IconButton>
             </Tooltip>
 
-            <Tooltip title="Delete">
-              <IconButton size="small" onClick={() => askDelete(params.row)} sx={{ color: "#8a0606" }}>
-                <DeleteOutlineOutlinedIcon fontSize="medium" />
-              </IconButton>
-            </Tooltip>
+            {isAdmin && (
+              <Tooltip title="Delete">
+                <IconButton size="small" onClick={() => askDelete(params.row)} sx={{ color: "#8a0606" }} >
+                  <DeleteOutlineOutlinedIcon fontSize="medium" />
+                </IconButton>
+              </Tooltip>
+            )}
+
           </Stack>
         ),
       },
