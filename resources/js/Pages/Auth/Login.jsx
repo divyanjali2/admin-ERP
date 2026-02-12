@@ -118,9 +118,28 @@ export default function Login({ status, canResetPassword }) {
                             </PrimaryButton>
 
                             {/* Footer */}
-                            <div className="text-center text-xs text-gray-400">
-                                <div>
-                                    Terms of use | Privacy policy
+                            <div className="text-center text-xs text-gray-500 space-x-4 relative">
+
+                                {/* Terms */}
+                                <div className="relative inline-block group cursor-pointer">
+                                    <span className="hover:text-gray-700">Terms of Use</span>
+
+                                    <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-64 rounded-md bg-gray-800 text-white text-[11px] px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
+                                        Use of this system is restricted to authorized personnel only. 
+                                        All activities may be monitored and logged.
+                                    </div>
+                                </div>
+
+                                <span>|</span>
+
+                                {/* Privacy */}
+                                <div className="relative inline-block group cursor-pointer">
+                                    <span className="hover:text-gray-700">Privacy Policy</span>
+
+                                    <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-64 rounded-md bg-gray-800 text-white text-[11px] px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
+                                        Personal data is processed securely and in accordance with 
+                                        company data protection standards.
+                                    </div>
                                 </div>
 
                                 <div className="mt-2 text-black font-extrabold">
