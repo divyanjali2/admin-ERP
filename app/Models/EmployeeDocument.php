@@ -9,6 +9,7 @@ class EmployeeDocument extends Model
     protected $table = 'employee_documents';
     protected $primaryKey = 'employee_document_id';
     public $timestamps = false;
+    protected $appends = ['url'];
 
     protected $fillable = [
         'employee_id','doc_type','file_name','file_path',
@@ -24,4 +25,10 @@ class EmployeeDocument extends Model
     {
         return $this->belongsTo(Employee::class, 'employee_id', 'employee_id');
     }
+
+    public function getUrlAttribute()
+    {
+        return $this->file_path ? asset('storage/'.$this->file_path) : null;
+    }
+
 }

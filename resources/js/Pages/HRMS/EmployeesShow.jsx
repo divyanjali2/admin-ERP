@@ -1,6 +1,8 @@
 import React, { useMemo } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, router } from "@inertiajs/react";
+import { Link } from "@inertiajs/react";
+
 import {
   Accordion,
   AccordionDetails,
@@ -303,15 +305,67 @@ const jobTitleName =
 
             {/* DOCUMENTS */}
             <Section title={`Documents (${documents.length})`}>
-              <SimpleTable
-                columns={[
-                  { key: "doc_type", label: "Type" },
-                  { key: "file_path", label: "Path" },
-                ]}
-                rows={documents}
-                emptyText="No documents"
-              />
+              {asArray(documents).length === 0 ? (
+                <Typography color="text.secondary">No documents</Typography>
+              ) : (
+                <Grid container spacing={2}>
+                  {asArray(documents).map((doc, i) => {
+                    const url = doc?.url ?? (doc?.file_path ? `/storage/${doc.file_path}` : null);
+                    const isImage = (doc?.mime_type ?? "").startsWith("image/");
+
+                    return (
+                      <Grid item xs={12} sm={6} md={3} key={i}>
+                        <Box sx={{ border: "1px solid", borderColor: "divider", p: 1.5 }}>
+                          <Typography fontWeight={900} sx={{ color: "#0B1C2D" }}>
+                            {fmt(doc?.doc_type)}
+                          </Typography>
+
+                          <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
+                            {fmt(doc?.file_name ?? doc?.original_name)}
+                          </Typography>
+
+                          {url && isImage ? (
+                            <Box
+                              component="img"
+                              src={url}
+                              alt={doc?.file_name ?? doc?.doc_type ?? "document"}
+                              sx={{
+                                width: "100%",
+                                height: 160,
+                                objectFit: "cover",
+                                borderRadius: 1,
+                                border: "1px solid",
+                                borderColor: "divider",
+                              }}
+                            />
+                          ) : (
+                            <Typography variant="body2" color="text.secondary">
+                              Preview not available
+                            </Typography>
+                          )}
+
+                          {url && (
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              sx={{ mt: 1 }}
+                              component="a"
+                              href={url}
+                              target="_blank"
+                              rel="noreferrer"
+                              fullWidth
+                            >
+                              Open
+                            </Button>
+                          )}
+                        </Box>
+                      </Grid>
+                    );
+                  })}
+                </Grid>
+              )}
             </Section>
+
           </Box>
         </Box>
       </Container>
