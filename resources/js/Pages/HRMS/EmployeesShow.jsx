@@ -208,9 +208,7 @@ const jobTitleName =
                 columns={[
                   { key: "address_type", label: "Type" },
                   { key: "address_line_1", label: "Line 1" },
-                  { key: "address_line_2", label: "Line 2" },
                   { key: "city", label: "City" },
-                  { key: "state", label: "State" },
                   { key: "country", label: "Country" },
                   { key: "postal_code", label: "Postal Code" },
                 ]}

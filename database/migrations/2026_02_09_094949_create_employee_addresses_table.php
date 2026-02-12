@@ -13,9 +13,7 @@ return new class extends Migration {
 
             $table->string('address_type', 20); // Residential/Emergency/Other
             $table->string('address_line_1', 255);
-            $table->string('address_line_2', 255)->nullable();
             $table->string('city', 100);
-            $table->string('state', 100);
             $table->string('country', 100);
             $table->string('postal_code', 20)->nullable();
 

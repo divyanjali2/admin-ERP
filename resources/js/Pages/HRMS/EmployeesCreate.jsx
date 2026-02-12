@@ -89,7 +89,6 @@ export default function EmployeesCreate({
         address_line_1: "",
         address_line_2: "",
         city: "",
-        state: "",
         country: "Sri Lanka",
         postal_code: "",
         is_current: true,
@@ -177,9 +176,7 @@ export default function EmployeesCreate({
       {
         address_type: "Other",
         address_line_1: "",
-        address_line_2: "",
         city: "",
-        state: "",
         country: "Sri Lanka",
         postal_code: "",
         is_current: false,
@@ -731,12 +728,6 @@ useEffect(() => {
                         onChange={(e) => setAddress(idx, "address_line_1", e.target.value)}
                         fullWidth
                       />
-                      <TextField
-                        label="Address Line 2"
-                        value={a.address_line_2}
-                        onChange={(e) => setAddress(idx, "address_line_2", e.target.value)}
-                        fullWidth
-                      />
 
                         <TextField
                           label="City"
@@ -751,13 +742,7 @@ useEffect(() => {
                     </Stack>
 
                     <Stack direction={{ xs: "column", sm: "row" }} spacing={4}>
-                  
-                      <TextField
-                        label="State"
-                        value={a.state}
-                        onChange={(e) => setAddress(idx, "state", e.target.value)}
-                        fullWidth
-                      />
+                
                        <TextField
                         label="Country"
                         value={a.country}

@@ -19,8 +19,8 @@ return new class extends Migration {
                 ->references('employee_id')->on('employees')
                 ->nullOnDelete();
             $table->index('employee_id', 'idx_contact_emp');
-            $table->unique(['employee_id', 'contact_type', 'contact_value'], 'uq_emp_contact');
-            $table->unique(['contact_type', 'contact_value'], 'uq_work_email_global');
+            // $table->unique(['employee_id', 'contact_type', 'contact_value'], 'uq_emp_contact');
+            // $table->unique(['contact_type', 'contact_value'], 'uq_work_email_global');
         });
     }
 
