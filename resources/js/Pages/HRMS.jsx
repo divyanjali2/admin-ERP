@@ -20,6 +20,30 @@ const modules = [
     image: "/images/hrms-employee.webp",
   },
   {
+    title: "Leave Management",
+    description: "View, Approve and monitor employee leave records and balances.",
+    href: "/hrms/payroll",
+    image: "/images/hrms-payroll.webp",
+  },
+  {
+    title: "Vehicle Request Management",
+    description: "Review, approve, and manage vehicle booking requests.",
+    href: "/hrms/recruitment",
+    image: "/images/hrms-recruitment.webp",
+  },
+  {
+    title: "Training",
+    description: "Training programs, sessions, and completion tracking.",
+    href: "/hrms/training",
+    image: "/images/hrms-training.webp",
+  },
+  {
+    title: "Employee Data",
+    description: "Profiles, departments, documents, and employee records.",
+    href: "/hrms/emp-dashboard",
+    image: "/images/hrms-employee.webp",
+  },
+  {
     title: "Payroll",
     description: "Salary components, payslips, and deductions.",
     href: "/hrms/payroll",
@@ -30,13 +54,7 @@ const modules = [
     description: "Applicants, vacancies, and hiring pipeline.",
     href: "/hrms/recruitment",
     image: "/images/hrms-recruitment.webp",
-  },
-  {
-    title: "Training",
-    description: "Training programs, sessions, and completion tracking.",
-    href: "/hrms/training",
-    image: "/images/hrms-training.webp",
-  },
+  }
 ];
 
 function ModuleCard({ item }) {
@@ -99,7 +117,7 @@ export default function HRMS({ auth }) {
       <Head title="HRMS" />
 
       <Container
-        maxWidth="md"
+        maxWidth="false"
         sx={{
           minHeight: "70vh",
           display: "flex",
@@ -110,7 +128,7 @@ export default function HRMS({ auth }) {
       >
         <Box sx={{ width: "100%" }}>
           <Typography variant="h5" fontWeight={900} sx={{ mb: 5, textAlign: "center" }}>
-            HRMS
+            HRMS PORTAL
           </Typography>
 
           <Grid container spacing={3} justifyContent="center">
