@@ -8,7 +8,8 @@ import dayjs from "dayjs";
 import Alert from "@mui/material/Alert";
 import Collapse from "@mui/material/Collapse";
 import { usePage } from "@inertiajs/react";
-import { useEffect, useState } from "react";
+import Swal from "sweetalert2";
+import { useEffect } from "react";
 
 import {
   Box,
@@ -130,10 +131,11 @@ export default function EmployeesCreate({
     yearly_leave: [
       {
         leave_policy_id: "",
-        leave_entitlement: 0,
+        leave_entitlement: "",
       },
     ],
   });
+
 
   const submit = (e) => {
     e.preventDefault();
@@ -141,8 +143,24 @@ export default function EmployeesCreate({
     post("/hrms/employees", {
       preserveScroll: true,
       forceFormData: true,
-      onSuccess: () => setAlert({ type: "success", message: "Employee saved successfully.", open: true }),
-      onError: () => setAlert({ type: "error", message: "Please fix the errors and try again.", open: true }),
+
+      onSuccess: () => {
+        Swal.fire({
+          icon: "success",
+          title: "Saved!",
+          text: "Employee saved successfully.",
+          timer: 1800,
+          showConfirmButton: false,
+        });
+      },
+
+      onError: () => {
+        Swal.fire({
+          icon: "error",
+          title: "Fix errors",
+          text: "Please fix the highlighted fields and try again.",
+        });
+      },
     });
   };
 
@@ -289,7 +307,7 @@ export default function EmployeesCreate({
   const addYearlyLeave = () => {
     setData("yearly_leave", [
       ...data.yearly_leave,
-      { leave_policy_id: "", leave_entitlement: 0 },
+      { leave_policy_id: "", leave_entitlement: "" },
     ]);
   };
 
@@ -300,20 +318,27 @@ export default function EmployeesCreate({
     );
   };
 
-const { flash } = usePage().props;
-const [alert, setAlert] = useState({ type: "", message: "", open: false });
+  const { flash } = usePage().props;
 
-useEffect(() => {
-  if (flash?.success) setAlert({ type: "success", message: flash.success, open: true });
-  else if (flash?.error) setAlert({ type: "error", message: flash.error, open: true });
-}, [flash]);
+  useEffect(() => {
+    if (flash?.success) {
+      Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: flash.success,
+        timer: 1800,
+        showConfirmButton: false,
+      });
+    }
 
-useEffect(() => {
-  if (Object.keys(errors || {}).length) {
-    setAlert({ type: "error", message: "Please fix the highlighted fields.", open: true });
-  }
-}, [errors]);
-
+    if (flash?.error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: flash.error,
+      });
+    }
+  }, [flash]);
 
   return (
     <AuthenticatedLayout user={auth.user}>
@@ -402,6 +427,8 @@ useEffect(() => {
                 label="Gender"
                 value={data.gender}
                 onChange={(e) => setData("gender", e.target.value)}
+                error={!!errors.gender}
+                helperText={errors.gender}
                 fullWidth
               >
                 {GENDERS.map((g) => (
@@ -411,7 +438,7 @@ useEffect(() => {
                 ))}
               </TextField>
 
-                   <TextField
+              <TextField
                 select
                 label="Marital Status"
                 value={data.marital_status}
@@ -583,6 +610,8 @@ useEffect(() => {
                   inputProps={{
                     max: new Date().toISOString().split("T")[0], 
                   }}
+                    error={!!errors.date_of_joining}
+                    helperText={errors.date_of_joining}
                   fullWidth
                 />
 
@@ -684,7 +713,10 @@ useEffect(() => {
                     value={c.contact_value}
                     onChange={(e) => setContact(idx, "contact_value", e.target.value)}
                     fullWidth
+                    error={!!errors[`contacts.${idx}.contact_value`]}
+                    helperText={errors[`contacts.${idx}.contact_value`]}
                   />
+
 
                   <IconButton onClick={() => removeContact(idx)} aria-label="remove-contact">
                     <DeleteOutlineOutlinedIcon />
@@ -727,14 +759,18 @@ useEffect(() => {
                         value={a.address_line_1}
                         onChange={(e) => setAddress(idx, "address_line_1", e.target.value)}
                         fullWidth
+                        error={!!errors[`addresses.${idx}.address_line_1`]}
+                        helperText={errors[`addresses.${idx}.address_line_1`]}
                       />
 
-                        <TextField
-                          label="City"
-                          value={a.city}
-                          onChange={(e) => setAddress(idx, "city", e.target.value)}
-                          fullWidth
-                        />
+                      <TextField
+                        label="City"
+                        value={a.city}
+                        onChange={(e) => setAddress(idx, "city", e.target.value)}
+                        fullWidth
+                        error={!!errors[`addresses.${idx}.city`]}
+                        helperText={errors[`addresses.${idx}.city`]}
+                      />
 
                       <IconButton onClick={() => removeAddress(idx)} aria-label="remove-address">
                         <DeleteOutlineOutlinedIcon />
@@ -743,12 +779,15 @@ useEffect(() => {
 
                     <Stack direction={{ xs: "column", sm: "row" }} spacing={4}>
                 
-                       <TextField
+                      <TextField
                         label="Country"
                         value={a.country}
                         onChange={(e) => setAddress(idx, "country", e.target.value)}
                         fullWidth
+                        error={!!errors[`addresses.${idx}.country`]}
+                        helperText={errors[`addresses.${idx}.country`]}
                       />
+
                       <TextField
                         label="Postal Code"
                         value={a.postal_code}
@@ -779,19 +818,28 @@ useEffect(() => {
                     value={ec.name}
                     onChange={(e) => setEmergency(idx, "name", e.target.value)}
                     fullWidth
+                    error={!!errors[`emergency_contacts.${idx}.name`]}
+                    helperText={errors[`emergency_contacts.${idx}.name`]}
                   />
+
                   <TextField
                     label="Relationship"
                     value={ec.relationship}
                     onChange={(e) => setEmergency(idx, "relationship", e.target.value)}
                     fullWidth
+                    error={!!errors[`emergency_contacts.${idx}.relationship`]}
+                    helperText={errors[`emergency_contacts.${idx}.relationship`]}
                   />
+
                   <TextField
                     label="Phone"
                     value={ec.phone}
                     onChange={(e) => setEmergency(idx, "phone", e.target.value)}
                     fullWidth
+                    error={!!errors[`emergency_contacts.${idx}.phone`]}
+                    helperText={errors[`emergency_contacts.${idx}.phone`]}
                   />
+
                   <IconButton onClick={() => removeEmergency(idx)} aria-label="remove-emergency">
                     <DeleteOutlineOutlinedIcon />
                   </IconButton>
@@ -812,34 +860,49 @@ useEffect(() => {
             <Stack spacing={2}>
               {data.bank_accounts.map((b, idx) => (
                 <Stack key={idx} direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="center">
-                  <TextField
-                    select
-                    label="Bank Name"
-                    value={b.bank_name}
-                    onChange={(e) => setBank(idx, "bank_name", e.target.value)}
-                    fullWidth
-                  >
-                    <MenuItem value="">Select Bank</MenuItem>
-                    {BANKS.map((bank) => (
-                      <MenuItem key={bank} value={bank}>
-                        {bank}
-                      </MenuItem>
-                    ))}
-                    
-                  </TextField>
+                    <TextField
+                      select
+                      label="Bank Name"
+                      value={b.bank_name}
+                      onChange={(e) => setBank(idx, "bank_name", e.target.value)}
+                      fullWidth
+                      error={!!errors[`bank_accounts.${idx}.bank_name`]}
+                      helperText={
+                        errors[`bank_accounts.${idx}.bank_name`] && "This field is required"
+                      }
+                    >
+                      <MenuItem value="">Select Bank</MenuItem>
+                      {BANKS.map((bank) => (
+                        <MenuItem key={bank} value={bank}>
+                          {bank}
+                        </MenuItem>
+                      ))}
+                    </TextField>
 
-                  <TextField
-                    label="Bank Account Number"
-                    value={b.bank_account_number}
-                    onChange={(e) => setBank(idx, "bank_account_number", e.target.value)}
-                    fullWidth
-                  />
-                  <TextField
-                    label="Bank Branch Name"
-                    value={b.bank_branch_name}
-                    onChange={(e) => setBank(idx, "bank_branch_name", e.target.value)}
-                    fullWidth
-                  />
+                    <TextField
+                      label="Bank Account Number"
+                      value={b.bank_account_number}
+                      onChange={(e) => setBank(idx, "bank_account_number", e.target.value)}
+                      fullWidth
+                      error={!!errors[`bank_accounts.${idx}.bank_account_number`]}
+                      helperText={
+                        errors[`bank_accounts.${idx}.bank_account_number`] &&
+                        "This field is required"
+                      }
+                    />
+
+                    <TextField
+                      label="Bank Branch Name"
+                      value={b.bank_branch_name}
+                      onChange={(e) => setBank(idx, "bank_branch_name", e.target.value)}
+                      fullWidth
+                      error={!!errors[`bank_accounts.${idx}.bank_branch_name`]}
+                      helperText={
+                        errors[`bank_accounts.${idx}.bank_branch_name`] &&
+                        "This field is required"
+                      }
+                    />
+
                   <IconButton onClick={() => removeBank(idx)} aria-label="remove-bank">
                     <DeleteOutlineOutlinedIcon />
                   </IconButton>
@@ -887,6 +950,10 @@ useEffect(() => {
                 value={data.compensation.effective_from}
                 onChange={(e) => setComp("effective_from", e.target.value)}
                 fullWidth
+                error={!!errors["compensation.effective_from"]}
+                helperText={
+                  errors["compensation.effective_from"] && "This field is required"
+                }
               />
               <TextField
                 label="Effective To"
@@ -933,7 +1000,13 @@ useEffect(() => {
                     value={cc.amount}
                     onChange={(e) => setCompComponent(idx, "amount", e.target.value)}
                     fullWidth
+                    error={!!errors[`compensation.components.${idx}.amount`]}
+                    helperText={
+                      errors[`compensation.components.${idx}.amount`] &&
+                      "This field is required"
+                    }
                   />
+
                   <IconButton onClick={() => removeCompComponent(idx)} aria-label="remove-comp-component">
                     <DeleteOutlineOutlinedIcon />
                   </IconButton>
@@ -959,35 +1032,36 @@ useEffect(() => {
                   spacing={2}
                   alignItems="center"
                 >
-                  <TextField
-                    select
-                    label="Leave Policy"
-                    value={yl.leave_policy_id}
-                    onChange={(e) =>
-                      setYearlyLeave(idx, "leave_policy_id", e.target.value)
-                    }
-                    fullWidth
-                  >
-                    <MenuItem value="">Select policy</MenuItem>
-                    {leavePolicies.map((lp) => (
-                      <MenuItem
-                        key={lp.leave_policy_id}
-                        value={lp.leave_policy_id}
-                      >
-                        {lp.name}
-                      </MenuItem>
-                    ))}
-                  </TextField>
+                <TextField
+                  select
+                  label="Leave Policy"
+                  value={yl.leave_policy_id}
+                  onChange={(e) => setYearlyLeave(idx, "leave_policy_id", e.target.value)}
+                  fullWidth
+                  error={!!errors[`yearly_leave.${idx}.leave_policy_id`]}
+                  helperText={
+                    errors[`yearly_leave.${idx}.leave_policy_id`] ? "This field is required" : ""
+                  }
+                >
+                  <MenuItem value="">Select policy</MenuItem>
+                  {leavePolicies.map((lp) => (
+                    <MenuItem key={lp.leave_policy_id} value={lp.leave_policy_id}>
+                      {lp.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
 
-                  <TextField
-                    label="Annual Leave Balance"
-                    type="number"
-                    value={yl.leave_entitlement}
-                    onChange={(e) =>
-                      setYearlyLeave(idx, "leave_entitlement", e.target.value)
-                    }
-                    fullWidth
-                  />
+                <TextField
+                  label="Annual Leave Balance"
+                  type="number"
+                  value={yl.leave_entitlement}
+                  onChange={(e) => setYearlyLeave(idx, "leave_entitlement", e.target.value)}
+                  fullWidth
+                  error={!!errors[`yearly_leave.${idx}.leave_entitlement`]}
+                  helperText={
+                    errors[`yearly_leave.${idx}.leave_entitlement`] ? "This field is required" : ""
+                  }
+                />
 
                   <IconButton onClick={() => removeYearlyLeave(idx)}>
                     <DeleteOutlineOutlinedIcon />
@@ -995,7 +1069,6 @@ useEffect(() => {
                 </Stack>
               ))}
             </Stack>
-
 
             <Divider />
 

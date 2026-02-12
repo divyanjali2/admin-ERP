@@ -11,7 +11,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('employee_id'); 
             $table->unsignedBigInteger('leave_policy_id');
 
-            $table->integer('leave_entitlement')->default(0);
+            $table->integer('leave_entitlement');
 
             $table->primary(['employee_id', 'leave_policy_id']);
 

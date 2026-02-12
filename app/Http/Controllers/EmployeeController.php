@@ -125,7 +125,6 @@ class EmployeeController extends Controller
                 'addresses.*.address_type' => ['required', 'string', 'max:20'],
                 'addresses.*.address_line_1' => ['required', 'string', 'max:255'],
                 'addresses.*.city' => ['required', 'string', 'max:100'],
-                'addresses.*.state' => ['required', 'string', 'max:100'],
                 'addresses.*.country' => ['required', 'string', 'max:100'],
                 'addresses.*.postal_code' => ['nullable', 'string', 'max:20'],
                 'addresses.*.is_current' => ['nullable', 'boolean'],
@@ -328,7 +327,6 @@ class EmployeeController extends Controller
                     'address_type'     => $a['address_type'],
                     'address_line_1'   => $a['address_line_1'],
                     'city'             => $a['city'],
-                    'state'            => $a['state'],
                     'country'          => $a['country'],
                     'postal_code'      => $a['postal_code'],
                     'is_current'       => (bool)($a['is_current'] ?? false),
@@ -338,31 +336,18 @@ class EmployeeController extends Controller
             $employee->employee_code = 'EV-' . str_pad((string)$employee->employee_id, 6, '0', STR_PAD_LEFT);
             $employee->save();
 
-            Log::channel('single')->info('EMPLOYEE STORE: employee created', ['employee_id' => $employee->employee_id]);
-
             DB::commit();
 
-            Log::channel('single')->info('EMPLOYEE STORE: committed OK', ['employee_id' => $employee->employee_id]);
-
-            return redirect()->route('hrms.employees.index')->with('success', 'Employee created successfully.');
-        }
-        catch (ValidationException $e) {
-            Log::channel('single')->warning('EMPLOYEE STORE: validation failed', [
-                'errors' => $e->errors(),
-            ]);
+            return redirect()
+                ->route('hrms.employees.index')
+                ->with('success', 'Employee created successfully.');
+        } catch (ValidationException $e) {
             throw $e;
-        }
-        catch (\Throwable $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
-
-            Log::channel('single')->error('EMPLOYEE STORE: exception', [
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => collect($e->getTrace())->take(10)->toArray(),
-            ]);
-
-            throw $e; // keep it so you see the error in dev
+            return redirect()
+                ->back()
+                ->with('error', 'Something went wrong while saving. Please try again.');
         }
     }
 
@@ -464,7 +449,6 @@ class EmployeeController extends Controller
             'addresses.*.address_type' => ['required','string','max:20'],
             'addresses.*.address_line_1' => ['required','string','max:255'],
             'addresses.*.city' => ['required','string','max:100'],
-            'addresses.*.state' => ['required','string','max:100'],
             'addresses.*.country' => ['required','string','max:100'],
             'addresses.*.postal_code' => ['nullable','string','max:20'],
             'addresses.*.is_current' => ['nullable','boolean'],
@@ -563,7 +547,6 @@ class EmployeeController extends Controller
                     'address_type' => $a['address_type'],
                     'address_line_1' => $a['address_line_1'],
                     'city' => $a['city'],
-                    'state' => $a['state'],
                     'country' => $a['country'],
                     'postal_code' => $a['postal_code'],
                     'is_current' => (bool)($a['is_current'] ?? false),

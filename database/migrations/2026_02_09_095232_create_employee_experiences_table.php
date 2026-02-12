@@ -11,7 +11,7 @@ return new class extends Migration {
             $table->id('experience_id');
             $table->unsignedBigInteger('employee_id')->nullable();
 
-            $table->string('previous_employer', 150);
+            $table->string('previous_employer', 150)->nullable();
             $table->decimal('total_years', 5, 2)->nullable();
 
             $table->foreign('employee_id')
