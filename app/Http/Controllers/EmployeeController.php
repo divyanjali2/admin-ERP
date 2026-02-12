@@ -713,13 +713,11 @@ class EmployeeController extends Controller
     {
         $today = Carbon::today();
 
-        // ✅ Active employees only
+        // Active employees base query
         $activeEmployeesQ = Employee::query()->where('employment_status', 'Active');
 
-        $employeesCount = (clone $activeEmployeesQ)->count();
-
-        // ========= Birthdays (Active only) =========
-        $allBirthdays = (clone $activeEmployeesQ)
+        // ===== Birthdays (today + next 7 days) =====
+        $birthdaysAll = (clone $activeEmployeesQ)
             ->whereNotNull('date_of_birth')
             ->get(['employee_id','first_name','last_name','employee_code','date_of_birth'])
             ->map(function ($e) use ($today) {
@@ -727,105 +725,101 @@ class EmployeeController extends Controller
                 $next = $dob->copy()->year($today->year);
                 if ($next->lt($today)) $next->addYear();
 
-                $daysLeft = $today->diffInDays($next);
-
                 return [
-                    'employee_id'    => $e->employee_id,
-                    'employee_code'  => $e->employee_code,
-                    'name'           => trim(($e->first_name ?? '').' '.($e->last_name ?? '')),
-                    'date_of_birth'  => $dob->toDateString(),
-                    'next_birthday'  => $next->toDateString(),
-                    'days_left'      => $daysLeft,
+                    'employee_id'   => $e->employee_id,
+                    'employee_code' => $e->employee_code,
+                    'name'          => trim(($e->first_name ?? '').' '.($e->last_name ?? '')),
+                    'date_of_birth' => $dob->toDateString(),
+                    'next_birthday' => $next->toDateString(),
+                    'days_left'     => $today->diffInDays($next),
                 ];
             });
 
-        $todayBirthdays = $allBirthdays
-            ->filter(fn ($x) => (int)$x['days_left'] === 0)
-            ->values();
+        $todayBirthdays = $birthdaysAll->where('days_left', 0)->values();
+        $upcomingBirthdays = $birthdaysAll->filter(fn ($x) => $x['days_left'] >= 1 && $x['days_left'] <= 7)
+            ->sortBy('days_left')->values();
 
-        $upcomingBirthdays = $allBirthdays
-            ->filter(fn ($x) => (int)$x['days_left'] >= 1 && (int)$x['days_left'] <= 7)
-            ->sortBy('days_left')
-            ->values();
+        // Helper to build name/code array from joins
+        $mapEmp = fn ($row) => [
+            'employee_id'   => $row->employee_id,
+            'employee_code' => $row->employee_code,
+            'name'          => trim(($row->first_name ?? '').' '.($row->last_name ?? '')),
+        ];
 
-        // ========= Probation ending soon (from employee_job) =========
+        // ===== Probation ending (next 14 days) from employee_job =====
         $probationEnding = EmployeeJob::query()
-            ->select([
+            ->join('employees', 'employees.employee_id', '=', 'employee_job.employee_id')
+            ->where('employees.employment_status', 'Active')
+            ->whereNotNull('employee_job.probation_end_date')
+            ->whereBetween('employee_job.probation_end_date', [
+                $today->toDateString(),
+                $today->copy()->addDays(14)->toDateString(),
+            ])
+            ->orderBy('employee_job.probation_end_date')
+            ->get([
                 'employee_job.employee_id',
                 'employee_job.probation_end_date',
                 'employees.employee_code',
                 'employees.first_name',
                 'employees.last_name',
             ])
-            ->join('employees', 'employees.employee_id', '=', 'employee_job.employee_id')
-            ->where('employees.employment_status', 'Active')
-            ->whereNotNull('employee_job.probation_end_date')
-            ->whereBetween('employee_job.probation_end_date', [$today->toDateString(), $today->copy()->addDays(14)->toDateString()])
-            ->orderBy('employee_job.probation_end_date')
-            ->get()
-            ->map(function ($row) use ($today) {
+            ->map(function ($row) use ($today, $mapEmp) {
                 $end = Carbon::parse($row->probation_end_date);
-                return [
-                    'employee_id' => $row->employee_id,
-                    'employee_code' => $row->employee_code,
-                    'name' => trim(($row->first_name ?? '').' '.($row->last_name ?? '')),
+                return $mapEmp($row) + [
                     'probation_end_date' => $end->toDateString(),
                     'days_left' => $today->diffInDays($end, false),
                 ];
             })
             ->values();
 
-        // ========= Recent hires (from employee_job date_of_joining) =========
+        // ===== Recent hires (last 30 days) from employee_job =====
         $recentHires = EmployeeJob::query()
-            ->select([
+            ->join('employees', 'employees.employee_id', '=', 'employee_job.employee_id')
+            ->where('employees.employment_status', 'Active')
+            ->whereNotNull('employee_job.date_of_joining')
+            ->whereBetween('employee_job.date_of_joining', [
+                $today->copy()->subDays(30)->toDateString(),
+                $today->toDateString(),
+            ])
+            ->orderByDesc('employee_job.date_of_joining')
+            ->limit(8)
+            ->get([
                 'employee_job.employee_id',
                 'employee_job.date_of_joining',
                 'employees.employee_code',
                 'employees.first_name',
                 'employees.last_name',
             ])
-            ->join('employees', 'employees.employee_id', '=', 'employee_job.employee_id')
-            ->where('employees.employment_status', 'Active')
-            ->whereNotNull('employee_job.date_of_joining')
-            ->whereBetween('employee_job.date_of_joining', [$today->copy()->subDays(30)->toDateString(), $today->toDateString()])
-            ->orderByDesc('employee_job.date_of_joining')
-            ->limit(8)
-            ->get()
-            ->map(fn ($row) => [
-                'employee_id' => $row->employee_id,
-                'employee_code' => $row->employee_code,
-                'name' => trim(($row->first_name ?? '').' '.($row->last_name ?? '')),
+            ->map(fn ($row) => $mapEmp($row) + [
                 'date_of_joining' => Carbon::parse($row->date_of_joining)->toDateString(),
             ])
             ->values();
 
-        // ========= Department mix (from employee_job.department_id) =========
+        // ===== Department mix =====
         $departmentBreakdown = EmployeeJob::query()
-            ->select([
-                'departments.name as name',
-                DB::raw('COUNT(*) as count'),
-            ])
             ->join('employees', 'employees.employee_id', '=', 'employee_job.employee_id')
             ->join('departments', 'departments.department_id', '=', 'employee_job.department_id')
             ->where('employees.employment_status', 'Active')
             ->groupBy('departments.name')
-            ->orderByDesc('count')
+            ->orderByDesc(DB::raw('COUNT(*)'))
             ->limit(8)
-            ->get()
-            ->map(fn ($r) => ['name' => $r->name, 'count' => (int)$r->count])
+            ->get([
+                'departments.name as name',
+                DB::raw('COUNT(*) as count'),
+            ])
+            ->map(fn ($r) => ['name' => $r->name, 'count' => (int) $r->count])
             ->values();
 
-        // Stats extras (optional)
+        // ===== Stats =====
+        $employeesCount = (clone $activeEmployeesQ)->count();
         $missingDobCount = (clone $activeEmployeesQ)->whereNull('date_of_birth')->count();
-        $newHiresLast30Days = $recentHires->count();
-        $departmentsCount = $departmentBreakdown->count();
 
         return Inertia::render('HRMS/EmpDashboard', [
             'stats' => [
                 'employeesCount' => $employeesCount,
                 'missingDobCount' => $missingDobCount,
-                'newHiresLast30Days' => $newHiresLast30Days,
-                'departmentsCount' => $departmentsCount,
+                'newHiresLast30Days' => $recentHires->count(),
+                'departmentsCount' => $departmentBreakdown->count(),
             ],
             'todayBirthdays' => $todayBirthdays,
             'upcomingBirthdays' => $upcomingBirthdays,
