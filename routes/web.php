@@ -5,13 +5,6 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\EmployeeController;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-*/
-
-// Redirect root to login
 Route::get('/', function () {
     return redirect()->route('login');
 });
@@ -70,22 +63,8 @@ Route::get('/hrms/emp-dashboard', [EmployeeController::class, 'empDashboard'])
   ->middleware(['auth'])
   ->name('emp-dashboard');
 
-
-// Route::prefix('hrms')->middleware(['auth'])->group(function () {
-//     Route::get('/employees', [EmployeeController::class, 'index'])->name('hrms.employees.index');
-//     Route::get('/employees/create', [EmployeeController::class, 'create'])->name('hrms.create');
-//     Route::post('/employees', [EmployeeController::class, 'store'])->name('hrms.employees.store');
-//     Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('hrms.employees.destroy');
-//     Route::get('/employees/{employee}', [EmployeeController::class, 'show'])
-//     ->name('hrms.show');
-
-// });
-
 Route::prefix('hrms')->name('hrms.')->group(function () {
     Route::resource('employees', EmployeeController::class);
 });
-
-
-
 
 require __DIR__.'/auth.php';
