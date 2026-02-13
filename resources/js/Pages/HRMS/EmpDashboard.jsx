@@ -1,13 +1,12 @@
-// resources/js/Pages/HRMS/EmpDashboard.jsx
 import React, { useMemo, useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, router } from "@inertiajs/react";
 
 import {
   AppBar,
+  Avatar,
   Box,
-  Button,
-  Container,
+  Chip,
   Divider,
   Drawer,
   IconButton,
@@ -19,30 +18,24 @@ import {
   Toolbar,
   Typography,
   useMediaQuery,
-  Paper,
-  Tabs,
-  Tab,
-  Chip,
-  TextField,
-  MenuItem,
-  LinearProgress,
   Tooltip,
+  Button,
+  Container,
 } from "@mui/material";
 
-import { DataGrid } from "@mui/x-data-grid";
-
-import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
+import RefreshOutlinedIcon from "@mui/icons-material/RefreshOutlined";
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
+import MenuIcon from "@mui/icons-material/Menu";
 import CakeOutlinedIcon from "@mui/icons-material/CakeOutlined";
 import NotificationsOutlinedIcon from "@mui/icons-material/NotificationsOutlined";
-import GroupOutlinedIcon from "@mui/icons-material/GroupOutlined";
-import ApartmentOutlinedIcon from "@mui/icons-material/ApartmentOutlined";
-import PersonAddAltOutlinedIcon from "@mui/icons-material/PersonAddAltOutlined";
-import RefreshOutlinedIcon from "@mui/icons-material/RefreshOutlined";
-import MenuIcon from "@mui/icons-material/Menu";
+import BookmarkBorderOutlinedIcon from "@mui/icons-material/BookmarkBorderOutlined";
+import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 
+const NAVY = "#0B1C2D";
+const NAVY_2 = "#0F2A44";
 const drawerWidth = 260;
 
 const navItems = [
@@ -51,186 +44,202 @@ const navItems = [
   { label: "Employees", href: "/hrms/employees", icon: <PeopleAltOutlinedIcon /> },
 ];
 
-const onlyDate = (v) => {
-  if (!v) return "-";
-  const s = String(v);
-  return s.split("T")[0].split(" ")[0] || "-";
-};
+function GlassCard({ title, icon, right, children, sx }) {
+  return (
+    <Box
+      sx={{
+        borderRadius: 4,
+        background: "#ffffff",
+        border: "1px solid #e5e7eb",
+        boxShadow: "0 8px 30px rgba(0,0,0,0.06)",
+        overflow: "hidden",
+        color: "#111827",
+        ...sx,
+      }}
+    >
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="space-between"
+        sx={{
+          px: 2,
+          py: 1.5,
+          background: "#f8fafc",
+          borderBottom: "1px solid #e5e7eb",
+        }}
+      >
+        <Stack direction="row" spacing={1} alignItems="center">
+          <Box sx={{ color: NAVY }}>{icon}</Box>
+          <Typography fontWeight={900} sx={{ color: "#111827" }}>
+            {title}
+          </Typography>
+        </Stack>
+        {right}
+      </Stack>
 
-const StatPill = ({ icon, label, value, helper }) => (
-  <Stack
-    direction="row"
-    spacing={1.25}
-    alignItems="center"
-    sx={{
-      px: 1.5,
-      py: 1.25,
-      borderRight: "1px solid",
-      borderColor: "divider",
-      minWidth: 220,
-      flexShrink: 0,
-    }}
-  >
-    <Box sx={{ display: "grid", placeItems: "center" }}>{icon}</Box>
-    <Box sx={{ minWidth: 0 }}>
-      <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
-        {label}
-      </Typography>
-      <Typography fontWeight={900} sx={{ lineHeight: 1.1 }}>
-        {value}
-      </Typography>
-      {helper ? (
-        <Typography variant="caption" color="text.secondary">
-          {helper}
-        </Typography>
-      ) : null}
+      <Box sx={{ p: 2 }}>{children}</Box>
     </Box>
-  </Stack>
-);
+  );
+}
+
+function EventRow({ avatarSrc, title, subtitle, rightChip, onClick }) {
+  return (
+    <Box
+      onClick={onClick}
+      sx={{
+        cursor: onClick ? "pointer" : "default",
+        px: 1.5,
+        py: 1.25,
+        borderRadius: 3,
+        border: "1px solid #e5e7eb",
+        background: "#ffffff",
+        transition: "transform .15s ease, background .15s ease, box-shadow .15s ease",
+        "&:hover": {
+          transform: onClick ? "translateY(-2px)" : "none",
+          background: "#f8fafc",
+          boxShadow: onClick ? "0 8px 18px rgba(0,0,0,0.06)" : "none",
+        },
+      }}
+    >
+      <Stack direction="row" alignItems="center" spacing={1.25}>
+        <Avatar src={avatarSrc} sx={{ width: 34, height: 34 }} />
+        <Box sx={{ minWidth: 0, flex: 1 }}>
+          <Typography fontWeight={800} sx={{ color: "#111827", lineHeight: 1.15 }} noWrap>
+            {title}
+          </Typography>
+          <Typography variant="caption" sx={{ color: "#6b7280" }} noWrap>
+            {subtitle}
+          </Typography>
+        </Box>
+        {rightChip}
+      </Stack>
+    </Box>
+  );
+}
+
+function MiniCalendar({ accent = "#22c55e" }) {
+  const [cursor, setCursor] = useState(() => {
+    const d = new Date();
+    return new Date(d.getFullYear(), d.getMonth(), 1);
+  });
+
+  const today = new Date();
+  const year = cursor.getFullYear();
+  const month = cursor.getMonth();
+  const monthName = cursor.toLocaleString(undefined, { month: "long" });
+
+  const startDay = new Date(year, month, 1).getDay(); // 0 Sun
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const cells = [];
+  const totalCells = 42;
+  for (let i = 0; i < totalCells; i++) {
+    const dayNum = i - startDay + 1;
+    const inMonth = dayNum >= 1 && dayNum <= daysInMonth;
+
+    const isToday =
+      inMonth &&
+      year === today.getFullYear() &&
+      month === today.getMonth() &&
+      dayNum === today.getDate();
+
+    cells.push({ dayNum, inMonth, isToday });
+  }
+
+  const prev = () => setCursor((d) => new Date(d.getFullYear(), d.getMonth() - 1, 1));
+  const next = () => setCursor((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1));
+
+  return (
+    <Box>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
+        <Typography fontWeight={900} sx={{ color: "#111827" }}>
+          {monthName} {year}
+        </Typography>
+        <Stack direction="row" spacing={1}>
+          <Button
+            size="small"
+            variant="contained"
+            onClick={prev}
+            sx={{
+              minWidth: 36,
+              px: 1,
+              backgroundColor: "#eef2f7",
+              color: "#111827",
+              boxShadow: "none",
+              "&:hover": { backgroundColor: "#e5e7eb", boxShadow: "none" },
+            }}
+          >
+            ‹
+          </Button>
+          <Button
+            size="small"
+            variant="contained"
+            onClick={next}
+            sx={{
+              minWidth: 36,
+              px: 1,
+              backgroundColor: "#eef2f7",
+              color: "#111827",
+              boxShadow: "none",
+              "&:hover": { backgroundColor: "#e5e7eb", boxShadow: "none" },
+            }}
+          >
+            ›
+          </Button>
+        </Stack>
+      </Stack>
+
+      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 0.75, mb: 1 }}>
+        {["S", "M", "T", "W", "T", "F", "S"].map((d) => (
+          <Typography key={d} variant="caption" sx={{ color: "#6b7280", textAlign: "center" }}>
+            {d}
+          </Typography>
+        ))}
+      </Box>
+
+      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 0.75 }}>
+        {cells.map((c, idx) => (
+          <Box
+            key={idx}
+            sx={{
+              height: 30,
+              borderRadius: 2,
+              display: "grid",
+              placeItems: "center",
+              background: c.isToday ? accent : "#f8fafc",
+              border: "1px solid #e5e7eb",
+              fontWeight: c.isToday ? 900 : 700,
+              color: c.isToday ? "#ffffff" : c.inMonth ? "#111827" : "#cbd5e1",
+            }}
+          >
+            <Typography variant="caption" sx={{ fontWeight: "inherit", color: "inherit" }}>
+              {c.inMonth ? c.dayNum : ""}
+            </Typography>
+          </Box>
+        ))}
+      </Box>
+    </Box>
+  );
+}
 
 export default function EmpDashboard({
   auth,
   stats = {},
   todayBirthdays = [],
   upcomingBirthdays = [],
-  departmentBreakdown = [], // [{ name, count }]
-  probationEnding = [], // [{ employee_id, employee_code, name, probation_end_date, days_left }]
-  recentHires = [], // [{ employee_id, employee_code, name, date_of_joining }]
+  departmentBreakdown = [],
+  probationEnding = [],
+  recentHires = [],
 }) {
   const isMobile = useMediaQuery("(max-width:900px)");
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const [tab, setTab] = useState(0); // 0 today, 1 next 7 days
-  const [q, setQ] = useState("");
-  const [sortBy, setSortBy] = useState("days_left"); // days_left | name | next_birthday
-
   const toggleDrawer = () => setMobileOpen((p) => !p);
-
-  const activeList = tab === 0 ? todayBirthdays : upcomingBirthdays;
-
-  const birthdayRows = useMemo(() => {
-    const query = q.trim().toLowerCase();
-
-    let out = (activeList ?? []).filter((b) => {
-      if (!query) return true;
-      const name = (b.name ?? "").toLowerCase();
-      const code = (b.employee_code ?? "").toLowerCase();
-      return name.includes(query) || code.includes(query);
-    });
-
-    out = [...out].sort((a, b) => {
-      if (sortBy === "name") return String(a.name ?? "").localeCompare(String(b.name ?? ""));
-      if (sortBy === "next_birthday") return String(a.next_birthday ?? "").localeCompare(String(b.next_birthday ?? ""));
-      return Number(a.days_left ?? 0) - Number(b.days_left ?? 0);
-    });
-
-    return out.map((x) => ({
-      id: x.employee_id,
-      ...x,
-      next_birthday: onlyDate(x.next_birthday),
-      date_of_birth: onlyDate(x.date_of_birth),
-    }));
-  }, [activeList, q, sortBy]);
-
-  const birthdayCols = [
-    {
-      field: "name",
-      headerName: "Employee",
-      flex: 1,
-      minWidth: 220,
-      renderCell: (p) => (
-        <Stack spacing={0.25}>
-          <Typography fontWeight={800} sx={{ lineHeight: 1.1 }}>
-            {p.value}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            {p.row.employee_code ?? "-"}
-          </Typography>
-        </Stack>
-      ),
-    },
-    { field: "next_birthday", headerName: "Next Birthday", width: 140 },
-    {
-      field: "days_left",
-      headerName: "In",
-      width: 120,
-      renderCell: (p) =>
-        tab === 0 ? <Chip size="small" label="Today" /> : <Chip size="small" label={`${p.value} days`} />,
-    },
-  ];
-
-  const probationRows = useMemo(
-    () =>
-      (probationEnding ?? []).map((x) => ({
-        id: x.employee_id,
-        ...x,
-        probation_end_date: onlyDate(x.probation_end_date),
-      })),
-    [probationEnding]
-  );
-
-  const probationCols = [
-    {
-      field: "name",
-      headerName: "Employee",
-      flex: 1,
-      minWidth: 220,
-      renderCell: (p) => (
-        <Stack spacing={0.25}>
-          <Typography fontWeight={800} sx={{ lineHeight: 1.1 }}>
-            {p.value}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            {p.row.employee_code ?? "-"}
-          </Typography>
-        </Stack>
-      ),
-    },
-    { field: "probation_end_date", headerName: "Ends", width: 140 },
-    {
-      field: "days_left",
-      headerName: "In",
-      width: 120,
-      renderCell: (p) => <Chip size="small" label={`${p.value}d`} />,
-    },
-  ];
-
-  const hireRows = useMemo(
-    () =>
-      (recentHires ?? []).map((x) => ({
-        id: x.employee_id,
-        ...x,
-        date_of_joining: onlyDate(x.date_of_joining),
-      })),
-    [recentHires]
-  );
-
-  const hireCols = [
-    {
-      field: "name",
-      headerName: "Employee",
-      flex: 1,
-      minWidth: 220,
-      renderCell: (p) => (
-        <Stack spacing={0.25}>
-          <Typography fontWeight={800} sx={{ lineHeight: 1.1 }}>
-            {p.value}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            {p.row.employee_code ?? "-"}
-          </Typography>
-        </Stack>
-      ),
-    },
-    { field: "date_of_joining", headerName: "Joined", width: 140 },
-  ];
-
-  const deptTotal = (departmentBreakdown ?? []).reduce((sum, d) => sum + Number(d.count ?? 0), 0) || 1;
 
   const drawer = (
     <Box sx={{ width: drawerWidth }}>
       <Toolbar>
-        <Typography fontWeight={900} variant="h6">
+        <Typography fontWeight={900} variant="h6" sx={{ color: "#111827" }}>
           HRMS
         </Typography>
       </Toolbar>
@@ -243,8 +252,14 @@ export default function EmpDashboard({
               router.get(item.href);
               if (isMobile) setMobileOpen(false);
             }}
+            sx={{
+              borderRadius: 2,
+              mx: 1,
+              my: 0.5,
+              "&:hover": { backgroundColor: "#f3f4f6" },
+            }}
           >
-            <ListItemIcon>{item.icon}</ListItemIcon>
+            <ListItemIcon sx={{ color: NAVY }}>{item.icon}</ListItemIcon>
             <ListItemText primary={item.label} />
           </ListItemButton>
         ))}
@@ -253,8 +268,66 @@ export default function EmpDashboard({
   );
 
   const totalEmployees = stats?.employeesCount ?? 0;
-  const departmentsCount = stats?.departmentsCount ?? (departmentBreakdown?.length || 0);
-  const newHires30 = stats?.newHiresLast30Days ?? (recentHires?.length || 0);
+
+  const userName =
+    auth?.user?.name ||
+    auth?.user?.full_name ||
+    auth?.user?.username ||
+    auth?.user?.email ||
+    "User";
+
+  // time-based greeting
+  const greeting = useMemo(() => {
+    const h = new Date().getHours();
+    if (h < 12) return "Good Morning";
+    if (h < 17) return "Good Afternoon";
+    return "Good Evening";
+  }, []);
+
+  const todaysEvents = useMemo(() => {
+    const bdays = (todayBirthdays ?? []).slice(0, 6).map((b) => ({
+      type: "birthday",
+      employee_id: b.employee_id,
+      name: b.name ?? "Unknown",
+      employee_code: b.employee_code ?? "",
+      label: "Birthday",
+      chip: { text: "Today", kind: "today" },
+    }));
+
+    const prob = [...(probationEnding ?? [])]
+      .map((p) => ({
+        type: "probation",
+        employee_id: p.employee_id,
+        name: p.name ?? "Unknown",
+        employee_code: p.employee_code ?? "",
+        label: "Probation ends",
+        days_left: Number(p.days_left ?? 0),
+      }))
+      .filter((x) => Number.isFinite(x.days_left))
+      .sort((a, b) => a.days_left - b.days_left)
+      .slice(0, 4)
+      .map((x) => ({
+        ...x,
+        chip: { text: `${x.days_left}d`, kind: "warn" },
+      }));
+
+    return [...bdays, ...prob];
+  }, [todayBirthdays, probationEnding]);
+
+  const bookmarked = useMemo(() => {
+    const list = [...(upcomingBirthdays ?? [])]
+      .map((b) => ({
+        employee_id: b.employee_id,
+        name: b.name ?? "Unknown",
+        employee_code: b.employee_code ?? "",
+        days_left: Number(b.days_left ?? 0),
+      }))
+      .filter((x) => Number.isFinite(x.days_left))
+      .sort((a, b) => a.days_left - b.days_left)
+      .slice(0, 6);
+
+    return list;
+  }, [upcomingBirthdays]);
 
   return (
     <AuthenticatedLayout user={auth.user}>
@@ -263,12 +336,12 @@ export default function EmpDashboard({
       <Box sx={{ display: "flex" }}>
         {/* MOBILE TOP BAR */}
         {isMobile && (
-          <AppBar position="fixed" sx={{ backgroundColor: "#0B1C2D" }}>
+          <AppBar position="fixed" sx={{ backgroundColor: NAVY }}>
             <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
               <IconButton color="inherit" edge="start" onClick={toggleDrawer}>
                 <MenuIcon />
               </IconButton>
-              <Typography fontWeight={900}>Employee Dashboard</Typography>
+              <Typography fontWeight={900}>Dashboard</Typography>
               <Box sx={{ width: 48 }} />
             </Toolbar>
           </AppBar>
@@ -293,7 +366,13 @@ export default function EmpDashboard({
             variant="permanent"
             sx={{
               display: { xs: "none", sm: "block" },
-              "& .MuiDrawer-paper": { width: drawerWidth },
+              "& .MuiDrawer-paper": {
+                width: drawerWidth,
+                backgroundColor: "#ffffff",
+                color: "#111827",
+                borderRight: "1px solid #e5e7eb",
+              },
+              "& .MuiListItemText-primary": { fontWeight: 800, color: "#111827" },
             }}
             open
           >
@@ -303,229 +382,244 @@ export default function EmpDashboard({
 
         {/* MAIN */}
         <Box sx={{ flexGrow: 1 }}>
-          <Toolbar sx={{ minHeight: isMobile ? 64 : undefined }} />
+          {/* <Toolbar sx={{ minHeight: isMobile ? 64 : undefined }} /> */}
 
-          <Container maxWidth={false} sx={{ py: 2 }}>
-            {/* Header row */}
-            <Stack
-              direction={{ xs: "column", md: "row" }}
-              justifyContent="space-between"
-              alignItems={{ xs: "flex-start", md: "center" }}
-              spacing={1.25}
-              sx={{ mb: 1.5 }}
-            >
-              <Box>
-                <Typography variant="h4" fontWeight={900}>
-                  Employee Dashboard
-                </Typography>
-                <Typography color="text.secondary" sx={{ mt: 0.5 }}>
-                  Active employees • Birthdays • Probation alerts • Recent hires
-                </Typography>
-              </Box>
-
-              <Stack direction="row" spacing={1} alignItems="center">
-                <Tooltip title="Refresh">
-                  <IconButton onClick={() => router.reload({ only: ["stats", "todayBirthdays", "upcomingBirthdays", "probationEnding", "recentHires", "departmentBreakdown"] })}>
-                    <RefreshOutlinedIcon />
-                  </IconButton>
-                </Tooltip>
-
-                <Button
-                  variant="contained"
-                  startIcon={<AddOutlinedIcon />}
-                  sx={{ backgroundColor: "#0B1C2D", "&:hover": { backgroundColor: "#0F2A44" } }}
-                  onClick={() => router.get("/hrms/employees/create")}
-                >
-                  Create
-                </Button>
-              </Stack>
-            </Stack>
-
-            {/* KPI STRIP (responsive, not card-y) */}
-            <Paper variant="outlined" sx={{ overflow: "hidden" }}>
+          {/* PAGE */}
+          <Box
+            sx={{
+              minHeight: "100vh",
+              px: { xs: 2, md: 3 },
+              py: { xs: 2, md: 3 },
+              backgroundColor: "#f5f7fa",
+            }}
+          >
+            <Container maxWidth={false} sx={{ px: 0 }}>
+              {/* TOP GREETING */}
               <Stack
-                direction="row"
+                direction={{ xs: "column", md: "row" }}
+                spacing={2}
+                alignItems={{ xs: "flex-start", md: "center" }}
+                justifyContent="space-between"
+                sx={{ mb: 2.5 }}
+              >
+                <Box>
+                  <Typography variant="h4" fontWeight={900} sx={{ color: "#111827" }}>
+                    {greeting}, {userName}
+                  </Typography>
+                  <Typography sx={{ color: "#6b7280", mt: 0.5 }}>
+                    Here’s what’s happening in HR today.
+                  </Typography>
+
+                  <Stack direction="row" spacing={1} sx={{ mt: 1.5 }} flexWrap="wrap">
+                    <Chip
+                      icon={<PeopleAltOutlinedIcon />}
+                      label={`Active Employees: ${totalEmployees}`}
+                      sx={{
+                        color: "#111827",
+                        backgroundColor: "#ffffff",
+                        border: "1px solid #e5e7eb",
+                        fontWeight: 800,
+                      }}
+                    />
+                    <Chip
+                      icon={<CakeOutlinedIcon />}
+                      label={`${todayBirthdays.length} birthdays today`}
+                      sx={{
+                        color: "#111827",
+                        backgroundColor: "#ffffff",
+                        border: "1px solid #e5e7eb",
+                        fontWeight: 800,
+                      }}
+                    />
+                    <Chip
+                      icon={<NotificationsOutlinedIcon />}
+                      label={`${probationEnding.length} probation alerts`}
+                      sx={{
+                        color: "#111827",
+                        backgroundColor: "#ffffff",
+                        border: "1px solid #e5e7eb",
+                        fontWeight: 800,
+                      }}
+                    />
+                  </Stack>
+                </Box>
+
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Tooltip title="Refresh">
+                    <IconButton
+                      onClick={() =>
+                        router.reload({
+                          only: [
+                            "stats",
+                            "todayBirthdays",
+                            "upcomingBirthdays",
+                            "probationEnding",
+                            "recentHires",
+                            "departmentBreakdown",
+                          ],
+                        })
+                      }
+                      sx={{
+                        color: NAVY,
+                        backgroundColor: "#ffffff",
+                        border: "1px solid #e5e7eb",
+                        "&:hover": { backgroundColor: "#f8fafc" },
+                      }}
+                    >
+                      <RefreshOutlinedIcon />
+                    </IconButton>
+                  </Tooltip>
+                </Stack>
+              </Stack>
+
+              {/* MAIN GRID */}
+              <Box
                 sx={{
-                  overflowX: "auto",
-                  flexWrap: { xs: "wrap", md: "nowrap" },
+                  display: "grid",
+                  gridTemplateColumns: { xs: "1fr", lg: "1.35fr 0.65fr" },
+                  gap: 2,
+                  alignItems: "start",
                 }}
               >
-                <StatPill
-                  icon={<GroupOutlinedIcon />}
-                  label="Active Employees"
-                  value={totalEmployees}
-                  helper=""
-                />
-                <StatPill
-                  icon={<CakeOutlinedIcon />}
-                  label="Birthdays"
-                  value={`${todayBirthdays.length} today`}
-                  helper={`${upcomingBirthdays.length} in next 7 days`}
-                />
-                <StatPill
-                  icon={<ApartmentOutlinedIcon />}
-                  label="Departments"
-                  value={departmentsCount}
-                  helper={departmentBreakdown?.length ? "Top departments shown" : "No data"}
-                />
-                <StatPill
-                  icon={<PersonAddAltOutlinedIcon />}
-                  label="New hires (30 days)"
-                  value={newHires30}
-                />
-              </Stack>
-            </Paper>
+                {/* LEFT COLUMN: TODAY + QUICK LINKS UNDER IT */}
+                <Stack spacing={2}>
+                  <GlassCard
+                    title="Today's Events"
+                    icon={<NotificationsOutlinedIcon />}
+                    right={
+                      <Button
+                        size="small"
+                        onClick={() => router.get("/hrms/employees")}
+                        sx={{
+                          color: NAVY,
+                          fontWeight: 900,
+                          textTransform: "none",
+                          backgroundColor: "#ffffff",
+                          border: "1px solid #e5e7eb",
+                          borderRadius: 2,
+                          "&:hover": { backgroundColor: "#f8fafc" },
+                        }}
+                      >
+                        View all
+                      </Button>
+                    }
+                  >
+                    <Stack spacing={1.25}>
+                      {todaysEvents.length === 0 ? (
+                        <Typography sx={{ color: "#6b7280" }}>No events found for today.</Typography>
+                      ) : (
+                        todaysEvents.map((e) => (
+                          <EventRow
+                            key={`${e.type}-${e.employee_id}`}
+                            title={`${e.name}`}
+                            subtitle={`${e.label}${e.employee_code ? ` • ${e.employee_code}` : ""}`}
+                            rightChip={
+                              <Chip
+                                size="small"
+                                label={e.chip?.text}
+                                sx={{
+                                  fontWeight: 900,
+                                  color: e.chip?.kind === "today" ? "#065f46" : "#92400e",
+                                  backgroundColor: e.chip?.kind === "today" ? "#d1fae5" : "#ffedd5",
+                                  border: "1px solid #e5e7eb",
+                                }}
+                              />
+                            }
+                            onClick={() => router.get(`/hrms/employees/${e.employee_id}`)}
+                          />
+                        ))
+                      )}
+                    </Stack>
+                  </GlassCard>
 
-            {/* MAIN PANELS */}
-            <Stack direction={{ xs: "column", lg: "row" }} spacing={2} sx={{ mt: 2 }}>
-              {/* LEFT: Birthdays */}
-              <Paper variant="outlined" sx={{ flex: 1, p: 1.5 }}>
-                <Stack direction={{ xs: "column", md: "row" }} justifyContent="space-between" spacing={1.5}>
-                  <Tabs value={tab} onChange={(_, v) => setTab(v)} variant={isMobile ? "scrollable" : "standard"}>
-                    <Tab label={`Today (${todayBirthdays.length})`} />
-                    <Tab label={`Next 7 Days (${upcomingBirthdays.length})`} />
-                  </Tabs>
+                  {/* QUICK LINKS (moved here, under Today's Events) */}
+                  <GlassCard title="Quick Links" icon={<DashboardOutlinedIcon />}>
+                    <Stack direction={{ xs: "column", md: "row" }} spacing={1}>
+                      <Button
+                        onClick={() => router.get("/hrms/employees")}
+                        variant="contained"
+                        sx={{
+                          backgroundColor: NAVY,
+                          "&:hover": { backgroundColor: NAVY_2 },
+                          borderRadius: 3,
+                          fontWeight: 900,
+                          textTransform: "none",
+                        }}
+                      >
+                        Employees
+                      </Button>
 
-                  <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ minWidth: { md: 520 } }}>
-                    <TextField
-                      size="small"
-                      placeholder="Search by name or code…"
-                      value={q}
-                      onChange={(e) => setQ(e.target.value)}
-                      fullWidth
-                    />
-                    <TextField
-                      size="small"
-                      select
-                      label="Sort"
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value)}
-                      sx={{ minWidth: 170 }}
-                    >
-                      <MenuItem value="days_left">Days left</MenuItem>
-                      <MenuItem value="name">Name</MenuItem>
-                      <MenuItem value="next_birthday">Date</MenuItem>
-                    </TextField>
-                  </Stack>
+                      <Button
+                        onClick={() => router.get("/hrms/employees/create")}
+                        variant="outlined"
+                        sx={{
+                          color: NAVY,
+                          borderColor: "#cbd5e1",
+                          borderRadius: 3,
+                          fontWeight: 900,
+                          textTransform: "none",
+                          "&:hover": { borderColor: "#94a3b8", backgroundColor: "#f8fafc" },
+                        }}
+                      >
+                        Add Employee
+                      </Button>
+                    </Stack>
+                  </GlassCard>
                 </Stack>
 
-                <Divider sx={{ my: 1.5 }} />
-
-                <Box sx={{ height: 360 }}>
-                  <DataGrid
-                    rows={birthdayRows}
-                    columns={birthdayCols}
-                    disableRowSelectionOnClick
-                    hideFooter
-                    onRowClick={(p) => router.get(`/hrms/employees/${p.row.employee_id}`)}
-                    sx={{
-                      border: 0,
-                      "& .MuiDataGrid-columnHeaders": { fontWeight: 900 },
-                      "& .MuiDataGrid-row": { cursor: "pointer" },
-                    }}
-                  />
-                </Box>
-              </Paper>
-
-              {/* RIGHT: Alerts + Department Mix + Recent Hires */}
-              <Stack spacing={2} sx={{ width: { xs: "100%", lg: 520 } }}>
-                {/* Probation Alerts */}
-                <Paper variant="outlined" sx={{ p: 1.5 }}>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <NotificationsOutlinedIcon />
-                    <Typography fontWeight={900}>Probation ending soon (next 14 days)</Typography>
-                    <Chip size="small" label={`${probationRows.length}`} sx={{ ml: "auto" }} />
-                  </Stack>
-
-                  <Divider sx={{ my: 1.25 }} />
-
-                  <Box sx={{ height: 260 }}>
-                    <DataGrid
-                      rows={probationRows}
-                      columns={probationCols}
-                      disableRowSelectionOnClick
-                      hideFooter
-                      onRowClick={(p) => router.get(`/hrms/employees/${p.row.employee_id}`)}
-                      sx={{
-                        border: 0,
-                        "& .MuiDataGrid-columnHeaders": { fontWeight: 900 },
-                        "& .MuiDataGrid-row": { cursor: "pointer" },
-                      }}
-                    />
-                  </Box>
-                </Paper>
-
-                {/* Department Mix */}
-                <Paper variant="outlined" sx={{ p: 1.5 }}>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <ApartmentOutlinedIcon />
-                    <Typography fontWeight={900}>Department mix (top)</Typography>
-                    <Chip size="small" label={`${departmentBreakdown.length}`} sx={{ ml: "auto" }} />
-                  </Stack>
-
-                  <Divider sx={{ my: 1.25 }} />
-
-                  {departmentBreakdown.length === 0 ? (
-                    <Typography color="text.secondary">No department data.</Typography>
-                  ) : (
-                    <Stack spacing={1}>
-                      {departmentBreakdown.slice(0, 8).map((d) => {
-                        const pct = Math.round((Number(d.count ?? 0) / deptTotal) * 100);
-                        return (
-                          <Box
-                            key={d.name}
-                            sx={{
-                              p: 1,
-                              border: "1px solid",
-                              borderColor: "divider",
-                              borderRadius: 1,
-                            }}
-                          >
-                            <Stack direction="row" justifyContent="space-between" alignItems="center">
-                              <Typography fontWeight={800} noWrap sx={{ maxWidth: "70%" }}>
-                                {d.name}
-                              </Typography>
-                              <Typography fontWeight={900}>{d.count ?? 0}</Typography>
-                            </Stack>
-                            <LinearProgress variant="determinate" value={pct} sx={{ mt: 1 }} />
-                            <Typography variant="caption" color="text.secondary">
-                              {pct}%
-                            </Typography>
-                          </Box>
-                        );
-                      })}
+                {/* RIGHT COLUMN: BOOKMARKED + CALENDAR */}
+                <Stack spacing={2}>
+                  <GlassCard
+                    title="Bookmarked"
+                    icon={<BookmarkBorderOutlinedIcon />}
+                    right={
+                      <Chip
+                        size="small"
+                        label={`${bookmarked.length}`}
+                        sx={{
+                          color: "#111827",
+                          fontWeight: 900,
+                          backgroundColor: "#ffffff",
+                          border: "1px solid #e5e7eb",
+                        }}
+                      />
+                    }
+                  >
+                    <Stack spacing={1.25}>
+                      {bookmarked.length === 0 ? (
+                        <Typography sx={{ color: "#6b7280" }}>No upcoming birthdays.</Typography>
+                      ) : (
+                        bookmarked.map((b) => (
+                          <EventRow
+                            key={b.employee_id}
+                            title={b.name}
+                            subtitle={`Birthday • ${b.employee_code || "-"}`}
+                            rightChip={
+                              <Chip
+                                size="small"
+                                label={`${b.days_left} day`}
+                                sx={{
+                                  fontWeight: 900,
+                                  color: "#065f46",
+                                  backgroundColor: "#d1fae5",
+                                  border: "1px solid #a7f3d0",
+                                }}
+                              />
+                            }
+                            onClick={() => router.get(`/hrms/employees/${b.employee_id}`)}
+                          />
+                        ))
+                      )}
                     </Stack>
-                  )}
-                </Paper>
+                  </GlassCard>
 
-                {/* Recent Hires */}
-                <Paper variant="outlined" sx={{ p: 1.5 }}>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <PersonAddAltOutlinedIcon />
-                    <Typography fontWeight={900}>Recent hires (last 30 days)</Typography>
-                    <Chip size="small" label={`${hireRows.length}`} sx={{ ml: "auto" }} />
-                  </Stack>
-
-                  <Divider sx={{ my: 1.25 }} />
-
-                  <Box sx={{ height: 260 }}>
-                    <DataGrid
-                      rows={hireRows}
-                      columns={hireCols}
-                      disableRowSelectionOnClick
-                      hideFooter
-                      onRowClick={(p) => router.get(`/hrms/employees/${p.row.employee_id}`)}
-                      sx={{
-                        border: 0,
-                        "& .MuiDataGrid-columnHeaders": { fontWeight: 900 },
-                        "& .MuiDataGrid-row": { cursor: "pointer" },
-                      }}
-                    />
-                  </Box>
-                </Paper>
-              </Stack>
-            </Stack>
-          </Container>
+                  <GlassCard title="Calendar" icon={<CalendarMonthOutlinedIcon />}>
+                    <MiniCalendar accent="#22c55e" />
+                  </GlassCard>
+                </Stack>
+              </Box>
+            </Container>
+          </Box>
         </Box>
       </Box>
     </AuthenticatedLayout>
