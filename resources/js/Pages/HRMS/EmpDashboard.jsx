@@ -255,7 +255,7 @@ export default function EmpDashboard({
             sx={{
               borderRadius: 2,
               mx: 1,
-              my: 0.5,
+              my: 1,
               "&:hover": { backgroundColor: "#f3f4f6" },
             }}
           >
@@ -275,14 +275,6 @@ export default function EmpDashboard({
     auth?.user?.username ||
     auth?.user?.email ||
     "User";
-
-  // time-based greeting
-  const greeting = useMemo(() => {
-    const h = new Date().getHours();
-    if (h < 12) return "Good Morning";
-    if (h < 17) return "Good Afternoon";
-    return "Good Evening";
-  }, []);
 
   const todaysEvents = useMemo(() => {
     const bdays = (todayBirthdays ?? []).slice(0, 6).map((b) => ({
@@ -330,7 +322,7 @@ export default function EmpDashboard({
   }, [upcomingBirthdays]);
 
   return (
-    <AuthenticatedLayout user={auth.user}>
+    <AuthenticatedLayout >
       <Head title="Employee Dashboard" />
 
       <Box sx={{ display: "flex" }}>
@@ -362,28 +354,28 @@ export default function EmpDashboard({
             {drawer}
           </Drawer>
 
-          <Drawer
-            variant="permanent"
-            sx={{
-              display: { xs: "none", sm: "block" },
-              "& .MuiDrawer-paper": {
-                width: drawerWidth,
-                backgroundColor: "#ffffff",
-                color: "#111827",
-                borderRight: "1px solid #e5e7eb",
-              },
-              "& .MuiListItemText-primary": { fontWeight: 800, color: "#111827" },
-            }}
-            open
-          >
+            <Drawer
+              variant="permanent"
+              sx={{
+                display: { xs: "none", sm: "block" },
+                "& .MuiDrawer-paper": {
+                  width: drawerWidth,
+                  top: "64px",                     
+                  height: "calc(100% - 64px)",     
+                  backgroundColor: "#ffffff",
+                  color: "#111827",
+                  borderRight: "1px solid #e5e7eb",
+                },
+              }}
+              open
+            >
+
             {drawer}
           </Drawer>
         </Box>
 
         {/* MAIN */}
         <Box sx={{ flexGrow: 1 }}>
-          {/* <Toolbar sx={{ minHeight: isMobile ? 64 : undefined }} /> */}
-
           {/* PAGE */}
           <Box
             sx={{
@@ -394,7 +386,6 @@ export default function EmpDashboard({
             }}
           >
             <Container maxWidth={false} sx={{ px: 0 }}>
-              {/* TOP GREETING */}
               <Stack
                 direction={{ xs: "column", md: "row" }}
                 spacing={2}
@@ -404,7 +395,7 @@ export default function EmpDashboard({
               >
                 <Box>
                   <Typography variant="h4" fontWeight={900} sx={{ color: "#111827" }}>
-                    {greeting}, {userName}
+                    Welcome Back, {userName}..
                   </Typography>
                   <Typography sx={{ color: "#6b7280", mt: 0.5 }}>
                     Here’s what’s happening in HR today.
