@@ -15,6 +15,13 @@ import {
 
 const services = [
   {
+    title: "ADMIN",
+    description: "System Administration & Controls",
+    href: "/admin",
+    external: false,
+    image: "/images/admin.webp",
+  },
+  {
     title: "FMS",
     description: "Fleet Management System",
     href: "https://exploredrive.lk/",

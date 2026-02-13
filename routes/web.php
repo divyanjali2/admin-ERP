@@ -30,6 +30,10 @@ Route::get('/hrms', function () {
     return Inertia::render('HRMS');
 })->middleware(['auth', 'verified'])->name('hrms');
 
+Route::get('/admin', function () {
+    return Inertia::render('Admin');
+})->middleware(['auth', 'verified'])->name('admin');
+
 Route::prefix('hrms')->name('hrms.')->middleware(['auth', 'verified'])->group(function () {
 
 Route::get('/emp-dashboard', function () {

@@ -7,30 +7,36 @@ import { useState } from 'react';
 
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
+    const { auth } = usePage().props;
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
 
+        const hour = new Date().getHours();
+
+        let greeting = "Hello";
+        if (hour < 12) greeting = "Good Morning";
+        else if (hour < 17) greeting = "Good Afternoon";
+        else greeting = "Good Evening";
+
     return (
-        <div className="min-h-screen bg-gray-100">
-            <nav className="border-b border-gray-100 bg-white">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gray-100 pt-16">
+            <nav className="fixed top-0 left-0 right-0 z-50 border-b border-gray-100 bg-white">
+                <div className="mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 justify-between">
                         <div className="flex">
                             <div className="flex shrink-0 items-center">
-                                {/* <Link href="/">
+                                <Link href="/">
                                     <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
-                                </Link> */}
+                                </Link>
                             </div>
 
-                            {/* <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                                <NavLink
-                                    href={route('dashboard')}
-                                    active={route().current('dashboard')}
-                                >
-                                    Dashboard
-                                </NavLink>
-                            </div> */}
+                            <div className="hidden sm:ms-10 sm:flex items-center">
+                                <span className="text-md font-semibold text-gray-800">
+                                    {greeting}, {auth.user.name}
+                                </span>
+                            </div>
+
                         </div>
 
                         <div className="hidden sm:ms-6 sm:flex sm:items-center">

@@ -306,8 +306,6 @@ export default function Leave({ auth }) {
             </Box>
           </Box>
         </Box>
-
-
       </Box>
     </AuthenticatedLayout>
   );
