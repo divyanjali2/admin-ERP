@@ -43,27 +43,25 @@ function ServiceCard({ item }) {
     : { component: Link, href: item.href };
 
   return (
-        <Card
-        elevation={0}
-        sx={{
-            width: 320,
-            maxWidth: "100%",
-            borderRadius: 5,
-            border: "3px solid #000035",          
-            backgroundColor: "#ffffff",
-            transition: "all 0.2s ease",
-            "&:hover": {
-            transform: "translateY(-4px)",
-            boxShadow: "0 8px 24px rgba(11, 28, 45, 0.25)", 
-            borderColor: "#0F2A44",                     
-            },
-        }}
-        >
-
+    <Card
+      elevation={0}
+      sx={{
+        width: 320,
+        maxWidth: "100%",
+        borderRadius: 5,
+        border: "3px solid #000035",
+        backgroundColor: "#ffffff",
+        transition: "all 0.2s ease",
+        "&:hover": {
+          transform: "translateY(-4px)",
+          boxShadow: "0 8px 24px rgba(11, 28, 45, 0.25)",
+          borderColor: "#0F2A44",
+        },
+      }}
+    >
       <CardActionArea {...actionProps} sx={{ height: "100%" }}>
         <CardContent>
           <Stack spacing={2} alignItems="center" textAlign="center">
-            {/* Image */}
             <Box
               component="img"
               src={item.image}
@@ -77,7 +75,6 @@ function ServiceCard({ item }) {
               }}
             />
 
-            {/* Text */}
             <Typography variant="h6" fontWeight={800}>
               {item.title}
             </Typography>
@@ -97,36 +94,41 @@ function ServiceCard({ item }) {
 }
 
 export default function Services({ auth }) {
+  const isAdmin =
+    auth?.user?.is_admin === true ||
+    auth?.user?.role === "Admin" ||
+    auth?.user?.name === "Admin";
+
+  const visibleServices = services.filter((s) => {
+    if (s.title === "ADMIN") return isAdmin;
+    return true;
+  });
+
   return (
     <AuthenticatedLayout user={auth.user}>
       <Head title="Services" />
 
       <Container
-        maxWidth="false"
+        maxWidth={false}
         sx={{
-          minHeight: "100vh",
-          backgroundColor: "#a7c4e50f", 
+          minHeight: "calc(100vh - 64px)", 
+          backgroundColor: "#a7c4e50f",
           display: "flex",
           alignItems: "center",
         }}
       >
         <Box sx={{ width: "100%" }}>
-          <Typography
-            variant="h4"
-            fontWeight={900}
-            sx={{ mb: 4, textAlign: "center" }}
-          >
+          <Typography variant="h4" fontWeight={900} sx={{ mb: 4, textAlign: "center" }}>
             Choose a Service
           </Typography>
 
           <Grid container spacing={3} justifyContent="center">
-            {services.map((service) => (
-                <Grid item key={service.title}
-                    sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                    }}
-                >
+            {visibleServices.map((service) => (
+              <Grid
+                item
+                key={service.title}
+                sx={{ display: "flex", justifyContent: "center" }}
+              >
                 <ServiceCard item={service} />
               </Grid>
             ))}
