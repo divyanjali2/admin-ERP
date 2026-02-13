@@ -17,17 +17,29 @@ const modules = [
     title: "Employee Data",
     description: "Profiles, departments, documents, and employee records.",
     href: "/hrms/emp-dashboard",
-    image: "/images/hrms-employee.webp",
+    image: "/images/employee-data.webp",
   },
   {
     title: "Leave Management",
     description: "View, Approve and monitor employee leave records and balances.",
     href: "/hrms/payroll",
-    image: "/images/hrms-payroll.webp",
+    image: "/images/leave-managment.webp",
   },
   {
     title: "Vehicle Request Management",
     description: "Review, approve, and manage vehicle booking requests.",
+    href: "/hrms/recruitment",
+    image: "/images/vehicle-request-management.webp",
+  },
+  {
+    title: "Payroll",
+    description: "Salary components, payslips, and deductions.",
+    href: "/hrms/payroll",
+    image: "/images/payroll.webp",
+  },
+  {
+    title: "Recruitment",
+    description: "Applicants, vacancies, and hiring pipeline.",
     href: "/hrms/recruitment",
     image: "/images/hrms-recruitment.webp",
   },
@@ -36,24 +48,6 @@ const modules = [
     description: "Training programs, sessions, and completion tracking.",
     href: "/hrms/training",
     image: "/images/hrms-training.webp",
-  },
-  {
-    title: "Employee Data",
-    description: "Profiles, departments, documents, and employee records.",
-    href: "/hrms/emp-dashboard",
-    image: "/images/hrms-employee.webp",
-  },
-  {
-    title: "Payroll",
-    description: "Salary components, payslips, and deductions.",
-    href: "/hrms/payroll",
-    image: "/images/hrms-payroll.webp",
-  },
-  {
-    title: "Recruitment",
-    description: "Applicants, vacancies, and hiring pipeline.",
-    href: "/hrms/recruitment",
-    image: "/images/hrms-recruitment.webp",
   }
 ];
 
