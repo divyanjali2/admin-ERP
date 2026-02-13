@@ -39,11 +39,31 @@ Route::get('/hrms', function () {
 
 Route::prefix('hrms')->name('hrms.')->middleware(['auth', 'verified'])->group(function () {
 
-    Route::get('/emp-dashboard', function () {
-        return Inertia::render('HRMS/EmpDashboard');
-    })->name('emp-dashboard');
+Route::get('/emp-dashboard', function () {
+    return Inertia::render('HRMS/EmpDashboard');
+})->name('emp-dashboard');
 
-    Route::resource('employees', EmployeeController::class);
+Route::get('/leave-dashboard', function () {
+    return Inertia::render('HRMS/LeaveDashboard');
+})->name('leave-dashboard');
+
+Route::get('/vehicle-reauest-dashboard', function () {
+    return Inertia::render('HRMS/VehicleRequestDashboard');
+})->name('vehicle-reauest-dashboard');
+
+Route::get('/payroll-dashboard', function () {
+    return Inertia::render('HRMS/PayrollDashboard');
+})->name('payroll-dashboard');
+
+Route::get('/recruitment-dashboard', function () {
+    return Inertia::render('HRMS/RecruitmentDashboard');
+})->name('recruitment-dashboard');
+
+Route::get('/training-dashboard', function () {
+    return Inertia::render('HRMS/TrainingDashboard');
+})->name('training-dashboard');
+
+Route::resource('employees', EmployeeController::class);
 });
 
 Route::get('/hrms/emp-dashboard', [EmployeeController::class, 'empDashboard'])

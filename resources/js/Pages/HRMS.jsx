@@ -22,31 +22,31 @@ const modules = [
   {
     title: "Leave Management",
     description: "View, Approve and monitor employee leave records and balances.",
-    href: "/hrms/payroll",
+    href: "/hrms/leave-dashboard",
     image: "/images/leave-managment.webp",
   },
   {
     title: "Vehicle Request Management",
     description: "Review, approve, and manage vehicle booking requests.",
-    href: "/hrms/recruitment",
+    href: "/hrms/vehicle-reauest-dashboard",
     image: "/images/vehicle-request-management.webp",
   },
   {
     title: "Payroll",
     description: "Salary components, payslips, and deductions.",
-    href: "/hrms/payroll",
+    href: "/hrms/payroll-dashboard",
     image: "/images/payroll.webp",
   },
   {
     title: "Recruitment",
     description: "Applicants, vacancies, and hiring pipeline.",
-    href: "/hrms/recruitment",
+    href: "/hrms/recruitment-dashboard",
     image: "/images/hrms-recruitment.webp",
   },
   {
     title: "Training",
     description: "Training programs, sessions, and completion tracking.",
-    href: "/hrms/training",
+    href: "/hrms/training-dashboard",
     image: "/images/hrms-training.webp",
   }
 ];
