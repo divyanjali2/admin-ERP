@@ -1,89 +1,313 @@
 import React from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head } from "@inertiajs/react";
-import { Box, Button, Stack, Typography } from "@mui/material";
+import { Head, router } from "@inertiajs/react";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
 
-const NAVY = "#0B1C2D";
-const NAVY_2 = "#0F2A44";
+import {
+  Box,
+  Stack,
+  Typography,
+  List,
+  ListItemButton,
+  ListItemText,
+  Divider,
+} from "@mui/material";
+
+const SIDEBAR_WIDTH = 240;
 
 export default function Leave({ auth }) {
   return (
     <AuthenticatedLayout user={auth.user}>
       <Head title="Leave" />
 
-      <Box
-        sx={{
-          minHeight: "100vh",
-          px: { xs: 2, md: 3 },
-          py: { xs: 2, md: 3 },
-          backgroundColor: "#f5f7fa",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
+      <Box sx={{ display: "flex", minHeight: "100vh", backgroundColor: "#f5f7fa" }}>
+        
+        {/* LEFT SIDEBAR */}
         <Box
           sx={{
-            width: "100%",
-            maxWidth: 720,
-            borderRadius: 4,
+            width: SIDEBAR_WIDTH,
             backgroundColor: "#ffffff",
-            border: "1px solid #e5e7eb",
-            boxShadow: "0 8px 30px rgba(0,0,0,0.06)",
-            p: { xs: 3, md: 5 },
-            textAlign: "center",
+            borderRight: "1px solid #e5e7eb",
+            p: 2,
           }}
         >
-          <Typography variant="h4" fontWeight={900} sx={{ color: "#111827" }}>
-            Leave Module
+          <Typography fontWeight={900} sx={{ mb: 2 }}>
+            HRMS
           </Typography>
 
-          <Typography sx={{ color: "#6b7280", mt: 1.25 }}>
-            Coming soon. We’re working on this page and it will be available shortly.
-          </Typography>
+          <Divider sx={{ mb: 2 }} />
 
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={1.25}
-            justifyContent="center"
-            sx={{ mt: 3 }}
-          >
-            <Button
-              variant="contained"
-              onClick={() => window.history.back()}
+          <List disablePadding>
+
+            <ListItemButton
+              onClick={() => router.get("/hrms")}
               sx={{
-                backgroundColor: NAVY,
-                "&:hover": { backgroundColor: NAVY_2 },
-                borderRadius: 3,
-                fontWeight: 900,
-                textTransform: "none",
-                px: 3,
+                borderRadius: 2,
+                mb: 0.5,
+                "&:hover": { backgroundColor: "#f3f4f6" },
               }}
             >
-              Go Back
-            </Button>
+              <HomeOutlinedIcon sx={{ mr: 1.5, color: "#374151" }} />
+              <ListItemText
+                primary="HRMS Home"
+                primaryTypographyProps={{ fontWeight: 600 }}
+              />
+            </ListItemButton>
 
-            <Button
-              variant="outlined"
-              href="/hrms"
+            <ListItemButton
+              selected
+              onClick={() => router.get("/hrms/leave-dashboard")}
               sx={{
-                color: NAVY,
-                borderColor: "#cbd5e1",
-                borderRadius: 3,
-                fontWeight: 900,
-                textTransform: "none",
-                px: 3,
-                "&:hover": { borderColor: "#94a3b8", backgroundColor: "#f8fafc" },
+                borderRadius: 2,
+                mb: 0.5,
+                "&:hover": { backgroundColor: "#f3f4f6" },
               }}
             >
-              HRMS Home
-            </Button>
-          </Stack>
+              <DashboardOutlinedIcon sx={{ mr: 1.5, color: "#374151" }} />
+              <ListItemText
+                primary="Dashboard"
+                primaryTypographyProps={{ fontWeight: 600 }}
+              />
+            </ListItemButton>
 
-          <Typography variant="caption" sx={{ color: "#9ca3af", mt: 3, display: "block" }}>
-            Developed &amp; Maintained by IT Department of Explore Vacations © {new Date().getFullYear()}
-          </Typography>
+            <ListItemButton
+                onClick={() => router.get("/hrms/leave-dashboard")}
+               sx={{
+                borderRadius: 2,
+                mb: 0.5,
+                "&:hover": { backgroundColor: "#f3f4f6" },
+              }}
+            >
+
+            </ListItemButton>
+
+          </List>
+
         </Box>
+
+        {/* MAIN CONTENT */}
+        <Box sx={{ flex: 1, p: { xs: 2, md: 4 } }}>
+
+          <Typography variant="h4" fontWeight={900} sx={{ color: "#111827", mb: 3 }}>
+            Leave Dashboard
+          </Typography>
+
+          {/* ===== SUMMARY CARDS ===== */}
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" },
+              gap: 2,
+              mb: 4,
+            }}
+          >
+            {[
+              { label: "On Leave Today", value: 5, color: "#2563eb" },
+              { label: "Pending Requests", value: 8, color: "#f59e0b" },
+              { label: "Approved", value: 24, color: "#16a34a" },
+              { label: "Rejected", value: 3, color: "#dc2626" },
+            ].map((item) => (
+              <Box
+                key={item.label}
+                sx={{
+                  backgroundColor: "#ffffff",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: 3,
+                  p: 3,
+                  boxShadow: "0 6px 20px rgba(0,0,0,0.04)",
+                }}
+              >
+                <Typography variant="body2" sx={{ color: "#6b7280" }}>
+                  {item.label}
+                </Typography>
+                <Typography
+                  variant="h4"
+                  fontWeight={900}
+                  sx={{ color: item.color, mt: 1 }}
+                >
+                  {item.value}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+
+          {/* ===== TWO COLUMN SECTION ===== */}
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" },
+              gap: 3,
+            }}
+          >
+            {/* === TODAY ON LEAVE === */}
+            <Box
+              sx={{
+                backgroundColor: "#ffffff",
+                border: "1px solid #e5e7eb",
+                borderRadius: 3,
+                p: 3,
+                boxShadow: "0 6px 20px rgba(0,0,0,0.04)",
+              }}
+            >
+              <Typography fontWeight={800} sx={{ mb: 2 }}>
+                Employees On Leave Today
+              </Typography>
+
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+                  gap: 2,
+                }}
+              >
+                {[
+                  {
+                    name: "John Doe",
+                    type: "Annual Leave",
+                    department: "Finance",
+                    manager: "Mr. Perera",
+                  },
+                  {
+                    name: "Jane Smith",
+                    type: "Medical Leave",
+                    department: "Operations",
+                    manager: "Ms. Fernando",
+                  },
+                  {
+                    name: "Michael Brown",
+                    type: "Casual Leave",
+                    department: "Sales",
+                    manager: "Mr. Silva",
+                  },
+                  {
+                    name: "Anne Blake",
+                    type: "Annual Leave",
+                    department: "HR",
+                    manager: "Mr. Raj",
+                  },
+                ].map((item) => (
+                  <Box
+                    key={item.name}
+                    sx={{
+                      p: 2,
+                      borderRadius: 2,
+                      border: "1px solid #e5e7eb",
+                      backgroundColor: "#f9fafb",
+                      transition: "0.2s ease",
+                      "&:hover": {
+                        boxShadow: "0 4px 14px rgba(0,0,0,0.06)",
+                        transform: "translateY(-2px)",
+                      },
+                    }}
+                  >
+                    <Typography fontWeight={700} sx={{ color: "#111827" }}>
+                      {item.name}
+                    </Typography>
+
+                    <Typography variant="caption" sx={{ color: "#6b7280", display: "block", mb: 1 }}>
+                      {item.type}
+                    </Typography>
+
+                    <Typography variant="caption" sx={{ color: "#374151", display: "block" }}>
+                      Department: {item.department}
+                    </Typography>
+
+                    <Typography variant="caption" sx={{ color: "#374151" }}>
+                      Reporting Manager: {item.manager}
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+
+            {/* === PENDING REQUESTS === */}
+            <Box
+              sx={{
+                backgroundColor: "#ffffff",
+                border: "1px solid #e5e7eb",
+                borderRadius: 3,
+                p: 3,
+                boxShadow: "0 6px 20px rgba(0,0,0,0.04)",
+              }}
+            >
+              <Typography fontWeight={800} sx={{ mb: 2 }}>
+                Pending Leave Requests
+              </Typography>
+
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, // 2 by 2
+                  gap: 2,
+                }}
+              >
+                {[
+                  {
+                    name: "David Lee",
+                    days: "2 Days",
+                    department: "Finance",
+                    manager: "Mr. Perera",
+                  },
+                  {
+                    name: "Sarah Wilson",
+                    days: "3 Days",
+                    department: "Operations",
+                    manager: "Ms. Fernando",
+                  },
+                  {
+                    name: "Chris Evans",
+                    days: "1 Day",
+                    department: "Sales",
+                    manager: "Mr. Silva",
+                  },
+                  {
+                    name: "Anne Blake",
+                    days: "4 Days",
+                    department: "HR",
+                    manager: "Mr. Raj",
+                  },
+                ].map((item) => (
+                  <Box
+                    key={item.name}
+                    sx={{
+                      p: 2,
+                      borderRadius: 2,
+                      border: "1px solid #e5e7eb",
+                      backgroundColor: "#f9fafb",
+                      transition: "0.2s ease",
+                      "&:hover": {
+                        boxShadow: "0 4px 14px rgba(0,0,0,0.06)",
+                        transform: "translateY(-2px)",
+                      },
+                    }}
+                  >
+                    <Typography fontWeight={700} sx={{ color: "#111827" }}>
+                      {item.name}
+                    </Typography>
+
+                    <Typography variant="caption" sx={{ color: "#6b7280" }}>
+                      {item.days}
+                    </Typography>
+
+                    <Box sx={{ mt: 1 }}>
+                      <Typography variant="caption" sx={{ color: "#374151", display: "block" }}>
+                        Department: {item.department}
+                      </Typography>
+
+                      <Typography variant="caption" sx={{ color: "#374151" }}>
+                        Reporting Manager: {item.manager}
+                      </Typography>
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+          </Box>
+        </Box>
+
+
       </Box>
     </AuthenticatedLayout>
   );
