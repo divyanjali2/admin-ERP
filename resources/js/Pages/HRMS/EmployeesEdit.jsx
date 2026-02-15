@@ -98,7 +98,6 @@ export default function EmployeesEdit({
         address_line_1: "",
         address_line_2: "",
         city: "",
-        state: "",
         country: "Sri Lanka",
         postal_code: "",
         is_current: true,
@@ -214,14 +213,11 @@ export default function EmployeesEdit({
               <TextField label="Last Name" value={data.last_name} onChange={(e) => setData("last_name", e.target.value)} error={!!errors.last_name} helperText={errors.last_name} fullWidth />
             </Stack>
 
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={4}>
               <TextField label="Date of Birth" type="date" InputLabelProps={{ shrink: true }} value={data.date_of_birth} onChange={(e) => setData("date_of_birth", e.target.value)} error={!!errors.date_of_birth} helperText={errors.date_of_birth} fullWidth />
               <TextField select label="Gender" value={data.gender} onChange={(e) => setData("gender", e.target.value)} fullWidth>
                 {GENDERS.map((g) => <MenuItem key={g} value={g}>{g}</MenuItem>)}
               </TextField>
-            </Stack>
-
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
               <TextField select label="Marital Status" value={data.marital_status} onChange={(e) => setData("marital_status", e.target.value)} fullWidth>
                 {MARITAL_STATUS.map((m) => <MenuItem key={m} value={m}>{m}</MenuItem>)}
               </TextField>
@@ -231,14 +227,11 @@ export default function EmployeesEdit({
               </TextField>
             </Stack>
 
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={4}>
               <TextField label="Nationality" value={data.nationality} onChange={(e) => setData("nationality", e.target.value)} fullWidth />
               <TextField select label="Attendance Type" value={data.attendance_type} onChange={(e) => setData("attendance_type", e.target.value)} fullWidth>
                 {ATTENDANCE_TYPE.map((a) => <MenuItem key={a} value={a}>{a}</MenuItem>)}
               </TextField>
-            </Stack>
-
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
               <TextField label="EPF Number" value={data.epf_number} onChange={(e) => setData("epf_number", e.target.value)} fullWidth />
               <TextField select label="Blood Group" value={data.blood_group} onChange={(e) => setData("blood_group", e.target.value)} fullWidth>
                 {BLOOD_GROUPS.map((a) => <MenuItem key={a} value={a}>{a}</MenuItem>)}
@@ -247,17 +240,9 @@ export default function EmployeesEdit({
 
             <Divider />
 
-            <Typography fontWeight={900}>Login (User)</Typography>
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <TextField label="User Email" value={data.user_email} onChange={(e) => setData("user_email", e.target.value)} error={!!errors.user_email} helperText={errors.user_email} fullWidth />
-              <TextField label="User Password (leave empty to keep)" type="password" value={data.user_password} onChange={(e) => setData("user_password", e.target.value)} error={!!errors.user_password} helperText={errors.user_password} fullWidth />
-            </Stack>
-
-            <Divider />
-
             <Typography fontWeight={900}>Job Details</Typography>
 
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={4}>
               <TextField select label="Department" value={data.department_id} onChange={(e) => setData("department_id", e.target.value)} error={!!errors.department_id} helperText={errors.department_id} fullWidth>
                 {departments.map((d) => <MenuItem key={d.department_id} value={d.department_id}>{d.name}</MenuItem>)}
               </TextField>
@@ -265,9 +250,6 @@ export default function EmployeesEdit({
               <TextField select label="Job Title" value={data.job_title_id} onChange={(e) => setData("job_title_id", e.target.value)} error={!!errors.job_title_id} helperText={errors.job_title_id} fullWidth>
                 {jobTitles.map((j) => <MenuItem key={j.job_title_id} value={j.job_title_id}>{j.name}</MenuItem>)}
               </TextField>
-            </Stack>
-
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
               <TextField select label="Employment Type" value={data.employment_type} onChange={(e) => setData("employment_type", e.target.value)} fullWidth>
                 {EMPLOYMENT_TYPE.map((x) => <MenuItem key={x} value={x}>{x}</MenuItem>)}
               </TextField>
@@ -276,11 +258,9 @@ export default function EmployeesEdit({
               </TextField>
             </Stack>
 
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={4}>
               <TextField label="Date of Joining" type="date" InputLabelProps={{ shrink: true }} value={data.date_of_joining} onChange={(e) => setData("date_of_joining", e.target.value)} fullWidth />
               <TextField label="Probation End Date" type="date" InputLabelProps={{ shrink: true }} value={data.probation_end_date} onChange={(e) => setData("probation_end_date", e.target.value)} fullWidth />
-            </Stack>
-
             <TextField select label="Reporting Manager" value={data.reporting_manager_id ?? ""} onChange={(e) => setData("reporting_manager_id", e.target.value)} fullWidth>
               <MenuItem value="">None</MenuItem>
               {employees.map((e) => (
@@ -289,6 +269,8 @@ export default function EmployeesEdit({
                 </MenuItem>
               ))}
             </TextField>
+            </Stack>
+
 
             <Divider />
 
@@ -338,6 +320,14 @@ export default function EmployeesEdit({
 
             <Divider />
 
+            <Typography fontWeight={900}>Login (User)</Typography>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+              <TextField label="User Email" value={data.user_email} onChange={(e) => setData("user_email", e.target.value)} error={!!errors.user_email} helperText={errors.user_email} fullWidth />
+              <TextField label="User Password (leave empty to keep)" type="password" value={data.user_password} onChange={(e) => setData("user_password", e.target.value)} error={!!errors.user_password} helperText={errors.user_password} fullWidth />
+            </Stack>
+
+            <Divider />
+
             {/* ADDRESSES */}
             <Stack direction="row" justifyContent="space-between" alignItems="center">
               <Typography fontWeight={900}>Addresses</Typography>
@@ -347,7 +337,6 @@ export default function EmployeesEdit({
                   address_line_1: "",
                   address_line_2: "",
                   city: "",
-                  state: "",
                   country: "Sri Lanka",
                   postal_code: "",
                   is_current: false,
@@ -360,29 +349,26 @@ export default function EmployeesEdit({
             <Stack spacing={2}>
               {data.addresses.map((a, idx) => (
                 <Box key={idx} sx={{ p: 2, border: "1px solid", borderColor: "divider" }}>
-                  <Stack spacing={2}>
+                  <Stack spacing={4}>
                     <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="center">
                       <TextField select label="Address Type" value={a.address_type} onChange={(e) => updateArrayRow("addresses", idx, { address_type: e.target.value })} fullWidth>
                         {ADDRESS_TYPE.map((t) => <MenuItem key={t} value={t}>{t}</MenuItem>)}
                       </TextField>
-
+{/* 
                       <TextField label="Current" select value={a.is_current ? "1" : "0"} onChange={(e) => updateArrayRow("addresses", idx, { is_current: e.target.value === "1" })} sx={{ minWidth: 120 }}>
                         <MenuItem value="1">Yes</MenuItem>
                         <MenuItem value="0">No</MenuItem>
-                      </TextField>
+                      </TextField> */}
 
                       <IconButton onClick={() => removeRow("addresses", idx)}><DeleteOutlineOutlinedIcon /></IconButton>
-                    </Stack>
-
                     <TextField label="Address Line 1" value={a.address_line_1} onChange={(e) => updateArrayRow("addresses", idx, { address_line_1: e.target.value })} fullWidth />
                     <TextField label="Address Line 2" value={a.address_line_2} onChange={(e) => updateArrayRow("addresses", idx, { address_line_2: e.target.value })} fullWidth />
+                    <TextField label="City" value={a.city} onChange={(e) => updateArrayRow("addresses", idx, { city: e.target.value })} fullWidth />
 
-                    <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-                      <TextField label="City" value={a.city} onChange={(e) => updateArrayRow("addresses", idx, { city: e.target.value })} fullWidth />
-                      <TextField label="State" value={a.state} onChange={(e) => updateArrayRow("addresses", idx, { state: e.target.value })} fullWidth />
                     </Stack>
 
-                    <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+
+                    <Stack direction={{ xs: "column", sm: "row" }} spacing={4}>
                       <TextField label="Country" value={a.country} onChange={(e) => updateArrayRow("addresses", idx, { country: e.target.value })} fullWidth />
                       <TextField label="Postal Code" value={a.postal_code} onChange={(e) => updateArrayRow("addresses", idx, { postal_code: e.target.value })} fullWidth />
                     </Stack>
@@ -407,7 +393,6 @@ export default function EmployeesEdit({
                   <TextField label="Name" value={ec.name} onChange={(e) => updateArrayRow("emergency_contacts", idx, { name: e.target.value })} fullWidth />
                   <TextField label="Relationship" value={ec.relationship} onChange={(e) => updateArrayRow("emergency_contacts", idx, { relationship: e.target.value })} fullWidth />
                   <TextField label="Phone" value={ec.phone} onChange={(e) => updateArrayRow("emergency_contacts", idx, { phone: e.target.value })} fullWidth />
-                  <TextField label="Address" value={ec.address} onChange={(e) => updateArrayRow("emergency_contacts", idx, { address: e.target.value })} fullWidth />
                   <IconButton onClick={() => removeRow("emergency_contacts", idx)}><DeleteOutlineOutlinedIcon /></IconButton>
                 </Stack>
               ))}
@@ -440,16 +425,13 @@ export default function EmployeesEdit({
 
             {/* COMP */}
             <Typography fontWeight={900}>Compensation</Typography>
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={4}>
               <TextField select label="Salary Currency" value={data.compensation.salary_currency} onChange={(e) => setComp({ salary_currency: e.target.value })} fullWidth>
                 {SALARY_CURRENCY.map((c) => <MenuItem key={c} value={c}>{c}</MenuItem>)}
               </TextField>
               <TextField select label="Pay Frequency" value={data.compensation.pay_frequency} onChange={(e) => setComp({ pay_frequency: e.target.value })} fullWidth>
                 {PAY_FREQUENCY.map((p) => <MenuItem key={p} value={p}>{p}</MenuItem>)}
               </TextField>
-            </Stack>
-
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
               <TextField label="Effective From" type="date" InputLabelProps={{ shrink: true }} value={data.compensation.effective_from} onChange={(e) => setComp({ effective_from: e.target.value })} fullWidth />
               <TextField label="Effective To" type="date" InputLabelProps={{ shrink: true }} value={data.compensation.effective_to} onChange={(e) => setComp({ effective_to: e.target.value })} fullWidth />
             </Stack>
@@ -524,6 +506,8 @@ export default function EmployeesEdit({
 
             {/* YEARLY LEAVE */}
             <Typography fontWeight={900}>Yearly Leave Balance</Typography>
+                        <Stack direction={{ xs: "column", sm: "row" }} spacing={4}>
+
             <TextField
               select
               label="Leave Policy"
@@ -546,7 +530,7 @@ export default function EmployeesEdit({
               onChange={(e) => setData("yearly_leave", { ...data.yearly_leave, leave_entitlement: e.target.value })}
               fullWidth
             />
-
+            </Stack>
             <Divider />
 
             {/* DOCUMENTS */}
