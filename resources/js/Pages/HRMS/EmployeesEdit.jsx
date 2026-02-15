@@ -426,7 +426,9 @@ export default function EmployeesEdit({
             <Stack spacing={2}>
               {data.bank_accounts.map((b, idx) => (
                 <Stack key={idx} direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="center">
-                  <TextField label="Bank Name" value={b.bank_name} onChange={(e) => updateArrayRow("bank_accounts", idx, { bank_name: e.target.value })} fullWidth />
+                  <TextField select label="Bank Name" value={data.bank_name} onChange={(e) => setData("bank_name", e.target.value)} fullWidth>
+                  {BANKS.map((a) => <MenuItem key={a} value={a}>{a}</MenuItem>)}
+                  </TextField>                  
                   <TextField label="Bank Account Number" value={b.bank_account_number} onChange={(e) => updateArrayRow("bank_accounts", idx, { bank_account_number: e.target.value })} fullWidth />
                   <TextField label="Bank Branch Name" value={b.bank_branch_name} onChange={(e) => updateArrayRow("bank_accounts", idx, { bank_branch_name: e.target.value })} fullWidth />
                   <IconButton onClick={() => removeRow("bank_accounts", idx)}><DeleteOutlineOutlinedIcon /></IconButton>
