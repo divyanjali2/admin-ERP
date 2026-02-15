@@ -22,18 +22,12 @@ const ATTENDANCE_TYPE = ["Fingerprint", "Biometric", "Manual"];
 const EMPLOYMENT_TYPE = ["Full-Time", "Contract"];
 const EMPLOYMENT_LEVEL = ["Probation", "Confirmed"];
 const ADDRESS_TYPE = ["Residential", "Emergency", "Other"];
-const CONTACT_TYPE = ["Personal_Email", "Work_Email", "Phone", "Alternate_Phone"];
+const CONTACT_TYPE = ["Personal Email", "Work Email", "Phone", "Alternate Phone"];
 const PAY_FREQUENCY = ["Monthly", "Weekly"];
 const SALARY_CURRENCY = ["LKR", "USD", "EUR", "GBP", "AUD", "CAD", "SGD", "INR"];
-const DOC_TYPES = [
-  "Profile_Photo",
-  "Resume_File",
-  "ID_Proof",
-  "Offer_Letter",
-  "Employment_Contract",
-  "Certificates",
-  "Other",
-];
+const DOC_TYPES = ["Profile Photo","Resume File","ID Proof","Offer Letter","Employment Contract","Certificates"];
+const BLOOD_GROUPS = ["A+","A-","B+","B-","AB+","AB-","O+","O-",];
+const BANKS = ["Nations Trust Bank","Commercial Bank","Bank of Ceylon","People's Bank","Sampath Bank","Hatton National Bank","DFCC Bank","Pan Asia Bank","Union Bank"];
 
 const ensureArray = (v, fallback) => (Array.isArray(v) && v.length ? v : fallback);
 const asDate = (v) => (v ? String(v).slice(0, 10) : "");
@@ -97,7 +91,7 @@ export default function EmployeesEdit({
     probation_end_date: asDate(job?.probation_end_date),
     reporting_manager_id: job?.reporting_manager_id ?? "",
 
-    contacts: ensureArray(contacts, [{ contact_type: "Work_Email", contact_value: "", is_primary: true }]),
+    contacts: ensureArray(contacts, [{ contact_type: "Work Email", contact_value: "", is_primary: true }]),
     addresses: ensureArray(addresses, [
       {
         address_type: "Residential",
@@ -246,7 +240,9 @@ export default function EmployeesEdit({
 
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
               <TextField label="EPF Number" value={data.epf_number} onChange={(e) => setData("epf_number", e.target.value)} fullWidth />
-              <TextField label="Blood Group" value={data.blood_group} onChange={(e) => setData("blood_group", e.target.value)} fullWidth />
+              <TextField select label="Blood Group" value={data.blood_group} onChange={(e) => setData("blood_group", e.target.value)} fullWidth>
+                {BLOOD_GROUPS.map((a) => <MenuItem key={a} value={a}>{a}</MenuItem>)}
+              </TextField>
             </Stack>
 
             <Divider />
@@ -319,7 +315,7 @@ export default function EmployeesEdit({
             {/* CONTACTS */}
             <Stack direction="row" justifyContent="space-between" alignItems="center">
               <Typography fontWeight={900}>Contacts</Typography>
-              <Button startIcon={<AddOutlinedIcon />} onClick={() => addRow("contacts", { contact_type: "Personal_Email", contact_value: "", is_primary: false })}>
+              <Button startIcon={<AddOutlinedIcon />} onClick={() => addRow("contacts", { contact_type: "Personal Email", contact_value: "", is_primary: false })}>
                 Add Contact
               </Button>
             </Stack>
