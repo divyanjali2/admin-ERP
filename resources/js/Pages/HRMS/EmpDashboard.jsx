@@ -190,8 +190,8 @@ function MiniCalendar({ accent = "#22c55e" }) {
       </Stack>
 
       <Box sx={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 0.75, mb: 1 }}>
-        {["S", "M", "T", "W", "T", "F", "S"].map((d) => (
-          <Typography key={d} variant="caption" sx={{ color: "#6b7280", textAlign: "center" }}>
+        {["S", "M", "T", "W", "T", "F", "S"].map((d, idx) => (
+          <Typography key={`${d}-${idx}`} variant="caption" sx={{ color: "#6b7280", textAlign: "center" }}>
             {d}
           </Typography>
         ))}

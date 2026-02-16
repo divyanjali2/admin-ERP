@@ -14,8 +14,6 @@ return new class extends Migration {
             $table->string('name', 150);
             $table->string('relationship', 100);
             $table->string('phone', 30);
-            $table->string('address', 255)->nullable();
-
             $table->foreign('employee_id')
                 ->references('employee_id')->on('employees')
                 ->nullOnDelete();
