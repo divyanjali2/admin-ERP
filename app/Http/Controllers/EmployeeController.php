@@ -585,7 +585,6 @@ public function edit(Employee $employee)
                     'name' => $ec['name'] ?? '',
                     'relationship' => $ec['relationship'] ?? '',
                     'phone' => $ec['phone'] ?? '',
-                    'address' => $ec['address'] ?? null,
                 ]);
             }
 
