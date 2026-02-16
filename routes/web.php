@@ -4,6 +4,8 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\JobTitleController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -60,6 +62,8 @@ Route::get('/training-dashboard', function () {
     return Inertia::render('HRMS/TrainingDashboard');
 })->name('training-dashboard');
 
+Route::resource('departments', DepartmentController::class);
+Route::resource('job-titles', JobTitleController::class);
 Route::resource('employees', EmployeeController::class);
 });
 

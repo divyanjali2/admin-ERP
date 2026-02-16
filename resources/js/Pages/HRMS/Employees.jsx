@@ -40,6 +40,8 @@ import MenuItem from "@mui/material/MenuItem";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
+import ApartmentOutlinedIcon from "@mui/icons-material/ApartmentOutlined";
+import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
 
 const drawerWidth = 260;
 
@@ -47,6 +49,8 @@ const navItems = [
   { label: "HRMS Home", href: "/hrms", icon: <HomeOutlinedIcon /> },
   { label: "Dashboard", href: "/hrms/emp-dashboard", icon: <DashboardOutlinedIcon /> },
   { label: "Employees", href: "/hrms/employees", icon: <PeopleAltOutlinedIcon /> },
+  { label: "Departments", href: "/hrms/departments", icon: <ApartmentOutlinedIcon /> },
+  { label: "Job Titles", href: "/hrms/job-titles", icon: <BadgeOutlinedIcon /> },
 ];
 
 export default function Employees({ auth, employees, isAdmin  = [] }) {

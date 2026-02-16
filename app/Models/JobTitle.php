@@ -11,6 +11,11 @@ class JobTitle extends Model
 
     protected $fillable = ['name'];
 
+    public function getRouteKeyName()
+    {
+        return 'job_title_id';
+    }
+
     public function employeeJobs()
     {
         return $this->hasMany(EmployeeJob::class, 'job_title_id', 'job_title_id');

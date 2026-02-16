@@ -11,6 +11,11 @@ class Department extends Model
 
     protected $fillable = ['name'];
 
+    public function getRouteKeyName()
+    {
+        return 'department_id';
+    }
+
     public function employeeJobs()
     {
         return $this->hasMany(EmployeeJob::class, 'department_id', 'department_id');
