@@ -1,15 +1,15 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, router, useForm } from "@inertiajs/react";
+import { Head, router, useForm, usePage } from "@inertiajs/react";
+
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
+
 import Alert from "@mui/material/Alert";
 import Collapse from "@mui/material/Collapse";
-import { usePage } from "@inertiajs/react";
 import Swal from "sweetalert2";
-import { useEffect, useMemo } from "react";
 
 import {
   Box,
@@ -29,25 +29,45 @@ import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined
 const EMPLOYMENT_STATUS = ["Active", "Inactive", "Resigned", "Terminated"];
 const GENDERS = ["Male", "Female", "Other"];
 const MARITAL_STATUS = ["Single", "Married", "Other"];
-const ATTENDANCE_TYPE = ["Fingerprint","Biometric", "Manual"];
-const EMPLOYMENT_TYPE = ["Full-Time","Contract"];
+const ATTENDANCE_TYPE = ["Fingerprint", "Biometric", "Manual"];
+const EMPLOYMENT_TYPE = ["Full-Time", "Contract"];
 const EMPLOYMENT_LEVEL = ["Probation", "Confirmed"];
 const ADDRESS_TYPE = ["Residential", "Emergency", "Other"];
 const CONTACT_TYPE = ["Personal Email", "Work Email", "Phone", "Alternate Phone"];
 const PAY_FREQUENCY = ["Monthly", "Weekly"];
 const SALARY_CURRENCY = ["LKR", "USD", "EUR", "GBP", "AUD", "CAD", "SGD", "INR"];
-const DOC_TYPES = ["Profile Photo","Resume File","ID Proof","Offer Letter","Employment Contract","Certificates"];
-const BLOOD_GROUPS = ["A+","A-","B+","B-","AB+","AB-","O+","O-",];
-const BANKS = ["Nations Trust Bank","Commercial Bank","Bank of Ceylon","People's Bank","Sampath Bank","Hatton National Bank","DFCC Bank","Pan Asia Bank","Union Bank"];
+const DOC_TYPES = [
+  "Profile Photo",
+  "Resume File",
+  "ID Proof",
+  "Offer Letter",
+  "Employment Contract",
+  "Certificates",
+];
+const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+const BANKS = [
+  "Nations Trust Bank",
+  "Commercial Bank",
+  "Bank of Ceylon",
+  "People's Bank",
+  "Sampath Bank",
+  "Hatton National Bank",
+  "DFCC Bank",
+  "Pan Asia Bank",
+  "Union Bank",
+];
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function EmployeesCreate({
   auth,
   departments = [],
   jobTitles = [],
   leavePolicies = [],
-  employees = [], 
+  employees = [],
 }) {
+  const { flash } = usePage().props;
+
   const { data, setData, post, processing, errors } = useForm({
     // employees
     employee_code: "",
@@ -76,7 +96,6 @@ export default function EmployeesCreate({
     date_of_joining: "",
     probation_end_date: "",
     reporting_manager_id: "",
-    work_location_id: "",
 
     // contacts (multiple)
     contacts: [
@@ -89,7 +108,6 @@ export default function EmployeesCreate({
       {
         address_type: "Residential",
         address_line_1: "",
-        address_line_2: "",
         city: "",
         country: "Sri Lanka",
         postal_code: "",
@@ -98,25 +116,16 @@ export default function EmployeesCreate({
     ],
 
     // emergency contacts
-    emergency_contacts: [
-      { name: "", relationship: "", phone: "", address: "" },
-    ],
+    emergency_contacts: [{ name: "", relationship: "", phone: "" }],
 
-    employee_documents: [
-      {
-        doc_type: "ID Proof",
-        files: [], 
-      },
-    ],
+    // documents
+    employee_documents: [{ doc_type: "ID Proof", files: [] }],
 
-    experience: [
-      { previous_employer: "", total_years: "" },
-    ],
+    // experience
+    experience: [{ previous_employer: "", total_years: "" }],
 
     // bank accounts
-    bank_accounts: [
-      { bank_name: "", bank_account_number: "", bank_branch_name: "" },
-    ],
+    bank_accounts: [{ bank_name: "", bank_account_number: "", bank_branch_name: "" }],
 
     // compensation
     compensation: {
@@ -124,62 +133,88 @@ export default function EmployeesCreate({
       pay_frequency: "Monthly",
       effective_from: "",
       effective_to: "",
-      components: [
-        { component_type: "Basic", component_name: "Basic Salary", amount: "" },
-      ],
+      components: [{ component_type: "Basic", component_name: "Basic Salary", amount: "" }],
     },
 
-    yearly_leave: [
-      {
-        leave_policy_id: "",
-        leave_entitlement: "",
-      },
-    ],
-    
+    yearly_leave: [{ leave_policy_id: "", leave_entitlement: "" }],
   });
 
-const workEmail = useMemo(() => {
-  const w = data.contacts.find((c) => c.contact_type === "Work Email");
-  return (w?.contact_value || "").trim();
-}, [data.contacts]);
+  const [alert, setAlert] = useState({ open: false, type: "info", message: "" });
 
-useEffect(() => {
-  if (workEmail) {
-    setData((prev) => ({
-      ...prev,
-      user_email: workEmail,
-      user_password: "Test@123",
-    }));
-  }
-}, [workEmail]);
+  const tf = (key, fallback = "") => ({
+    error: Boolean(errors?.[key]),
+    helperText: errors?.[key] || fallback || "",
+  });
+
+  const workEmail = useMemo(() => {
+    const w = data.contacts.find((c) => c.contact_type === "Work Email");
+    return (w?.contact_value || "").trim();
+  }, [data.contacts]);
+
+  const isWorkEmailInvalid = useMemo(() => {
+    if (!workEmail) return false;
+    return !emailRegex.test(workEmail);
+  }, [workEmail]);
+
+  useEffect(() => {
+    if (workEmail && !isWorkEmailInvalid) {
+      setData((prev) => ({
+        ...prev,
+        user_email: workEmail,
+        user_password: "Test@123",
+      }));
+    }
+  }, [workEmail, isWorkEmailInvalid, setData]);
 
   const submit = (e) => {
     e.preventDefault();
+
+    // client-side check for Work Email format (optional but useful)
+    if (isWorkEmailInvalid) {
+      setAlert({
+        open: true,
+        type: "error",
+        message: "Please enter a valid Work Email address before saving.",
+      });
+      return;
+    }
 
     post("/hrms/employees", {
       preserveScroll: true,
       forceFormData: true,
 
       onSuccess: () => {
+        setAlert({ open: false, type: "info", message: "" });
+
         Swal.fire({
           icon: "success",
-          title: "Saved!",
-          text: "Employee saved successfully.",
+          title: "Employee Created",
+          text: "The employee record was saved successfully.",
           timer: 1800,
           showConfirmButton: false,
         });
+
+        // Optional redirect after save:
+        // router.get("/hrms/employees");
       },
 
       onError: () => {
+        setAlert({
+          open: true,
+          type: "error",
+          message: "Please fix the highlighted fields and try again.",
+        });
+
         Swal.fire({
           icon: "error",
-          title: "Fix errors",
-          text: "Please fix the highlighted fields and try again.",
+          title: "Validation Error",
+          text: "Some fields need your attention. Please review the form and submit again.",
         });
       },
     });
   };
 
+  // ---- set/add/remove helpers ----
   const setContact = (idx, key, value) => {
     const next = [...data.contacts];
     next[idx] = { ...next[idx], [key]: value };
@@ -192,7 +227,6 @@ useEffect(() => {
       { contact_type: "Personal Email", contact_value: "", is_primary: false },
     ]);
   };
-
 
   const removeContact = (idx) => {
     const next = data.contacts.filter((_, i) => i !== idx);
@@ -233,7 +267,7 @@ useEffect(() => {
   const addEmergency = () => {
     setData("emergency_contacts", [
       ...data.emergency_contacts,
-      { name: "", relationship: "", phone: "", address: "" },
+      { name: "", relationship: "", phone: ""},
     ]);
   };
 
@@ -251,7 +285,7 @@ useEffect(() => {
   const addBank = () => {
     setData("bank_accounts", [
       ...data.bank_accounts,
-      { bank_name: "", bank_account_number: "" },
+      { bank_name: "", bank_account_number: "", bank_branch_name: "" },
     ]);
   };
 
@@ -282,7 +316,6 @@ useEffect(() => {
     setComp("components", next);
   };
 
-    // ===== DOCUMENTS =====
   const setDocument = (idx, key, value) => {
     const next = [...data.employee_documents];
     next[idx] = { ...next[idx], [key]: value };
@@ -292,7 +325,7 @@ useEffect(() => {
   const addDocument = () => {
     setData("employee_documents", [
       ...data.employee_documents,
-      { doc_type: "Other", files: null },
+      { doc_type: "Profile Photo", files: [] },
     ]);
   };
 
@@ -300,7 +333,6 @@ useEffect(() => {
     setData("employee_documents", data.employee_documents.filter((_, i) => i !== idx));
   };
 
-  // ===== EXPERIENCE =====
   const setExperience = (idx, key, value) => {
     const next = [...data.experience];
     next[idx] = { ...next[idx], [key]: value };
@@ -322,21 +354,14 @@ useEffect(() => {
   };
 
   const addYearlyLeave = () => {
-    setData("yearly_leave", [
-      ...data.yearly_leave,
-      { leave_policy_id: "", leave_entitlement: "" },
-    ]);
+    setData("yearly_leave", [...data.yearly_leave, { leave_policy_id: "", leave_entitlement: "" }]);
   };
 
   const removeYearlyLeave = (idx) => {
-    setData(
-      "yearly_leave",
-      data.yearly_leave.filter((_, i) => i !== idx)
-    );
+    setData("yearly_leave", data.yearly_leave.filter((_, i) => i !== idx));
   };
 
-  const { flash } = usePage().props;
-
+  // Flash messages from server (optional)
   useEffect(() => {
     if (flash?.success) {
       Swal.fire({
@@ -347,7 +372,6 @@ useEffect(() => {
         showConfirmButton: false,
       });
     }
-
     if (flash?.error) {
       Swal.fire({
         icon: "error",
@@ -360,6 +384,7 @@ useEffect(() => {
   return (
     <AuthenticatedLayout user={auth.user}>
       <Head title="Create Employee" />
+
       <Collapse in={alert.open} sx={{ mb: 2 }}>
         <Alert
           severity={alert.type || "info"}
@@ -369,7 +394,7 @@ useEffect(() => {
         </Alert>
       </Collapse>
 
-      <Container maxWidth="false" sx={{ py: 4 }}>
+      <Container maxWidth={false} sx={{ py: 4 }}>
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
           <Typography variant="h5" fontWeight={900} sx={{ color: "#0B1C2D" }}>
             Create Employee
@@ -389,17 +414,15 @@ useEffect(() => {
                 label="Surname"
                 value={data.surname}
                 onChange={(e) => setData("surname", e.target.value)}
-                error={!!errors.surname}
-                helperText={errors.surname}
                 fullWidth
+                {...tf("surname")}
               />
               <TextField
                 label="First Name"
                 value={data.first_name}
                 onChange={(e) => setData("first_name", e.target.value)}
-                error={!!errors.first_name}
-                helperText={errors.first_name}
                 fullWidth
+                {...tf("first_name")}
               />
               <TextField
                 label="Middle Name"
@@ -411,9 +434,8 @@ useEffect(() => {
                 label="Last Name"
                 value={data.last_name}
                 onChange={(e) => setData("last_name", e.target.value)}
-                error={!!errors.last_name}
-                helperText={errors.last_name}
                 fullWidth
+                {...tf("last_name")}
               />
             </Stack>
 
@@ -432,8 +454,7 @@ useEffect(() => {
                   slotProps={{
                     textField: {
                       fullWidth: true,
-                      error: !!errors.date_of_birth,
-                      helperText: errors.date_of_birth,
+                      ...tf("date_of_birth"),
                     },
                   }}
                 />
@@ -444,9 +465,8 @@ useEffect(() => {
                 label="Gender"
                 value={data.gender}
                 onChange={(e) => setData("gender", e.target.value)}
-                error={!!errors.gender}
-                helperText={errors.gender}
                 fullWidth
+                {...tf("gender")}
               >
                 {GENDERS.map((g) => (
                   <MenuItem key={g} value={g}>
@@ -491,6 +511,7 @@ useEffect(() => {
                 onChange={(e) => setData("nationality", e.target.value)}
                 fullWidth
               />
+
               <TextField
                 select
                 label="Attendance Type"
@@ -504,12 +525,14 @@ useEffect(() => {
                   </MenuItem>
                 ))}
               </TextField>
+
               <TextField
                 label="EPF Number"
                 value={data.epf_number}
                 onChange={(e) => setData("epf_number", e.target.value)}
                 fullWidth
               />
+
               <TextField
                 select
                 label="Blood Group"
@@ -537,9 +560,8 @@ useEffect(() => {
                 label="Department"
                 value={data.department_id}
                 onChange={(e) => setData("department_id", e.target.value)}
-                error={!!errors.department_id}
-                helperText={errors.department_id}
                 fullWidth
+                {...tf("department_id")}
               >
                 {departments.map((d) => (
                   <MenuItem key={d.department_id} value={d.department_id}>
@@ -553,9 +575,8 @@ useEffect(() => {
                 label="Job Title"
                 value={data.job_title_id}
                 onChange={(e) => setData("job_title_id", e.target.value)}
-                error={!!errors.job_title_id}
-                helperText={errors.job_title_id}
                 fullWidth
+                {...tf("job_title_id")}
               >
                 {jobTitles.map((j) => (
                   <MenuItem key={j.job_title_id} value={j.job_title_id}>
@@ -594,31 +615,27 @@ useEffect(() => {
             </Stack>
 
             <Stack direction={{ xs: "column", sm: "row" }} spacing={3}>
-                <TextField
-                  label="Date of Joining"
-                  type="date"
-                  InputLabelProps={{ shrink: true }}
-                  value={data.date_of_joining}
-                  onChange={(e) => setData("date_of_joining", e.target.value)}
-                  inputProps={{
-                    max: new Date().toISOString().split("T")[0], 
-                  }}
-                    error={!!errors.date_of_joining}
-                    helperText={errors.date_of_joining}
-                  fullWidth
-                />
+              <TextField
+                label="Date of Joining"
+                type="date"
+                InputLabelProps={{ shrink: true }}
+                value={data.date_of_joining}
+                onChange={(e) => setData("date_of_joining", e.target.value)}
+                inputProps={{ max: new Date().toISOString().split("T")[0] }}
+                fullWidth
+                {...tf("date_of_joining")}
+              />
 
-                <TextField
-                  label="Probation End Date"
-                  type="date"
-                  InputLabelProps={{ shrink: true }}
-                  value={data.probation_end_date}
-                  onChange={(e) => setData("probation_end_date", e.target.value)}
-                  inputProps={{
-                    min: new Date().toISOString().split("T")[0], 
-                  }}
-                  fullWidth
-                />
+              <TextField
+                label="Probation End Date"
+                type="date"
+                InputLabelProps={{ shrink: true }}
+                value={data.probation_end_date}
+                onChange={(e) => setData("probation_end_date", e.target.value)}
+                inputProps={{ min: new Date().toISOString().split("T")[0] }}
+                fullWidth
+                {...tf("probation_end_date")}
+              />
 
               <TextField
                 select
@@ -638,6 +655,7 @@ useEffect(() => {
 
             <Divider />
 
+            {/* ================= EXPERIENCE ================= */}
             <Stack direction="row" justifyContent="space-between" alignItems="center">
               <Typography fontWeight={900}>Experience</Typography>
               <Button startIcon={<AddOutlinedIcon />} onClick={addExperience}>
@@ -685,48 +703,53 @@ useEffect(() => {
             </Stack>
 
             <Stack spacing={2}>
-              {data.contacts.map((c, idx) => (
-                <Stack key={idx} direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="center">
-                  <TextField
-                    select
-                    label="Contact Type"
-                    value={c.contact_type}
-                    onChange={(e) => setContact(idx, "contact_type", e.target.value)}
-                    fullWidth
-                  >
-                    {CONTACT_TYPE.map((t) => (
-                      <MenuItem key={t} value={t}>
-                        {t}
-                      </MenuItem>
-                    ))}
-                  </TextField>
+              {data.contacts.map((c, idx) => {
+                const key = `contacts.${idx}.contact_value`;
+                const serverErr = errors?.[key];
+                const isEmailField = c.contact_type === "Work Email";
+                const localEmailErr = isEmailField && c.contact_value && !emailRegex.test(c.contact_value);
 
-                  <TextField
-                    label="Contact Value"
-                    value={c.contact_value}
-                    onChange={(e) => setContact(idx, "contact_value", e.target.value)}
-                    fullWidth
-                    error={
-                      !!errors[`contacts.${idx}.contact_value`] ||
-                      (c.contact_type === "Work Email" &&
-                        c.contact_value &&
-                        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.contact_value))
-                    }
-                    helperText={
-                      errors[`contacts.${idx}.contact_value`] ||
-                      (c.contact_type === "Work Email" &&
-                        c.contact_value &&
-                        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.contact_value)
-                        ? "Enter a valid email address"
-                        : "")
-                    }
-                  />
-                  
-                  <IconButton onClick={() => removeContact(idx)} aria-label="remove-contact">
-                    <DeleteOutlineOutlinedIcon />
-                  </IconButton>
-                </Stack>
-              ))}
+                const error = Boolean(serverErr) || Boolean(localEmailErr);
+                const helperText =
+                  serverErr ||
+                  (localEmailErr ? "Enter a valid email address." : "");
+
+                return (
+                  <Stack
+                    key={idx}
+                    direction={{ xs: "column", sm: "row" }}
+                    spacing={2}
+                    alignItems="center"
+                  >
+                    <TextField
+                      select
+                      label="Contact Type"
+                      value={c.contact_type}
+                      onChange={(e) => setContact(idx, "contact_type", e.target.value)}
+                      fullWidth
+                    >
+                      {CONTACT_TYPE.map((t) => (
+                        <MenuItem key={t} value={t}>
+                          {t}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+
+                    <TextField
+                      label="Contact Value"
+                      value={c.contact_value}
+                      onChange={(e) => setContact(idx, "contact_value", e.target.value)}
+                      fullWidth
+                      error={error}
+                      helperText={helperText}
+                    />
+
+                    <IconButton onClick={() => removeContact(idx)} aria-label="remove-contact">
+                      <DeleteOutlineOutlinedIcon />
+                    </IconButton>
+                  </Stack>
+                );
+              })}
             </Stack>
 
             <Divider />
@@ -738,21 +761,17 @@ useEffect(() => {
                 label="User Email"
                 value={data.user_email}
                 disabled
-                error={!!errors.user_email}
-                helperText={errors.user_email}
                 fullWidth
+                {...tf("user_email")}
               />
-
               <TextField
                 label="User Password"
                 type="password"
                 value={data.user_password}
                 disabled
-                error={!!errors.user_password}
-                helperText={errors.user_password}
                 fullWidth
+                {...tf("user_password")}
               />
-
             </Stack>
 
             <Divider />
@@ -789,8 +808,7 @@ useEffect(() => {
                         value={a.address_line_1}
                         onChange={(e) => setAddress(idx, "address_line_1", e.target.value)}
                         fullWidth
-                        error={!!errors[`addresses.${idx}.address_line_1`]}
-                        helperText={errors[`addresses.${idx}.address_line_1`]}
+                        {...tf(`addresses.${idx}.address_line_1`)}
                       />
 
                       <TextField
@@ -798,8 +816,7 @@ useEffect(() => {
                         value={a.city}
                         onChange={(e) => setAddress(idx, "city", e.target.value)}
                         fullWidth
-                        error={!!errors[`addresses.${idx}.city`]}
-                        helperText={errors[`addresses.${idx}.city`]}
+                        {...tf(`addresses.${idx}.city`)}
                       />
 
                       <IconButton onClick={() => removeAddress(idx)} aria-label="remove-address">
@@ -808,14 +825,12 @@ useEffect(() => {
                     </Stack>
 
                     <Stack direction={{ xs: "column", sm: "row" }} spacing={4}>
-                
                       <TextField
                         label="Country"
                         value={a.country}
                         onChange={(e) => setAddress(idx, "country", e.target.value)}
                         fullWidth
-                        error={!!errors[`addresses.${idx}.country`]}
-                        helperText={errors[`addresses.${idx}.country`]}
+                        {...tf(`addresses.${idx}.country`)}
                       />
 
                       <TextField
@@ -823,6 +838,7 @@ useEffect(() => {
                         value={a.postal_code}
                         onChange={(e) => setAddress(idx, "postal_code", e.target.value)}
                         fullWidth
+                        {...tf(`addresses.${idx}.postal_code`)}
                       />
                     </Stack>
                   </Stack>
@@ -842,14 +858,18 @@ useEffect(() => {
 
             <Stack spacing={2}>
               {data.emergency_contacts.map((ec, idx) => (
-                <Stack key={idx} direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="center">
+                <Stack
+                  key={idx}
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={2}
+                  alignItems="center"
+                >
                   <TextField
                     label="Name"
                     value={ec.name}
                     onChange={(e) => setEmergency(idx, "name", e.target.value)}
                     fullWidth
-                    error={!!errors[`emergency_contacts.${idx}.name`]}
-                    helperText={errors[`emergency_contacts.${idx}.name`]}
+                    {...tf(`emergency_contacts.${idx}.name`)}
                   />
 
                   <TextField
@@ -857,8 +877,7 @@ useEffect(() => {
                     value={ec.relationship}
                     onChange={(e) => setEmergency(idx, "relationship", e.target.value)}
                     fullWidth
-                    error={!!errors[`emergency_contacts.${idx}.relationship`]}
-                    helperText={errors[`emergency_contacts.${idx}.relationship`]}
+                    {...tf(`emergency_contacts.${idx}.relationship`)}
                   />
 
                   <TextField
@@ -866,8 +885,7 @@ useEffect(() => {
                     value={ec.phone}
                     onChange={(e) => setEmergency(idx, "phone", e.target.value)}
                     fullWidth
-                    error={!!errors[`emergency_contacts.${idx}.phone`]}
-                    helperText={errors[`emergency_contacts.${idx}.phone`]}
+                    {...tf(`emergency_contacts.${idx}.phone`)}
                   />
 
                   <IconButton onClick={() => removeEmergency(idx)} aria-label="remove-emergency">
@@ -889,49 +907,43 @@ useEffect(() => {
 
             <Stack spacing={2}>
               {data.bank_accounts.map((b, idx) => (
-                <Stack key={idx} direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="center">
-                    <TextField
-                      select
-                      label="Bank Name"
-                      value={b.bank_name}
-                      onChange={(e) => setBank(idx, "bank_name", e.target.value)}
-                      fullWidth
-                      error={!!errors[`bank_accounts.${idx}.bank_name`]}
-                      helperText={
-                        errors[`bank_accounts.${idx}.bank_name`] && "This field is required"
-                      }
-                    >
-                      <MenuItem value="">Select Bank</MenuItem>
-                      {BANKS.map((bank) => (
-                        <MenuItem key={bank} value={bank}>
-                          {bank}
-                        </MenuItem>
-                      ))}
-                    </TextField>
+                <Stack
+                  key={idx}
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={2}
+                  alignItems="center"
+                >
+                  <TextField
+                    select
+                    label="Bank Name"
+                    value={b.bank_name}
+                    onChange={(e) => setBank(idx, "bank_name", e.target.value)}
+                    fullWidth
+                    {...tf(`bank_accounts.${idx}.bank_name`)}
+                  >
+                    <MenuItem value="">Select Bank</MenuItem>
+                    {BANKS.map((bank) => (
+                      <MenuItem key={bank} value={bank}>
+                        {bank}
+                      </MenuItem>
+                    ))}
+                  </TextField>
 
-                    <TextField
-                      label="Bank Account Number"
-                      value={b.bank_account_number}
-                      onChange={(e) => setBank(idx, "bank_account_number", e.target.value)}
-                      fullWidth
-                      error={!!errors[`bank_accounts.${idx}.bank_account_number`]}
-                      helperText={
-                        errors[`bank_accounts.${idx}.bank_account_number`] &&
-                        "This field is required"
-                      }
-                    />
+                  <TextField
+                    label="Bank Account Number"
+                    value={b.bank_account_number}
+                    onChange={(e) => setBank(idx, "bank_account_number", e.target.value)}
+                    fullWidth
+                    {...tf(`bank_accounts.${idx}.bank_account_number`)}
+                  />
 
-                    <TextField
-                      label="Bank Branch Name"
-                      value={b.bank_branch_name}
-                      onChange={(e) => setBank(idx, "bank_branch_name", e.target.value)}
-                      fullWidth
-                      error={!!errors[`bank_accounts.${idx}.bank_branch_name`]}
-                      helperText={
-                        errors[`bank_accounts.${idx}.bank_branch_name`] &&
-                        "This field is required"
-                      }
-                    />
+                  <TextField
+                    label="Bank Branch Name"
+                    value={b.bank_branch_name}
+                    onChange={(e) => setBank(idx, "bank_branch_name", e.target.value)}
+                    fullWidth
+                    {...tf(`bank_accounts.${idx}.bank_branch_name`)}
+                  />
 
                   <IconButton onClick={() => removeBank(idx)} aria-label="remove-bank">
                     <DeleteOutlineOutlinedIcon />
@@ -973,6 +985,7 @@ useEffect(() => {
                   </MenuItem>
                 ))}
               </TextField>
+
               <TextField
                 label="Effective From"
                 type="date"
@@ -980,11 +993,9 @@ useEffect(() => {
                 value={data.compensation.effective_from}
                 onChange={(e) => setComp("effective_from", e.target.value)}
                 fullWidth
-                error={!!errors["compensation.effective_from"]}
-                helperText={
-                  errors["compensation.effective_from"] && "This field is required"
-                }
+                {...tf("compensation.effective_from")}
               />
+
               <TextField
                 label="Effective To"
                 type="date"
@@ -992,6 +1003,7 @@ useEffect(() => {
                 value={data.compensation.effective_to}
                 onChange={(e) => setComp("effective_to", e.target.value)}
                 fullWidth
+                {...tf("compensation.effective_to")}
               />
             </Stack>
 
@@ -1004,7 +1016,12 @@ useEffect(() => {
 
             <Stack spacing={2}>
               {data.compensation.components.map((cc, idx) => (
-                <Stack key={idx} direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="center">
+                <Stack
+                  key={idx}
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={2}
+                  alignItems="center"
+                >
                   <TextField
                     select
                     label="Type"
@@ -1018,23 +1035,21 @@ useEffect(() => {
                       </MenuItem>
                     ))}
                   </TextField>
+
                   <TextField
                     label="Name"
                     value={cc.component_name}
                     onChange={(e) => setCompComponent(idx, "component_name", e.target.value)}
                     fullWidth
                   />
+
                   <TextField
                     label="Amount"
                     type="number"
                     value={cc.amount}
                     onChange={(e) => setCompComponent(idx, "amount", e.target.value)}
                     fullWidth
-                    error={!!errors[`compensation.components.${idx}.amount`]}
-                    helperText={
-                      errors[`compensation.components.${idx}.amount`] &&
-                      "This field is required"
-                    }
+                    {...tf(`compensation.components.${idx}.amount`)}
                   />
 
                   <IconButton onClick={() => removeCompComponent(idx)} aria-label="remove-comp-component">
@@ -1046,7 +1061,7 @@ useEffect(() => {
 
             <Divider />
 
-            {/* ================= LEAVE POLICY / YEARLY ================= */}
+            {/* ================= YEARLY LEAVE ================= */}
             <Stack direction="row" justifyContent="space-between" alignItems="center">
               <Typography fontWeight={800}>Yearly Balance</Typography>
               <Button startIcon={<AddOutlinedIcon />} onClick={addYearlyLeave}>
@@ -1062,38 +1077,32 @@ useEffect(() => {
                   spacing={2}
                   alignItems="center"
                 >
-                <TextField
-                  select
-                  label="Leave Policy"
-                  value={yl.leave_policy_id}
-                  onChange={(e) => setYearlyLeave(idx, "leave_policy_id", e.target.value)}
-                  fullWidth
-                  error={!!errors[`yearly_leave.${idx}.leave_policy_id`]}
-                  helperText={
-                    errors[`yearly_leave.${idx}.leave_policy_id`] ? "This field is required" : ""
-                  }
-                >
-                  <MenuItem value="">Select policy</MenuItem>
-                  {leavePolicies.map((lp) => (
-                    <MenuItem key={lp.leave_policy_id} value={lp.leave_policy_id}>
-                      {lp.name}
-                    </MenuItem>
-                  ))}
-                </TextField>
+                  <TextField
+                    select
+                    label="Leave Policy"
+                    value={yl.leave_policy_id}
+                    onChange={(e) => setYearlyLeave(idx, "leave_policy_id", e.target.value)}
+                    fullWidth
+                    {...tf(`yearly_leave.${idx}.leave_policy_id`)}
+                  >
+                    <MenuItem value="">Select policy</MenuItem>
+                    {leavePolicies.map((lp) => (
+                      <MenuItem key={lp.leave_policy_id} value={lp.leave_policy_id}>
+                        {lp.name}
+                      </MenuItem>
+                    ))}
+                  </TextField>
 
-                <TextField
-                  label="Annual Leave Balance"
-                  type="number"
-                  value={yl.leave_entitlement}
-                  onChange={(e) => setYearlyLeave(idx, "leave_entitlement", e.target.value)}
-                  fullWidth
-                  error={!!errors[`yearly_leave.${idx}.leave_entitlement`]}
-                  helperText={
-                    errors[`yearly_leave.${idx}.leave_entitlement`] ? "This field is required" : ""
-                  }
-                />
+                  <TextField
+                    label="Annual Leave Balance"
+                    type="number"
+                    value={yl.leave_entitlement}
+                    onChange={(e) => setYearlyLeave(idx, "leave_entitlement", e.target.value)}
+                    fullWidth
+                    {...tf(`yearly_leave.${idx}.leave_entitlement`)}
+                  />
 
-                  <IconButton onClick={() => removeYearlyLeave(idx)}>
+                  <IconButton onClick={() => removeYearlyLeave(idx)} aria-label="remove-yearly-leave">
                     <DeleteOutlineOutlinedIcon />
                   </IconButton>
                 </Stack>
@@ -1102,6 +1111,7 @@ useEffect(() => {
 
             <Divider />
 
+            {/* ================= DOCUMENTS ================= */}
             <Stack direction="row" justifyContent="space-between" alignItems="center">
               <Typography fontWeight={900}>Documents</Typography>
               <Button startIcon={<AddOutlinedIcon />} onClick={addDocument}>
@@ -1132,29 +1142,21 @@ useEffect(() => {
                   </TextField>
 
                   <Button
-                      variant="outlined"
-                      component="label"
-                      fullWidth
-                      sx={{ justifyContent: "flex-start" }}
-                    >
-                      {d.files?.length
-                        ? `${d.files.length} file(s) selected`
-                        : "Choose Files"}
-
-                      <input
-                        type="file"
-                        hidden
-                        multiple
-                        onChange={(e) =>
-                          setDocument(
-                            idx,
-                            "files",
-                            Array.from(e.target.files || [])
-                          )
-                        }
-                      />
-                    </Button>
-
+                    variant="outlined"
+                    component="label"
+                    fullWidth
+                    sx={{ justifyContent: "flex-start" }}
+                  >
+                    {d.files?.length ? `${d.files.length} file(s) selected` : "Choose Files"}
+                    <input
+                      type="file"
+                      hidden
+                      multiple
+                      onChange={(e) =>
+                        setDocument(idx, "files", Array.from(e.target.files || []))
+                      }
+                    />
+                  </Button>
 
                   <IconButton onClick={() => removeDocument(idx)} aria-label="remove-document">
                     <DeleteOutlineOutlinedIcon />
@@ -1175,7 +1177,7 @@ useEffect(() => {
                 disabled={processing}
                 sx={{ backgroundColor: "#0B1C2D", "&:hover": { backgroundColor: "#0F2A44" } }}
               >
-                Save Employee
+                {processing ? "Saving..." : "Save Employee"}
               </Button>
             </Stack>
           </Stack>

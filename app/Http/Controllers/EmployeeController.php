@@ -157,8 +157,8 @@ class EmployeeController extends Controller
                 'compensation.components.*.amount' => ['required_with:compensation.components', 'numeric'],
 
                 'yearly_leave' => ['nullable', 'array'],
-                'yearly_leave.leave_policy_id' => ['nullable', 'integer', 'exists:leave_policies,leave_policy_id'],
-                'yearly_leave.leave_entitlement' => ['nullable', 'integer'],
+                'yearly_leave.*.leave_policy_id' => ['nullable', 'integer', 'exists:leave_policies,leave_policy_id'],
+                'yearly_leave.*.leave_entitlement' => ['nullable', 'integer', 'min:0'],
 
                 'employee_documents' => ['nullable','array'],
                 'employee_documents.*.doc_type' => ['required','string','max:30'],
@@ -236,7 +236,6 @@ class EmployeeController extends Controller
                     'name'          => $ec['name'],
                     'relationship'  => $ec['relationship'],
                     'phone'         => $ec['phone'],
-                    'address'       => $ec['address'] ?? null,
                 ]);
             }
 
@@ -250,16 +249,19 @@ class EmployeeController extends Controller
                 ]);
             }
 
-            if (!empty($validated['yearly_leave']['leave_policy_id'] ?? null)) {
+            foreach (($validated['yearly_leave'] ?? []) as $yl) {
+                if (empty($yl['leave_policy_id'])) continue;
+
                 EmployeeYearlyLeaveBalance::updateOrCreate(
                     [
                         'employee_id'     => $employee->employee_id,
-                        'leave_policy_id' => $validated['yearly_leave']['leave_policy_id'],
-                        'leave_entitlement' => (int)($validated['yearly_leave']['leave_entitlement'] ?? 0),
+                        'leave_policy_id' => (int) $yl['leave_policy_id'],
                     ],
+                    [
+                        'leave_entitlement' => (int) ($yl['leave_entitlement'] ?? 0),
+                    ]
                 );
             }
-
 
             if (!empty($validated['compensation'] ?? null)) {
                 $comp = $validated['compensation'];
@@ -347,8 +349,18 @@ class EmployeeController extends Controller
             throw $e;
         } catch (\Throwable $e) {
             DB::rollBack();
+
+            Log::channel('single')->error('EMPLOYEE STORE FAILED', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                // careful: trace is long, but very useful during debugging
+                'trace' => $e->getTraceAsString(),
+            ]);
+
             return redirect()
                 ->back()
+                ->withInput()
                 ->with('error', 'Something went wrong while saving. Please try again.');
         }
     }
