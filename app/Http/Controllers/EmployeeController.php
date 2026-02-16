@@ -354,7 +354,6 @@ class EmployeeController extends Controller
                 'message' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
-                // careful: trace is long, but very useful during debugging
                 'trace' => $e->getTraceAsString(),
             ]);
 
