@@ -1,6 +1,7 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, router, useForm } from "@inertiajs/react";
+import Swal from "sweetalert2";
 import {
   Box,
   Button,
@@ -16,15 +17,15 @@ import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 const EMPLOYMENT_STATUS = ["Active", "Inactive", "Resigned", "Terminated"];
-const GENDERS = ["Male", "Female", "Other"];
+const GENDERS = ["Male", "Female"];
 const MARITAL_STATUS = ["Single", "Married", "Other"];
 const ATTENDANCE_TYPE = ["Fingerprint", "Biometric", "Manual"];
 const EMPLOYMENT_TYPE = ["Full-Time", "Contract"];
 const EMPLOYMENT_LEVEL = ["Probation", "Confirmed"];
 const ADDRESS_TYPE = ["Residential", "Emergency", "Other"];
-const CONTACT_TYPE = ["Personal Email", "Work Email", "Phone", "Alternate Phone"];
+const CONTACT_TYPE = ["Personal Email", "Work Email", "Whatsapp Number", "Alternate Phone"];
 const PAY_FREQUENCY = ["Monthly", "Weekly"];
-const SALARY_CURRENCY = ["LKR", "USD", "EUR", "GBP", "AUD", "CAD", "SGD", "INR"];
+const SALARY_CURRENCY = ["LKR", "USD"];
 const DOC_TYPES = [
   "Profile Photo",
   "Resume File",
@@ -238,6 +239,28 @@ export default function EmployeesEdit({
       {
         preserveScroll: true,
         forceFormData: true,
+        onSuccess: () => {
+          Swal.fire({
+            icon: "success",
+            title: "Success!",
+            text: "Employee updated successfully.",
+            confirmButtonColor: "#078318",
+          }).then(() => {
+            router.get(`/hrms/employees/`);
+          });
+        },
+        onError: (errors) => {
+          const errorMessages = Object.entries(errors)
+            .map(([key, message]) => `<strong>${key}:</strong> ${message}`)
+            .join("<br>");
+
+          Swal.fire({
+            icon: "error",
+            title: "Validation Error",
+            html: errorMessages || "Please check your input and try again.",
+            confirmButtonColor: "#880d0d",
+          });
+        },
       }
     );
   };
@@ -255,6 +278,23 @@ export default function EmployeesEdit({
 
   const setComp = (patch) => setData("compensation", { ...data.compensation, ...patch });
 
+  const handleCancel = () => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "Any unsaved changes will be lost.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#045511",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, leave",
+      cancelButtonText: "Cancel",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        router.get(`/hrms/employees/`);
+      }
+    });
+  };
+
   return (
     <AuthenticatedLayout user={auth.user}>
       <Head title={`Edit Employee - ${employee?.employee_code ?? ""}`} />
@@ -264,7 +304,7 @@ export default function EmployeesEdit({
           <Typography variant="h5" fontWeight={900} sx={{ color: "#0B1C2D" }}>
             Edit Employee
           </Typography>
-          <Button variant="outlined" onClick={() => router.get(`/hrms/employees`)}>
+          <Button variant="outlined" onClick={handleCancel}>
             Back
           </Button>
         </Stack>
@@ -665,7 +705,7 @@ export default function EmployeesEdit({
             <Divider />
 
             <Stack direction="row" justifyContent="flex-end" spacing={2} sx={{ pt: 1 }}>
-              <Button variant="outlined" onClick={() => router.get(`/hrms/employees/${employee.employee_id}`)}>
+              <Button variant="outlined" onClick={handleCancel}>
                 Cancel
               </Button>
               <Button type="submit" variant="contained" disabled={processing} sx={{ backgroundColor: "#0B1C2D", "&:hover": { backgroundColor: "#0F2A44" } }}>

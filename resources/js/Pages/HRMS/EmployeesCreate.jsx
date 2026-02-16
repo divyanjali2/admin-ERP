@@ -27,15 +27,15 @@ import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 const EMPLOYMENT_STATUS = ["Active", "Inactive", "Resigned", "Terminated"];
-const GENDERS = ["Male", "Female", "Other"];
+const GENDERS = ["Male", "Female"];
 const MARITAL_STATUS = ["Single", "Married", "Other"];
 const ATTENDANCE_TYPE = ["Fingerprint", "Biometric", "Manual"];
 const EMPLOYMENT_TYPE = ["Full-Time", "Contract"];
 const EMPLOYMENT_LEVEL = ["Probation", "Confirmed"];
 const ADDRESS_TYPE = ["Residential", "Emergency", "Other"];
-const CONTACT_TYPE = ["Personal Email", "Work Email", "Phone", "Alternate Phone"];
+const CONTACT_TYPE = ["Personal Email", "Work Email", "Whatsapp Number", "Alternate Phone"];
 const PAY_FREQUENCY = ["Monthly", "Weekly"];
-const SALARY_CURRENCY = ["LKR", "USD", "EUR", "GBP", "AUD", "CAD", "SGD", "INR"];
+const SALARY_CURRENCY = ["LKR", "USD"];
 const DOC_TYPES = [
   "Profile Photo",
   "Resume File",
@@ -100,7 +100,7 @@ export default function EmployeesCreate({
     // contacts (multiple)
     contacts: [
       { contact_type: "Work Email", contact_value: "", is_primary: true },
-      { contact_type: "Phone", contact_value: "", is_primary: true },
+      { contact_type: "Whatsapp Number", contact_value: "", is_primary: true },
     ],
 
     // addresses (multiple)
@@ -169,7 +169,6 @@ export default function EmployeesCreate({
   const submit = (e) => {
     e.preventDefault();
 
-    // client-side check for Work Email format (optional but useful)
     if (isWorkEmailInvalid) {
       setAlert({
         open: true,
