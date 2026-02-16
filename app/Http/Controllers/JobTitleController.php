@@ -10,7 +10,7 @@ class JobTitleController extends Controller
 {
     public function index()
     {
-        $jobTitles = JobTitle::orderBy('name')->get();
+        $jobTitles = JobTitle::orderBy('job_title_id')->get();
 
         return Inertia::render('HRMS/JobTitles', [
             'jobTitles' => $jobTitles,

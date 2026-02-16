@@ -10,7 +10,7 @@ class DepartmentController extends Controller
 {
     public function index()
     {
-        $departments = Department::orderBy('name')->get();
+        $departments = Department::orderBy('department_id')->get();
 
         return Inertia::render('HRMS/Departments', [
             'departments' => $departments,
