@@ -25,9 +25,26 @@ const ADDRESS_TYPE = ["Residential", "Emergency", "Other"];
 const CONTACT_TYPE = ["Personal Email", "Work Email", "Phone", "Alternate Phone"];
 const PAY_FREQUENCY = ["Monthly", "Weekly"];
 const SALARY_CURRENCY = ["LKR", "USD", "EUR", "GBP", "AUD", "CAD", "SGD", "INR"];
-const DOC_TYPES = ["Profile Photo","Resume File","ID Proof","Offer Letter","Employment Contract","Certificates"];
-const BLOOD_GROUPS = ["A+","A-","B+","B-","AB+","AB-","O+","O-",];
-const BANKS = ["Nations Trust Bank","Commercial Bank","Bank of Ceylon","People's Bank","Sampath Bank","Hatton National Bank","DFCC Bank","Pan Asia Bank","Union Bank"];
+const DOC_TYPES = [
+  "Profile Photo",
+  "Resume File",
+  "ID Proof",
+  "Offer Letter",
+  "Employment Contract",
+  "Certificates",
+];
+const BLOOD_GROUPS = ["A+","A-","B+","B-","AB+","AB-","O+","O-"];
+const BANKS = [
+  "Nations Trust Bank",
+  "Commercial Bank",
+  "Bank of Ceylon",
+  "People's Bank",
+  "Sampath Bank",
+  "Hatton National Bank",
+  "DFCC Bank",
+  "Pan Asia Bank",
+  "Union Bank",
+];
 
 const ensureArray = (v, fallback) => (Array.isArray(v) && v.length ? v : fallback);
 const asDate = (v) => (v ? String(v).slice(0, 10) : "");
@@ -35,6 +52,17 @@ const asDate = (v) => (v ? String(v).slice(0, 10) : "");
 // basic emptiness helpers
 const hasAny = (obj, keys) => keys.some((k) => String(obj?.[k] ?? "").trim() !== "");
 const isNumFilled = (v) => v !== "" && v !== null && v !== undefined;
+
+// ✅ Always define this OUTSIDE the component (so it exists before use)
+const toYearlyLeaveRows = (balances) => {
+  const rows = (Array.isArray(balances) ? balances : []).map((b) => ({
+    leave_policy_id: b?.leave_policy_id != null ? String(b.leave_policy_id) : "",
+    leave_entitlement: b?.leave_entitlement != null ? String(b.leave_entitlement) : "",
+  }));
+
+  return rows.length ? rows : [{ leave_policy_id: "", leave_entitlement: "" }];
+};
+
 
 export default function EmployeesEdit({
   auth,
@@ -49,22 +77,43 @@ export default function EmployeesEdit({
   const contacts = employee?.contacts ?? employee?.employee_contacts ?? [];
   const addresses = employee?.addresses ?? employee?.employee_addresses ?? [];
   const emergencyContacts =
-    employee?.emergencyContacts ?? employee?.emergency_contacts ?? employee?.employee_emergency_contacts ?? [];
+    employee?.emergencyContacts ??
+    employee?.emergency_contacts ??
+    employee?.employee_emergency_contacts ??
+    [];
   const bankAccounts =
-    employee?.bankAccounts ?? employee?.bank_accounts ?? employee?.employee_bank_accounts ?? [];
+    employee?.bankAccounts ??
+    employee?.bank_accounts ??
+    employee?.employee_bank_accounts ??
+    [];
   const experiences =
-    employee?.experiences ?? employee?.experience ?? employee?.employee_experiences ?? [];
+    employee?.experiences ??
+    employee?.experience ??
+    employee?.employee_experiences ??
+    [];
   const compensations =
-    employee?.compensations ?? employee?.employee_compensations ?? employee?.employeeCompensations ?? [];
+    employee?.compensations ??
+    employee?.employee_compensations ??
+    employee?.employeeCompensations ??
+    [];
   const yearlyLeaveBalances =
-    employee?.yearlyLeaveBalances ??
+    employee?.yearly_leave_balances ??        
+    employee?.yearlyLeaveBalances ??         
     employee?.employee_yearly_leave_balance ??
     employee?.leaveBalances ??
     employee?.leave_balances ??
+    employee?.yearly_leave ??
     [];
 
-  const initialComp = compensations?.[0] ?? employee?.compensation ?? employee?.employee_compensation ?? null;
-  const initialYearlyLeave = yearlyLeaveBalances?.[0] ?? employee?.yearly_leave ?? null;
+
+  const initialComp =
+    compensations?.[0] ??
+    employee?.compensation ??
+    employee?.employee_compensation ??
+    null;
+
+  // ✅ build rows once
+  const initialYearlyLeaveRows = toYearlyLeaveRows(yearlyLeaveBalances);
 
   const { data, setData, processing, errors } = useForm({
     employment_status: employee?.employment_status ?? "Active",
@@ -91,20 +140,25 @@ export default function EmployeesEdit({
     probation_end_date: asDate(job?.probation_end_date),
     reporting_manager_id: job?.reporting_manager_id ?? "",
 
-    contacts: ensureArray(contacts, [{ contact_type: "Work Email", contact_value: "", is_primary: true }]),
+    contacts: ensureArray(contacts, [
+      { contact_type: "Work Email", contact_value: "", is_primary: true },
+    ]),
     addresses: ensureArray(addresses, [
       {
         address_type: "Residential",
         address_line_1: "",
-        address_line_2: "",
         city: "",
         country: "Sri Lanka",
         postal_code: "",
         is_current: true,
       },
     ]),
-    emergency_contacts: ensureArray(emergencyContacts, [{ name: "", relationship: "", phone: "", address: "" }]),
-    bank_accounts: ensureArray(bankAccounts, [{ bank_name: "", bank_account_number: "", bank_branch_name: "" }]),
+    emergency_contacts: ensureArray(emergencyContacts, [
+      { name: "", relationship: "", phone: "", address: "" },
+    ]),
+    bank_accounts: ensureArray(bankAccounts, [
+      { bank_name: "", bank_account_number: "", bank_branch_name: "" },
+    ]),
     experience: ensureArray(experiences, [{ previous_employer: "", total_years: "" }]),
 
     compensation: {
@@ -117,10 +171,8 @@ export default function EmployeesEdit({
       ]),
     },
 
-    yearly_leave: {
-      leave_policy_id: initialYearlyLeave?.leave_policy_id ?? "",
-      leave_entitlement: initialYearlyLeave?.leave_entitlement ?? 0,
-    },
+    // ✅ MUST be an array because UI uses map()
+    yearly_leave: initialYearlyLeaveRows,
 
     employee_documents: [{ doc_type: "Other", file: null }],
   });
@@ -136,11 +188,12 @@ export default function EmployeesEdit({
       hasAny(x, ["bank_name", "bank_account_number", "bank_branch_name"])
     );
 
-    cleaned.experience = (data.experience || []).filter((x) => hasAny(x, ["previous_employer"]) || isNumFilled(x?.total_years));
+    cleaned.experience = (data.experience || []).filter(
+      (x) => hasAny(x, ["previous_employer"]) || isNumFilled(x?.total_years)
+    );
 
     cleaned.employee_documents = (data.employee_documents || []).filter((d) => !!d?.file);
 
-    // Only include components that have name + amount
     cleaned.compensation = data.compensation
       ? {
           ...data.compensation,
@@ -150,9 +203,20 @@ export default function EmployeesEdit({
         }
       : null;
 
-    // Fix empty strings to null where backend expects nullable
+    // reporting_manager nullable
     if (cleaned.reporting_manager_id === "") cleaned.reporting_manager_id = null;
-    if (cleaned.yearly_leave?.leave_policy_id === "") cleaned.yearly_leave.leave_policy_id = null;
+
+    // ✅ yearly_leave as array, convert "" -> null
+    cleaned.yearly_leave = (data.yearly_leave || [])
+      .filter(
+        (x) =>
+          String(x?.leave_policy_id ?? "").trim() !== "" ||
+          isNumFilled(x?.leave_entitlement)
+      )
+      .map((x) => ({
+        leave_policy_id: x.leave_policy_id === "" ? null : x.leave_policy_id,
+        leave_entitlement: x.leave_entitlement === "" ? null : x.leave_entitlement,
+      }));
 
     return cleaned;
   }, [data]);
@@ -169,9 +233,6 @@ export default function EmployeesEdit({
       {
         preserveScroll: true,
         forceFormData: true,
-        onError: (errs) => {
-          // optional: console.log(errs);
-        },
       }
     );
   };
@@ -184,7 +245,8 @@ export default function EmployeesEdit({
   };
 
   const addRow = (field, row) => setData(field, [...(data[field] || []), row]);
-  const removeRow = (field, idx) => setData(field, (data[field] || []).filter((_, i) => i !== idx));
+  const removeRow = (field, idx) =>
+    setData(field, (data[field] || []).filter((_, i) => i !== idx));
 
   const setComp = (patch) => setData("compensation", { ...data.compensation, ...patch });
 
@@ -221,7 +283,6 @@ export default function EmployeesEdit({
               <TextField select label="Marital Status" value={data.marital_status} onChange={(e) => setData("marital_status", e.target.value)} fullWidth>
                 {MARITAL_STATUS.map((m) => <MenuItem key={m} value={m}>{m}</MenuItem>)}
               </TextField>
-
               <TextField select label="Employment Status" value={data.employment_status} onChange={(e) => setData("employment_status", e.target.value)} fullWidth>
                 {EMPLOYMENT_STATUS.map((s) => <MenuItem key={s} value={s}>{s}</MenuItem>)}
               </TextField>
@@ -250,9 +311,11 @@ export default function EmployeesEdit({
               <TextField select label="Job Title" value={data.job_title_id} onChange={(e) => setData("job_title_id", e.target.value)} error={!!errors.job_title_id} helperText={errors.job_title_id} fullWidth>
                 {jobTitles.map((j) => <MenuItem key={j.job_title_id} value={j.job_title_id}>{j.name}</MenuItem>)}
               </TextField>
+
               <TextField select label="Employment Type" value={data.employment_type} onChange={(e) => setData("employment_type", e.target.value)} fullWidth>
                 {EMPLOYMENT_TYPE.map((x) => <MenuItem key={x} value={x}>{x}</MenuItem>)}
               </TextField>
+
               <TextField select label="Employment Level" value={data.employment_level} onChange={(e) => setData("employment_level", e.target.value)} fullWidth>
                 {EMPLOYMENT_LEVEL.map((x) => <MenuItem key={x} value={x}>{x}</MenuItem>)}
               </TextField>
@@ -261,16 +324,15 @@ export default function EmployeesEdit({
             <Stack direction={{ xs: "column", sm: "row" }} spacing={4}>
               <TextField label="Date of Joining" type="date" InputLabelProps={{ shrink: true }} value={data.date_of_joining} onChange={(e) => setData("date_of_joining", e.target.value)} fullWidth />
               <TextField label="Probation End Date" type="date" InputLabelProps={{ shrink: true }} value={data.probation_end_date} onChange={(e) => setData("probation_end_date", e.target.value)} fullWidth />
-            <TextField select label="Reporting Manager" value={data.reporting_manager_id ?? ""} onChange={(e) => setData("reporting_manager_id", e.target.value)} fullWidth>
-              <MenuItem value="">None</MenuItem>
-              {employees.map((e) => (
-                <MenuItem key={e.employee_id ?? e.id} value={e.employee_id ?? e.id}>
-                  {(e.first_name ?? "") + " " + (e.last_name ?? "")} ({e.employee_code ?? ""})
-                </MenuItem>
-              ))}
-            </TextField>
+              <TextField select label="Reporting Manager" value={data.reporting_manager_id ?? ""} onChange={(e) => setData("reporting_manager_id", e.target.value)} fullWidth>
+                <MenuItem value="">None</MenuItem>
+                {employees.map((e) => (
+                  <MenuItem key={e.employee_id ?? e.id} value={e.employee_id ?? e.id}>
+                    {(e.first_name ?? "") + " " + (e.last_name ?? "")} ({e.employee_code ?? ""})
+                  </MenuItem>
+                ))}
+              </TextField>
             </Stack>
-
 
             <Divider />
 
@@ -331,17 +393,19 @@ export default function EmployeesEdit({
             {/* ADDRESSES */}
             <Stack direction="row" justifyContent="space-between" alignItems="center">
               <Typography fontWeight={900}>Addresses</Typography>
-              <Button startIcon={<AddOutlinedIcon />} onClick={() =>
-                addRow("addresses", {
-                  address_type: "Other",
-                  address_line_1: "",
-                  address_line_2: "",
-                  city: "",
-                  country: "Sri Lanka",
-                  postal_code: "",
-                  is_current: false,
-                })
-              }>
+              <Button
+                startIcon={<AddOutlinedIcon />}
+                onClick={() =>
+                  addRow("addresses", {
+                    address_type: "Other",
+                    address_line_1: "",
+                    city: "",
+                    country: "Sri Lanka",
+                    postal_code: "",
+                    is_current: false,
+                  })
+                }
+              >
                 Add Address
               </Button>
             </Stack>
@@ -354,19 +418,14 @@ export default function EmployeesEdit({
                       <TextField select label="Address Type" value={a.address_type} onChange={(e) => updateArrayRow("addresses", idx, { address_type: e.target.value })} fullWidth>
                         {ADDRESS_TYPE.map((t) => <MenuItem key={t} value={t}>{t}</MenuItem>)}
                       </TextField>
-{/* 
-                      <TextField label="Current" select value={a.is_current ? "1" : "0"} onChange={(e) => updateArrayRow("addresses", idx, { is_current: e.target.value === "1" })} sx={{ minWidth: 120 }}>
-                        <MenuItem value="1">Yes</MenuItem>
-                        <MenuItem value="0">No</MenuItem>
-                      </TextField> */}
 
                       <IconButton onClick={() => removeRow("addresses", idx)}><DeleteOutlineOutlinedIcon /></IconButton>
-                    <TextField label="Address Line 1" value={a.address_line_1} onChange={(e) => updateArrayRow("addresses", idx, { address_line_1: e.target.value })} fullWidth />
-                    <TextField label="Address Line 2" value={a.address_line_2} onChange={(e) => updateArrayRow("addresses", idx, { address_line_2: e.target.value })} fullWidth />
-                    <TextField label="City" value={a.city} onChange={(e) => updateArrayRow("addresses", idx, { city: e.target.value })} fullWidth />
 
+                      <TextField label="Address Line 1" value={a.address_line_1} onChange={(e) => updateArrayRow("addresses", idx, { address_line_1: e.target.value })} fullWidth />
+
+                      {/* ✅ FIX: update addresses, not "city" */}
+                      <TextField label="City" value={a.city} onChange={(e) => updateArrayRow("addresses", idx, { city: e.target.value })} fullWidth />
                     </Stack>
-
 
                     <Stack direction={{ xs: "column", sm: "row" }} spacing={4}>
                       <TextField label="Country" value={a.country} onChange={(e) => updateArrayRow("addresses", idx, { country: e.target.value })} fullWidth />
@@ -411,11 +470,14 @@ export default function EmployeesEdit({
             <Stack spacing={2}>
               {data.bank_accounts.map((b, idx) => (
                 <Stack key={idx} direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="center">
-                  <TextField select label="Bank Name" value={data.bank_name} onChange={(e) => setData("bank_name", e.target.value)} fullWidth>
-                  {BANKS.map((a) => <MenuItem key={a} value={a}>{a}</MenuItem>)}
-                  </TextField>                  
-                  <TextField label="Bank Account Number" value={b.bank_account_number} onChange={(e) => updateArrayRow("bank_accounts", idx, { bank_account_number: e.target.value })} fullWidth />
-                  <TextField label="Bank Branch Name" value={b.bank_branch_name} onChange={(e) => updateArrayRow("bank_accounts", idx, { bank_branch_name: e.target.value })} fullWidth />
+                  <TextField select label="Bank Name" value={b.bank_name || ""} onChange={(e) => updateArrayRow("bank_accounts", idx, { bank_name: e.target.value })} fullWidth>
+                    <MenuItem value="">Select Bank</MenuItem>
+                    {BANKS.map((a) => <MenuItem key={a} value={a}>{a}</MenuItem>)}
+                  </TextField>
+
+                  <TextField label="Bank Account Number" value={b.bank_account_number || ""} onChange={(e) => updateArrayRow("bank_accounts", idx, { bank_account_number: e.target.value })} fullWidth />
+                  <TextField label="Bank Branch Name" value={b.bank_branch_name || ""} onChange={(e) => updateArrayRow("bank_accounts", idx, { bank_branch_name: e.target.value })} fullWidth />
+
                   <IconButton onClick={() => removeRow("bank_accounts", idx)}><DeleteOutlineOutlinedIcon /></IconButton>
                 </Stack>
               ))}
@@ -438,14 +500,7 @@ export default function EmployeesEdit({
 
             <Stack direction="row" justifyContent="space-between" alignItems="center">
               <Typography fontWeight={800}>Compensation Components</Typography>
-              <Button
-                startIcon={<AddOutlinedIcon />}
-                onClick={() =>
-                  setComp({
-                    components: [...(data.compensation.components || []), { component_type: "Allowance", component_name: "", amount: "" }],
-                  })
-                }
-              >
+              <Button startIcon={<AddOutlinedIcon />} onClick={() => setComp({ components: [...(data.compensation.components || []), { component_type: "Allowance", component_name: "", amount: "" }] })}>
                 Add Component
               </Button>
             </Stack>
@@ -453,49 +508,30 @@ export default function EmployeesEdit({
             <Stack spacing={2}>
               {data.compensation.components.map((cc, idx) => (
                 <Stack key={idx} direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="center">
-                  <TextField
-                    select
-                    label="Type"
-                    value={cc.component_type}
-                    onChange={(e) => {
-                      const next = [...data.compensation.components];
-                      next[idx] = { ...next[idx], component_type: e.target.value };
-                      setComp({ components: next });
-                    }}
-                    fullWidth
-                  >
+                  <TextField select label="Type" value={cc.component_type} onChange={(e) => {
+                    const next = [...data.compensation.components];
+                    next[idx] = { ...next[idx], component_type: e.target.value };
+                    setComp({ components: next });
+                  }} fullWidth>
                     {["Basic", "Allowance", "Deduction"].map((t) => <MenuItem key={t} value={t}>{t}</MenuItem>)}
                   </TextField>
 
-                  <TextField
-                    label="Name"
-                    value={cc.component_name}
-                    onChange={(e) => {
-                      const next = [...data.compensation.components];
-                      next[idx] = { ...next[idx], component_name: e.target.value };
-                      setComp({ components: next });
-                    }}
-                    fullWidth
-                  />
+                  <TextField label="Name" value={cc.component_name} onChange={(e) => {
+                    const next = [...data.compensation.components];
+                    next[idx] = { ...next[idx], component_name: e.target.value };
+                    setComp({ components: next });
+                  }} fullWidth />
 
-                  <TextField
-                    label="Amount"
-                    type="number"
-                    value={cc.amount}
-                    onChange={(e) => {
-                      const next = [...data.compensation.components];
-                      next[idx] = { ...next[idx], amount: e.target.value };
-                      setComp({ components: next });
-                    }}
-                    fullWidth
-                  />
+                  <TextField label="Amount" type="number" value={cc.amount} onChange={(e) => {
+                    const next = [...data.compensation.components];
+                    next[idx] = { ...next[idx], amount: e.target.value };
+                    setComp({ components: next });
+                  }} fullWidth />
 
-                  <IconButton
-                    onClick={() => {
-                      const next = data.compensation.components.filter((_, i) => i !== idx);
-                      setComp({ components: next });
-                    }}
-                  >
+                  <IconButton onClick={() => {
+                    const next = data.compensation.components.filter((_, i) => i !== idx);
+                    setComp({ components: next });
+                  }}>
                     <DeleteOutlineOutlinedIcon />
                   </IconButton>
                 </Stack>
@@ -505,32 +541,62 @@ export default function EmployeesEdit({
             <Divider />
 
             {/* YEARLY LEAVE */}
-            <Typography fontWeight={900}>Yearly Leave Balance</Typography>
-                        <Stack direction={{ xs: "column", sm: "row" }} spacing={4}>
-
-            <TextField
-              select
-              label="Leave Policy"
-              value={data.yearly_leave.leave_policy_id ?? ""}
-              onChange={(e) => setData("yearly_leave", { ...data.yearly_leave, leave_policy_id: e.target.value })}
-              fullWidth
-            >
-              <MenuItem value="">Select policy</MenuItem>
-              {leavePolicies.map((lp) => (
-                <MenuItem key={lp.leave_policy_id} value={lp.leave_policy_id}>
-                  {lp.name}
-                </MenuItem>
-              ))}
-            </TextField>
-
-            <TextField
-              label="Leave Entitlement"
-              type="number"
-              value={data.yearly_leave.leave_entitlement}
-              onChange={(e) => setData("yearly_leave", { ...data.yearly_leave, leave_entitlement: e.target.value })}
-              fullWidth
-            />
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Typography fontWeight={900}>Yearly Leave Balance</Typography>
+              <Button
+                startIcon={<AddOutlinedIcon />}
+                onClick={() => addRow("yearly_leave", { leave_policy_id: "", leave_entitlement: "" })}
+              >
+                Add Leave Policy
+              </Button>
             </Stack>
+
+            <Stack spacing={2}>
+              {(data.yearly_leave || []).map((yl, idx) => (
+                <Stack
+                  key={idx}
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={4}
+                  alignItems="center"
+                >
+                  <TextField
+                    select
+                    label="Leave Policy"
+                    value={yl.leave_policy_id != null ? String(yl.leave_policy_id) : ""}
+                    onChange={(e) => {
+                      const next = [...(data.yearly_leave || [])];
+                      next[idx] = { ...next[idx], leave_policy_id: e.target.value };
+                      setData("yearly_leave", next);
+                    }}
+                    fullWidth
+                  >
+                    <MenuItem value="">Select policy</MenuItem>
+                    {leavePolicies.map((lp) => (
+                      <MenuItem key={lp.leave_policy_id} value={String(lp.leave_policy_id)}>
+                        {lp.name}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+
+                  <TextField
+                    label="Leave Entitlement"
+                    type="number"
+                    value={yl.leave_entitlement ?? ""}
+                    onChange={(e) => {
+                      const next = [...(data.yearly_leave || [])];
+                      next[idx] = { ...next[idx], leave_entitlement: e.target.value };
+                      setData("yearly_leave", next);
+                    }}
+                    fullWidth
+                  />
+
+                  <IconButton onClick={() => removeRow("yearly_leave", idx)}>
+                    <DeleteOutlineOutlinedIcon />
+                  </IconButton>
+                </Stack>
+              ))}
+            </Stack>
+
             <Divider />
 
             {/* DOCUMENTS */}
