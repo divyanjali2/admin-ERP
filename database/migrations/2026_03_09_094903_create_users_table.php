@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('employee_id')->nullable()->unique();
             $table->string('name');
             $table->string('email')->unique();
+            $table->string('role', 30)->default('user')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();

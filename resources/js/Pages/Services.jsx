@@ -29,8 +29,8 @@ const services = [
     image: "/images/fms.webp",
   },
   {
-    title: "HRMS",
-    description: "Human Resource Management System",
+    title: "ERP",
+    description: "Enterprise Resource Planning System",
     href: "/hrms",
     external: false,
     image: "/images/hrms.webp",

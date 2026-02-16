@@ -20,9 +20,9 @@ class DummyDataSeeder extends Seeder
         DB::table('departments')->upsert(
             [
                 ['name' => 'Senior Management'],
-                ['name' => 'HR Department'],
+                ['name' => 'HR'],
                 ['name' => 'IT Department'],
-                ['name' => 'Finance Department'],
+                ['name' => 'FINANCE'],
                 ['name' => 'Marketing Department'],
                 ['name' => 'Rent a Car Department'],
                 ['name' => 'Digital Marketing Department'],
