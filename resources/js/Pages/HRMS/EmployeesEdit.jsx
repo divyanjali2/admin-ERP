@@ -112,7 +112,12 @@ export default function EmployeesEdit({
     employee?.employee_compensation ??
     null;
 
-  // ✅ build rows once
+    const existingDocs =
+      employee?.documents ??
+      employee?.employee_documents ??
+      [];
+
+
   const initialYearlyLeaveRows = toYearlyLeaveRows(yearlyLeaveBalances);
 
   const { data, setData, processing, errors } = useForm({
@@ -606,6 +611,39 @@ export default function EmployeesEdit({
                 Add Document
               </Button>
             </Stack>
+
+            <Typography fontWeight={900}>Existing Documents</Typography>
+
+              {existingDocs.length === 0 ? (
+                <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                  No documents uploaded yet.
+                </Typography>
+              ) : (
+                <Stack spacing={1}>
+                  {existingDocs.map((doc) => (
+                    <Box
+                      key={doc.employee_document_id ?? `${doc.doc_type}-${doc.file_path}`}
+                      sx={{ p: 2, border: "1px solid", borderColor: "divider", borderRadius: 1 }}
+                    >
+                      <Typography fontWeight={700}>{doc.doc_type}</Typography>
+                      <Typography variant="body2">{doc.file_name}</Typography>
+
+                      {doc.url && (
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          sx={{ mt: 1 }}
+                          component="a"
+                          href={doc.url}
+                          target="_blank"
+                        >
+                          View / Download
+                        </Button>
+                      )}
+                    </Box>
+                  ))}
+                </Stack>
+              )}
 
             <Stack spacing={2}>
               {data.employee_documents.map((d, idx) => (
