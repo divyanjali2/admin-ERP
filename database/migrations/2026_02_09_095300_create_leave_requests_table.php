@@ -18,15 +18,14 @@ return new class extends Migration {
             $table->decimal('number_of_days', 5, 2);
 
             $table->string('reason', 500);
-
-            // ✅ FIX HERE
             $table->unsignedBigInteger('oversee_member_id')->nullable();
+            $table->enum('half_day_session', ['MORNING', 'EVENING'])->nullable();
+            $table->text('manager_comment')->nullable();
+            $table->text('reliever_comment')->nullable();
 
             $table->boolean('is_special_request')->default(false);
             $table->string('address', 255)->nullable();
             $table->string('status', 30);
-
-            // ✅ Laravel can manage these automatically, but if you keep them:
             $table->dateTime('requested_at');
             $table->dateTime('updated_at');
 

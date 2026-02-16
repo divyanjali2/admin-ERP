@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('role', 30)->default('user')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('recovery_key')->nullable();
             $table->rememberToken();
             $table->timestamps();
             $table->foreign('employee_id')

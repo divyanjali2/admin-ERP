@@ -17,7 +17,7 @@ class LeaveRequest extends Model
         'number_of_days','reason',
         'oversee_member_id','is_special_request',
         'address','status',
-        'requested_at','updated_at'
+        'requested_at','updated_at','half_day_session','manager_comment','reliever_comment'
     ];
 
     protected $casts = [
