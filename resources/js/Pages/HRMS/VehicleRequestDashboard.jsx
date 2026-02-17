@@ -7,6 +7,7 @@ import DirectionsCarOutlinedIcon from "@mui/icons-material/DirectionsCarOutlined
 import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
 import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
 import HourglassEmptyOutlinedIcon from "@mui/icons-material/HourglassEmptyOutlined";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 
@@ -24,15 +25,30 @@ import {
   Grid,
   Button,
   Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 
 const SIDEBAR_WIDTH = 280;
 
 const formatDate = (d) =>
-  new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+  d
+    ? new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })
+    : "—";
 
 const formatTime = (d) =>
-  new Date(d).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+  d
+    ? new Date(d).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
+    : "—";
+
+const getDateDisplay = (r) => {
+  const start = formatDate(r.start_date);
+  if (r.is_one_day) return start;
+  const end = formatDate(r.end_date);
+  return `${start} — ${end}`;
+};
 
 const EmptyState = ({ icon: Icon, text }) => (
   <Paper sx={{ p: 4, textAlign: "center", borderRadius: 2, bgcolor: "#f8fafc" }}>
@@ -42,7 +58,7 @@ const EmptyState = ({ icon: Icon, text }) => (
 );
 
 const StatCard = ({ icon: Icon, label, value }) => (
-  <Card sx={{ borderRadius: 2, border: "1px solid #e5e7eb" }}>
+  <Card sx={{ borderRadius: 2, border: "1px solid #e5e7eb", width: "100%" }}>
     <CardContent>
       <Stack direction="row" spacing={2} alignItems="center">
         <Box
@@ -71,26 +87,71 @@ const StatCard = ({ icon: Icon, label, value }) => (
   </Card>
 );
 
-const RequestCard = ({ request, status = "pending" }) => {
-  const statusMap = {
-    pending: { label: "Pending", bg: "#f1f5f9", color: "#334155" },
-    approved: { label: "Approved", bg: "#ecfdf5", color: "#047857" },
-    rejected: { label: "Rejected", bg: "#fef2f2", color: "#b91c1c" },
-  };
-  const s = statusMap[status] || statusMap.pending;
+const statusStyles = {
+  pending: { label: "Pending", bg: "#f1f5f9", color: "#334155" },
+  approved: { label: "Approved", bg: "#ecfdf5", color: "#047857" },
+  rejected: { label: "Rejected", bg: "#fef2f2", color: "#b91c1c" },
+};
 
-  const start = formatDate(request.start_date);
-  const end = request.is_one_day ? start : formatDate(request.end_date);
+const DetailsDialog = ({ open, onClose, data, statusLabel }) => {
+  if (!data) return null;
+
+  const dateDisplay = getDateDisplay(data);
+
+  const trip = data.trip_details?.[0];
+  const startTime = trip?.start_date ? formatTime(trip.start_date) : "—";
+  const endTime = trip?.trip_end_datetime ? formatTime(trip.trip_end_datetime) : "—";
 
   return (
-    <Card
-      sx={{
-        borderRadius: 2,
-        border: "1px solid #e5e7eb",
-        height: "100%",
-        "&:hover": { boxShadow: "0 10px 25px rgba(0,0,0,0.06)" },
-      }}
-    >
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle sx={{ fontWeight: 900 }}>
+        {data.vehicle_reg_no || "Vehicle"} — {statusLabel}
+      </DialogTitle>
+
+      <DialogContent dividers>
+        <Stack spacing={1.25}>
+          <Row label="Employee" value={data.employee_name || "—"} />
+          <Row label="Trip Code" value={data.trip_code || "—"} />
+          <Row label="Reason" value={data.reason || "—"} />
+          <Row label="Destination" value={data.destinations || "—"} />
+          <Row label="Date" value={dateDisplay} />
+
+          {/* Time fields (safe even if missing) */}
+          <Row label="Start Time" value={startTime} />
+          <Row label="End Time" value={endTime} />
+
+          {/* Extra */}
+          {data.created_at && <Row label="Requested On" value={formatDate(data.created_at)} />}
+          {data.reject_reason && <Row label="Reject Reason" value={data.reject_reason} />}
+        </Stack>
+      </DialogContent>
+
+      <DialogActions>
+        <Button onClick={onClose} sx={{ textTransform: "none" }}>
+          Close
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+const Row = ({ label, value }) => (
+  <Stack direction="row" justifyContent="space-between" spacing={2}>
+    <Typography variant="body2" sx={{ color: "#6b7280" }}>
+      {label}
+    </Typography>
+    <Typography variant="body2" fontWeight={700} sx={{ color: "#111827", textAlign: "right" }}>
+      {value}
+    </Typography>
+  </Stack>
+);
+
+const RequestCard = ({ request, status = "pending", onView, hideOutNowDetails = false }) => {
+  const s = statusStyles[status] || statusStyles.pending;
+  const dateDisplay = getDateDisplay(request);
+
+  return (
+    <Card sx={{ borderRadius: 2, border: "1px solid #e5e7eb", height: "100%" }}>
       <CardContent>
         <Stack spacing={1.25}>
           <Stack direction="row" justifyContent="space-between" alignItems="start">
@@ -99,7 +160,7 @@ const RequestCard = ({ request, status = "pending" }) => {
                 {request.vehicle_reg_no}
               </Typography>
               <Typography variant="body2" sx={{ color: "#6b7280" }}>
-                {request.employee?.full_name || "Employee"}
+                {request.employee_name || "Employee"}
               </Typography>
             </Box>
 
@@ -116,22 +177,31 @@ const RequestCard = ({ request, status = "pending" }) => {
             <Stack direction="row" spacing={1} alignItems="center">
               <CalendarTodayIcon sx={{ fontSize: 18, color: "#6b7280" }} />
               <Typography variant="body2" sx={{ color: "#374151" }}>
-                {start} — {end}
+                {dateDisplay}
               </Typography>
             </Stack>
 
             <Typography variant="body2" sx={{ color: "#4b5563" }}>
-              <strong>Reason:</strong> {request.reason}
+              <strong>Trip Code:</strong> {request.trip_code || "—"}
             </Typography>
 
-            {!!request.destinations && (
+            <Typography variant="body2" sx={{ color: "#4b5563" }}>
+              <strong>Reason:</strong> {request.reason || "—"}
+            </Typography>
+
+            {/* Out-now cards: keep these blank (no extra data on card) */}
+            {!hideOutNowDetails && (
               <Typography variant="body2" sx={{ color: "#4b5563" }}>
-                <strong>Destination:</strong> {request.destinations}
+                <strong>Destination:</strong> {request.destinations || "—"}
               </Typography>
             )}
           </Stack>
 
-          <Button size="small" sx={{ mt: 1, alignSelf: "flex-start", textTransform: "none" }}>
+          <Button
+            size="small"
+            onClick={() => onView?.(request, s.label)}
+            sx={{ mt: 1, alignSelf: "flex-start", textTransform: "none" }}
+          >
             View Details
           </Button>
         </Stack>
@@ -140,87 +210,32 @@ const RequestCard = ({ request, status = "pending" }) => {
   );
 };
 
-const VehicleInUseCard = ({ vehicle }) => {
-  const trip = vehicle.trip_details?.[0];
-  const start = trip?.trip_start_datetime ? formatTime(trip.trip_start_datetime) : "N/A";
-
-  const durationHours = useMemo(() => {
-    if (!trip?.trip_start_datetime) return null;
-    const end = trip.trip_end_datetime ? new Date(trip.trip_end_datetime) : new Date();
-    const diff = end - new Date(trip.trip_start_datetime);
-    return Math.max(0, Math.round(diff / (1000 * 60 * 60)));
-  }, [trip]);
-
-  return (
-    <Card sx={{ borderRadius: 2, border: "1px solid #e5e7eb", bgcolor: "#fff" }}>
-      <CardContent>
-        <Stack spacing={1.25}>
-          <Stack direction="row" justifyContent="space-between" alignItems="start">
-            <Box>
-              <Typography variant="subtitle1" fontWeight={800} sx={{ color: "#111827" }}>
-                {vehicle.vehicle_reg_no}
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#6b7280" }}>
-                {vehicle.employee?.full_name || "Driver"}
-              </Typography>
-            </Box>
-
-            <Chip
-              icon={<AccessTimeIcon />}
-              label="In Use"
-              size="small"
-              sx={{ bgcolor: "#fef2f2", color: "#b91c1c", fontWeight: 700, borderRadius: 1 }}
-            />
-          </Stack>
-
-          <Divider />
-
-          <Stack spacing={0.75}>
-            <Stack direction="row" justifyContent="space-between">
-              <Typography variant="body2" sx={{ color: "#6b7280" }}>
-                Started:
-              </Typography>
-              <Typography variant="body2" fontWeight={700} sx={{ color: "#111827" }}>
-                {start}
-              </Typography>
-            </Stack>
-
-            {trip?.trip_end_datetime && durationHours !== null && (
-              <Stack direction="row" justifyContent="space-between">
-                <Typography variant="body2" sx={{ color: "#6b7280" }}>
-                  Duration:
-                </Typography>
-                <Typography variant="body2" fontWeight={700} sx={{ color: "#111827" }}>
-                  {durationHours} hrs
-                </Typography>
-              </Stack>
-            )}
-
-            <Typography variant="body2" sx={{ color: "#4b5563" }}>
-              <strong>Destination:</strong> {vehicle.destinations || "Not specified"}
-            </Typography>
-          </Stack>
-        </Stack>
-      </CardContent>
-    </Card>
-  );
-};
-
 export default function VehicleRequestDashboard({
   auth,
-  vehiclesOutNow = [],
   vehiclesToBeOutToday = [],
   pendingRequests = [],
   approvedRequests = [],
+  rejectedRequests = [],
 }) {
   const [activeSection, setActiveSection] = useState("dashboard");
 
+  // modal state
+  const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState(null);
+  const [selectedStatusLabel, setSelectedStatusLabel] = useState("");
+
+  const onView = (item, statusLabel) => {
+    setSelected(item);
+    setSelectedStatusLabel(statusLabel);
+    setOpen(true);
+  };
+
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: DashboardOutlinedIcon },
-    { id: "out-now", label: "Out Now", icon: DirectionsCarOutlinedIcon },
     { id: "out-today", label: "Out Today", icon: LocalShippingOutlinedIcon },
     { id: "pending", label: "Pending Requests", icon: HourglassEmptyOutlinedIcon },
     { id: "approved", label: "Approved Requests", icon: CheckCircleOutlinedIcon },
+    { id: "rejected", label: "Rejected Requests", icon: CancelOutlinedIcon },
   ];
 
   const Section = ({ title, items, renderItem, emptyIcon, emptyText }) => (
@@ -229,33 +244,12 @@ export default function VehicleRequestDashboard({
         {title}
       </Typography>
 
-      {items.length ? (
-        <Grid container spacing={2.5}>
-          {items.map(renderItem)}
-        </Grid>
-      ) : (
-        <EmptyState icon={emptyIcon} text={emptyText} />
-      )}
+      {items.length ? <Grid container spacing={2.5}>{items.map(renderItem)}</Grid> : <EmptyState icon={emptyIcon} text={emptyText} />}
     </Box>
   );
 
   const content = (() => {
     switch (activeSection) {
-      case "out-now":
-        return (
-          <Section
-            title="Vehicles Out Now"
-            items={vehiclesOutNow}
-            emptyIcon={DirectionsCarOutlinedIcon}
-            emptyText="No vehicles out currently"
-            renderItem={(v) => (
-              <Grid item xs={12} sm={6} lg={4} key={v.vehicle_request_id}>
-                <VehicleInUseCard vehicle={v} />
-              </Grid>
-            )}
-          />
-        );
-
       case "out-today":
         return (
           <Section
@@ -265,7 +259,7 @@ export default function VehicleRequestDashboard({
             emptyText="No vehicles scheduled for today"
             renderItem={(r) => (
               <Grid item xs={12} sm={6} lg={4} key={r.vehicle_request_id}>
-                <RequestCard request={r} status="approved" />
+                <RequestCard request={r} status="approved" onView={onView} />
               </Grid>
             )}
           />
@@ -280,7 +274,7 @@ export default function VehicleRequestDashboard({
             emptyText="No pending requests"
             renderItem={(r) => (
               <Grid item xs={12} sm={6} lg={4} key={r.vehicle_request_id}>
-                <RequestCard request={r} status="pending" />
+                <RequestCard request={r} status="pending" onView={onView} />
               </Grid>
             )}
           />
@@ -295,7 +289,22 @@ export default function VehicleRequestDashboard({
             emptyText="No approved requests"
             renderItem={(r) => (
               <Grid item xs={12} sm={6} lg={4} key={r.vehicle_request_id}>
-                <RequestCard request={r} status="approved" />
+                <RequestCard request={r} status="approved" onView={onView} />
+              </Grid>
+            )}
+          />
+        );
+
+      case "rejected":
+        return (
+          <Section
+            title="Rejected Vehicle Requests"
+            items={rejectedRequests}
+            emptyIcon={CancelOutlinedIcon}
+            emptyText="No rejected requests"
+            renderItem={(r) => (
+              <Grid item xs={12} sm={6} lg={4} key={r.vehicle_request_id}>
+                <RequestCard request={r} status="rejected" onView={onView} />
               </Grid>
             )}
           />
@@ -308,10 +317,8 @@ export default function VehicleRequestDashboard({
               Dashboard Overview
             </Typography>
 
-            <Grid container spacing={2.5}>
-              <Grid item xs={12} sm={6} lg={3}>
-                <StatCard icon={DirectionsCarOutlinedIcon} label="Out Now" value={vehiclesOutNow.length} />
-              </Grid>
+            {/* STAT CARDS (side by side) */}
+            <Grid container spacing={2}>
               <Grid item xs={12} sm={6} lg={3}>
                 <StatCard icon={CalendarTodayIcon} label="Out Today" value={vehiclesToBeOutToday.length} />
               </Grid>
@@ -321,6 +328,9 @@ export default function VehicleRequestDashboard({
               <Grid item xs={12} sm={6} lg={3}>
                 <StatCard icon={CheckCircleOutlinedIcon} label="Approved" value={approvedRequests.length} />
               </Grid>
+              <Grid item xs={12} sm={6} lg={3}>
+                <StatCard icon={CancelOutlinedIcon} label="Rejected" value={rejectedRequests.length} />
+              </Grid>
             </Grid>
 
             <Typography variant="subtitle1" fontWeight={800} sx={{ mt: 4, mb: 2, color: "#111827" }}>
@@ -328,19 +338,15 @@ export default function VehicleRequestDashboard({
             </Typography>
 
             <Grid container spacing={2.5}>
-              {vehiclesOutNow.slice(0, 3).map((v) => (
-                <Grid item xs={12} sm={6} lg={4} key={v.vehicle_request_id}>
-                  <VehicleInUseCard vehicle={v} />
-                </Grid>
-              ))}
-              {!vehiclesOutNow.length && !pendingRequests.length && (
+              {!pendingRequests.length && !approvedRequests.length && !rejectedRequests.length && (
                 <Grid item xs={12}>
                   <EmptyState icon={DashboardOutlinedIcon} text="No recent activity" />
                 </Grid>
               )}
+
               {pendingRequests.slice(0, 3).map((r) => (
                 <Grid item xs={12} sm={6} lg={4} key={r.vehicle_request_id}>
-                  <RequestCard request={r} status="pending" />
+                  <RequestCard request={r} status="pending" onView={onView} />
                 </Grid>
               ))}
             </Grid>
@@ -369,7 +375,7 @@ export default function VehicleRequestDashboard({
           <Stack spacing={2.5}>
             <Box>
               <Typography variant="subtitle1" fontWeight={900} sx={{ color: "#111827" }}>
-                Vehicle Managment
+                Vehicle Management
               </Typography>
               <Typography variant="caption" sx={{ color: "#6b7280" }}>
                 Dashboard
@@ -422,7 +428,17 @@ export default function VehicleRequestDashboard({
         </Box>
 
         {/* MAIN */}
-        <Box sx={{ flex: 1, p: { xs: 2, sm: 3, lg: 4 } }}>{content}</Box>
+        <Box sx={{ flex: 1, p: { xs: 2, sm: 3, lg: 4 } }}>
+          {content}
+        </Box>
+
+        {/* MODAL */}
+        <DetailsDialog
+          open={open}
+          onClose={() => setOpen(false)}
+          data={selected}
+          statusLabel={selectedStatusLabel}
+        />
       </Box>
     </AuthenticatedLayout>
   );
