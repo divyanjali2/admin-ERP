@@ -13,6 +13,14 @@ import {
 } from "@mui/material";
 
 const MODULE_SETS = {
+  ADMIN: [
+    {
+      title: "Users, Roles & Permissions",
+      description: "Manage system users, roles, and permission controls.",
+      href: "/hrms/users-management",
+      image: "/images/users-roles-permissions.webp",
+    },
+  ],
   HR: [
     {
       title: "Employee Data",
@@ -52,15 +60,6 @@ const MODULE_SETS = {
       description: "Salary components, payslips, and deductions.",
       href: "/hrms/payroll-dashboard",
       image: "/images/payroll.webp",
-    },
-  ],
-
-  ADMIN: [
-    {
-      title: "Users, Roles & Permissions",
-      description: "Manage system users, roles, and permission controls.",
-      href: "/hrms/users-management",
-      image: "/images/users-roles-permissions.webp",
     },
   ],
 };
@@ -118,15 +117,13 @@ function ModuleCard({ item }) {
 export default function HRMS({ auth }) {
   const page = usePage();
 
-  // ✅ Role from users table (auth.user.role)
   const roleRaw =
     page.props?.auth?.user?.role ??
     auth?.user?.role ??
     "";
 
-  const role = String(roleRaw).trim().toLowerCase(); // "admin"
+  const role = String(roleRaw).trim().toLowerCase(); 
 
-  // ✅ Department (only used for non-admin users)
   const deptRaw =
     page.props?.auth?.department ??
     page.props?.auth?.user?.department ??
@@ -134,7 +131,7 @@ export default function HRMS({ auth }) {
     auth?.user?.department ??
     "";
 
-  const dept = String(deptRaw).trim().toLowerCase(); // "hr" | "finance"
+  const dept = String(deptRaw).trim().toLowerCase();
 
   const allModules = useMemo(() => {
     const all = [...(MODULE_SETS.HR || []), ...(MODULE_SETS.FINANCE || [])];
