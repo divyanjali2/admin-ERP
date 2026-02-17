@@ -6,6 +6,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\JobTitleController;
+use App\Http\Controllers\LeaveRequestController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -42,9 +43,7 @@ Route::get('/emp-dashboard', function () {
     return Inertia::render('HRMS/EmpDashboard');
 })->name('emp-dashboard');
 
-Route::get('/leave-dashboard', function () {
-    return Inertia::render('HRMS/LeaveDashboard');
-})->name('leave-dashboard');
+Route::get('/leave-dashboard', [LeaveRequestController::class, 'dashboard'])->name('leave-dashboard');
 
 Route::get('/vehicle-reauest-dashboard', function () {
     return Inertia::render('HRMS/VehicleRequestDashboard');
@@ -71,8 +70,9 @@ Route::get('/hrms/emp-dashboard', [EmployeeController::class, 'empDashboard'])
   ->middleware(['auth'])
   ->name('emp-dashboard');
 
-Route::prefix('hrms')->name('hrms.')->group(function () {
+Route::prefix('hrms')->name('hrms.')->middleware(['auth'])->group(function () {
     Route::resource('employees', EmployeeController::class);
+    Route::get('leave-balances/{employeeId}', [LeaveRequestController::class, 'getEmployeeLeaveBalances'])->name('leave-balances.show');
 });
 
 require __DIR__.'/auth.php';

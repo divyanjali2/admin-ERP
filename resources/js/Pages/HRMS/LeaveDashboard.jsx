@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, router } from "@inertiajs/react";
+import { Head, router, usePage } from "@inertiajs/react";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
@@ -13,11 +13,38 @@ import {
   ListItemButton,
   ListItemText,
   Divider,
+  TextField,
+  MenuItem,
+  Autocomplete,
+  CircularProgress,
 } from "@mui/material";
 
 const SIDEBAR_WIDTH = 240;
 
-export default function Leave({ auth }) {
+export default function Leave({ auth, employeesOnLeave = [], pendingRequests = [], stats = {}, employees = [] }) {
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [leaveBalances, setLeaveBalances] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const handleEmployeeChange = async (event, value) => {
+    const empId = value?.id;
+    setSelectedEmployee(value);
+    setLeaveBalances([]);
+
+    if (!empId) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch(`/hrms/leave-balances/${empId}`);
+      const data = await response.json();
+      setLeaveBalances(data.balances || []);
+    } catch (error) {
+      console.error("Error fetching leave balances:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <AuthenticatedLayout user={auth.user}>
       <Head title="Leave" />
@@ -72,19 +99,91 @@ export default function Leave({ auth }) {
               />
             </ListItemButton>
 
-            <ListItemButton
-                onClick={() => router.get("/hrms/leave-dashboard")}
-               sx={{
-                borderRadius: 2,
-                mb: 0.5,
-                "&:hover": { backgroundColor: "#f3f4f6" },
-              }}
-            >
+            <Divider sx={{ my: 2 }} />
 
-            </ListItemButton>
+            {/* EMPLOYEE LEAVE BALANCES SECTION */}
+            <Typography fontWeight={900} sx={{ fontSize: "0.9rem", mb: 1 }}>
+              LEAVE BALANCES
+            </Typography>
 
+            <Autocomplete
+              options={employees}
+              getOptionLabel={(option) => `${option.name} (${option.code})`}
+              value={selectedEmployee}
+              onChange={handleEmployeeChange}
+              isOptionEqualToValue={(option, value) => option.id === value?.id}
+              size="small"
+              fullWidth
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Search Employee"
+                  placeholder="Type name or code..."
+                />
+              )}
+              sx={{ mb: 2 }}
+            />
+
+            {loading && (
+              <Stack alignItems="center" sx={{ py: 2 }}>
+                <CircularProgress size={24} />
+              </Stack>
+            )}
+
+            {!loading && leaveBalances.length > 0 && (
+              <Stack spacing={1}>
+                {leaveBalances.map((balance) => (
+                  <Box
+                    key={balance.leave_balance_id}
+                    sx={{
+                      p: 1.5,
+                      borderRadius: 1,
+                      backgroundColor: "#f0f4f8",
+                      border: "1px solid #e0e7ff",
+                    }}
+                  >
+                    <Typography fontWeight={600} sx={{ fontSize: "0.85rem", color: "#374151" }}>
+                      {balance.policy_name}
+                    </Typography>
+                    <Stack direction="row" sx={{ mt: 0.5 }} spacing={1}>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography sx={{ fontSize: "0.7rem", color: "#6b7280" }}>
+                          Entitlement
+                        </Typography>
+                        <Typography sx={{ fontSize: "0.9rem", fontWeight: 700, color: "#0c6eca" }}>
+                          {balance.leave_entitlement ?? balance.entitlement ?? stats.totalEntitlement ?? '-'}
+                        </Typography>
+                      </Box>
+
+                      <Box sx={{ flex: 1 }}>
+                        <Typography sx={{ fontSize: "0.7rem", color: "#6b7280" }}>
+                          Taken
+                        </Typography>
+                        <Typography sx={{ fontSize: "0.9rem", fontWeight: 700, color: "#dc2626" }}>
+                          {balance.total_taken}
+                        </Typography>
+                      </Box>
+
+                      <Box sx={{ flex: 1 }}>
+                        <Typography sx={{ fontSize: "0.7rem", color: "#6b7280" }}>
+                          Remaining
+                        </Typography>
+                        <Typography sx={{ fontSize: "0.9rem", fontWeight: 700, color: "#16a34a" }}>
+                          {balance.remaining}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                  </Box>
+                ))}
+              </Stack>
+            )}
+
+            {!loading && selectedEmployee && leaveBalances.length === 0 && (
+              <Typography sx={{ fontSize: "0.85rem", color: "#6b7280", p: 1 }}>
+                No leave balances found.
+              </Typography>
+            )}
           </List>
-
         </Box>
 
         {/* MAIN CONTENT */}
@@ -104,10 +203,10 @@ export default function Leave({ auth }) {
             }}
           >
             {[
-              { label: "On Leave Today", value: 5, color: "#2563eb" },
-              { label: "Pending Requests", value: 8, color: "#f59e0b" },
-              { label: "Approved", value: 24, color: "#16a34a" },
-              { label: "Rejected", value: 3, color: "#dc2626" },
+              { label: "On Leave Today", value: stats.onLeaveToday ?? 0, color: "#064c8d" },
+              { label: "Pending Requests", value: stats.pendingRequests ?? 0, color: "#7f540a" },
+              { label: "Approved", value: stats.approved ?? 0, color: "#16a34a" },
+              { label: "Rejected", value: stats.rejected ?? 0, color: "#810909" },
             ].map((item) => (
               <Box
                 key={item.label}
@@ -162,32 +261,7 @@ export default function Leave({ auth }) {
                   gap: 2,
                 }}
               >
-                {[
-                  {
-                    name: "John Doe",
-                    type: "Annual Leave",
-                    department: "Finance",
-                    manager: "Mr. Perera",
-                  },
-                  {
-                    name: "Jane Smith",
-                    type: "Medical Leave",
-                    department: "Operations",
-                    manager: "Ms. Fernando",
-                  },
-                  {
-                    name: "Michael Brown",
-                    type: "Casual Leave",
-                    department: "Sales",
-                    manager: "Mr. Silva",
-                  },
-                  {
-                    name: "Anne Blake",
-                    type: "Annual Leave",
-                    department: "HR",
-                    manager: "Mr. Raj",
-                  },
-                ].map((item) => (
+                {(employeesOnLeave || []).map((item) => (
                   <Box
                     key={item.name}
                     sx={{
@@ -211,11 +285,11 @@ export default function Leave({ auth }) {
                     </Typography>
 
                     <Typography variant="caption" sx={{ color: "#374151", display: "block" }}>
-                      Department: {item.department}
+                      Department : {item.department}
                     </Typography>
 
                     <Typography variant="caption" sx={{ color: "#374151" }}>
-                      Reporting Manager: {item.manager}
+                      Reason : {item.reason}
                     </Typography>
                   </Box>
                 ))}
@@ -239,36 +313,11 @@ export default function Leave({ auth }) {
               <Box
                 sx={{
                   display: "grid",
-                  gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, // 2 by 2
+                  gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, 
                   gap: 2,
                 }}
               >
-                {[
-                  {
-                    name: "David Lee",
-                    days: "2 Days",
-                    department: "Finance",
-                    manager: "Mr. Perera",
-                  },
-                  {
-                    name: "Sarah Wilson",
-                    days: "3 Days",
-                    department: "Operations",
-                    manager: "Ms. Fernando",
-                  },
-                  {
-                    name: "Chris Evans",
-                    days: "1 Day",
-                    department: "Sales",
-                    manager: "Mr. Silva",
-                  },
-                  {
-                    name: "Anne Blake",
-                    days: "4 Days",
-                    department: "HR",
-                    manager: "Mr. Raj",
-                  },
-                ].map((item) => (
+                {(pendingRequests || []).map((item) => (
                   <Box
                     key={item.name}
                     sx={{
@@ -297,7 +346,7 @@ export default function Leave({ auth }) {
                       </Typography>
 
                       <Typography variant="caption" sx={{ color: "#374151" }}>
-                        Reporting Manager: {item.manager}
+                        Reason : {item.reason}
                       </Typography>
                     </Box>
                   </Box>
