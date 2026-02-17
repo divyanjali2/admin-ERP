@@ -54,6 +54,15 @@ const MODULE_SETS = {
       image: "/images/payroll.webp",
     },
   ],
+
+  ADMIN: [
+    {
+      title: "Users, Roles & Permissions",
+      description: "Manage system users, roles, and permission controls.",
+      href: "/hrms/users-management",
+      image: "/images/users-roles-permissions.webp",
+    },
+  ],
 };
 
 function ModuleCard({ item }) {
@@ -133,7 +142,10 @@ export default function HRMS({ auth }) {
   }, []);
 
   const modules = useMemo(() => {
-    if (role === "admin") return allModules;
+    if (role === "admin") {
+      const adminModules = [...allModules, ...(MODULE_SETS.ADMIN || [])];
+      return adminModules.filter((m, i, arr) => arr.findIndex((x) => x.href === m.href) === i);
+    }
 
     if (dept === "hr" || dept.includes("human")) return MODULE_SETS.HR || [];
     if (dept === "finance" || dept.includes("finan")) return MODULE_SETS.FINANCE || [];

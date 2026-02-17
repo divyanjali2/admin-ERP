@@ -7,6 +7,9 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\JobTitleController;
 use App\Http\Controllers\LeaveRequestController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\PermissionController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -61,6 +64,10 @@ Route::get('/training-dashboard', function () {
     return Inertia::render('HRMS/TrainingDashboard');
 })->name('training-dashboard');
 
+Route::get('/users-management', function () {
+    return Inertia::render('HRMS/UsersManagement');
+})->name('users-management');
+
 Route::resource('departments', DepartmentController::class);
 Route::resource('job-titles', JobTitleController::class);
 Route::resource('employees', EmployeeController::class);
@@ -72,6 +79,9 @@ Route::get('/hrms/emp-dashboard', [EmployeeController::class, 'empDashboard'])
 
 Route::prefix('hrms')->name('hrms.')->middleware(['auth'])->group(function () {
     Route::resource('employees', EmployeeController::class);
+    Route::resource('users', UserController::class);
+    Route::resource('roles', RoleController::class);
+    Route::resource('permissions', PermissionController::class);
     Route::get('leave-balances/{employeeId}', [LeaveRequestController::class, 'getEmployeeLeaveBalances'])->name('leave-balances.show');
 });
 
