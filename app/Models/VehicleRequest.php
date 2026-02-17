@@ -39,8 +39,8 @@ class VehicleRequest extends Model
         return $this->hasOne(EmployeeJob::class, 'employee_id', 'employee_id');
     }
 
-    // public function vehicle()
-    // {
-    //     return $this->belongsTo(Vehicle::class, 'vehicle_id', 'vehicle_id');
-    // }
+    public function tripDetails()
+    {
+        return $this->hasMany(TripDetail::class, 'vehicle_request_id', 'vehicle_request_id');
+    }
 }
