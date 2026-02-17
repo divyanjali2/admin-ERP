@@ -7,6 +7,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\JobTitleController;
 use App\Http\Controllers\LeaveRequestController;
+use App\Http\Controllers\VehicleRequestController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PermissionController;
@@ -48,9 +49,7 @@ Route::get('/emp-dashboard', function () {
 
 Route::get('/leave-dashboard', [LeaveRequestController::class, 'dashboard'])->name('leave-dashboard');
 
-Route::get('/vehicle-reauest-dashboard', function () {
-    return Inertia::render('HRMS/VehicleRequestDashboard');
-})->name('vehicle-reauest-dashboard');
+Route::get('/vehicle-reauest-dashboard', [VehicleRequestController::class, 'dashboard'])->name('vehicle-reauest-dashboard');
 
 Route::get('/payroll-dashboard', function () {
     return Inertia::render('HRMS/PayrollDashboard');
