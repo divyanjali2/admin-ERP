@@ -96,12 +96,19 @@ class LeaveRequestController extends Controller
         $balances = EmployeeLeaveBalance::with('policy')
             ->where('employee_id', $employeeId)
             ->get()
-            ->map(fn ($balance) => [
-                'leave_balance_id' => $balance->leave_balance_id,
-                'policy_name' => $balance->policy?->name ?? 'Unknown',
-                'total_taken' => (float) $balance->total_taken,
-                'remaining' => (float) $balance->remaining,
-            ]);
+            ->map(function ($balance) {
+                $yearlyBalance = EmployeeYearlyLeaveBalance::where('employee_id', $balance->employee_id)
+                    ->where('leave_policy_id', $balance->leave_policy_id)
+                    ->first();
+
+                return [
+                    'leave_balance_id' => $balance->leave_balance_id,
+                    'policy_name' => $balance->policy?->name ?? 'Unknown',
+                    'leave_entitlement' => $yearlyBalance?->leave_entitlement ?? 0,
+                    'total_taken' => (float) $balance->total_taken,
+                    'remaining' => (float) $balance->remaining,
+                ];
+            });
 
         return response()->json([
             'balances' => $balances,

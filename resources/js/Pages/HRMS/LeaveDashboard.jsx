@@ -151,7 +151,7 @@ export default function Leave({ auth, employeesOnLeave = [], pendingRequests = [
                           Entitlement
                         </Typography>
                         <Typography sx={{ fontSize: "0.9rem", fontWeight: 700, color: "#0c6eca" }}>
-                          {balance.leave_entitlement ?? balance.entitlement ?? stats.totalEntitlement ?? '-'}
+                          {balance.leave_entitlement ?? '-'}
                         </Typography>
                       </Box>
 
