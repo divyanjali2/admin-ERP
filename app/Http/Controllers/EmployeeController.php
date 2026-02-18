@@ -386,41 +386,41 @@ class EmployeeController extends Controller
         ]);
     }
 
-public function edit(Employee $employee)
-{
-    $employee->load([
-        'user:id,email,employee_id',
-        'job.department',
-        'job.jobTitle',
-        'job.reportingManager',
-        'contacts',
-        'addresses',
-        'emergencyContacts',
-        'bankAccounts',
-        'experiences',
-        'documents',
-        'yearlyLeaveBalances' => function ($q) {
-            $q->select(['employee_id','leave_policy_id','leave_entitlement']);
-        },
-        'yearlyLeaveBalances.policy:leave_policy_id,name',
-        'compensations.components',
-    ]);
+    public function edit(Employee $employee)
+    {
+        $employee->load([
+            'user:id,email,employee_id',
+            'job.department',
+            'job.jobTitle',
+            'job.reportingManager',
+            'contacts',
+            'addresses',
+            'emergencyContacts',
+            'bankAccounts',
+            'experiences',
+            'documents',
+            'yearlyLeaveBalances' => function ($q) {
+                $q->select(['employee_id','leave_policy_id','leave_entitlement']);
+            },
+            'yearlyLeaveBalances.policy:leave_policy_id,name',
+            'compensations.components',
+        ]);
 
-    Log::info('EDIT yearly leave rows', [
-    'employee_id' => $employee->employee_id,
-    'count' => $employee->yearlyLeaveBalances()->count(),
-    'rows' => $employee->yearlyLeaveBalances()->get()->toArray(),
-]);
+        Log::info('EDIT yearly leave rows', [
+        'employee_id' => $employee->employee_id,
+        'count' => $employee->yearlyLeaveBalances()->count(),
+        'rows' => $employee->yearlyLeaveBalances()->get()->toArray(),
+        ]);
 
 
-    return Inertia::render('HRMS/EmployeesEdit', [
-        'employee' => $employee,
-        'departments' => Department::orderBy('name')->get(['department_id','name']),
-        'jobTitles' => JobTitle::orderBy('name')->get(['job_title_id','name']),
-        'leavePolicies' => LeavePolicy::orderBy('name')->get(['leave_policy_id','name']),
-        'employees' => Employee::orderBy('first_name')->get(['employee_id','employee_code','first_name','last_name']),
-    ]);
-}
+        return Inertia::render('HRMS/EmployeesEdit', [
+            'employee' => $employee,
+            'departments' => Department::orderBy('name')->get(['department_id','name']),
+            'jobTitles' => JobTitle::orderBy('name')->get(['job_title_id','name']),
+            'leavePolicies' => LeavePolicy::orderBy('name')->get(['leave_policy_id','name']),
+            'employees' => Employee::orderBy('first_name')->get(['employee_id','employee_code','first_name','last_name']),
+        ]);
+    }
 
 
     public function update(Request $request, Employee $employee)

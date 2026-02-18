@@ -180,7 +180,7 @@ export default function EmployeesEdit({
     // ✅ MUST be an array because UI uses map()
     yearly_leave: initialYearlyLeaveRows,
 
-    employee_documents: [{ doc_type: "Other", file: null }],
+    employee_documents: [{ doc_type: "Other", files: [] }],
   });
 
   const cleanedPayload = useMemo(() => {
@@ -198,7 +198,7 @@ export default function EmployeesEdit({
       (x) => hasAny(x, ["previous_employer"]) || isNumFilled(x?.total_years)
     );
 
-    cleaned.employee_documents = (data.employee_documents || []).filter((d) => !!d?.file);
+    cleaned.employee_documents = (data.employee_documents || []).filter((d) => d?.files?.length > 0);
 
     cleaned.compensation = data.compensation
       ? {
@@ -309,7 +309,7 @@ export default function EmployeesEdit({
           </Button>
         </Stack>
 
-        <Box component="form" onSubmit={submit} sx={{ border: "2px solid #0B1C2D", p: 3 }}>
+        <Box component="form" onSubmit={submit} encType="multipart/form-data" sx={{ border: "2px solid #0B1C2D", p: 3 }}>
           <Stack spacing={3}>
             <Typography fontWeight={900}>Basic Details</Typography>
 
@@ -647,7 +647,7 @@ export default function EmployeesEdit({
             {/* DOCUMENTS */}
             <Stack direction="row" justifyContent="space-between" alignItems="center">
               <Typography fontWeight={900}>Upload New Documents</Typography>
-              <Button startIcon={<AddOutlinedIcon />} onClick={() => addRow("employee_documents", { doc_type: "Other", file: null })}>
+              <Button startIcon={<AddOutlinedIcon />} onClick={() => addRow("employee_documents", { doc_type: "Other", files: [] })}>
                 Add Document
               </Button>
             </Stack>
@@ -659,20 +659,20 @@ export default function EmployeesEdit({
                   No documents uploaded yet.
                 </Typography>
               ) : (
-                <Stack spacing={1}>
+                <Box sx={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2 }}>
                   {existingDocs.map((doc) => (
                     <Box
                       key={doc.employee_document_id ?? `${doc.doc_type}-${doc.file_path}`}
-                      sx={{ p: 2, border: "1px solid", borderColor: "divider", borderRadius: 1 }}
+                      sx={{ p: 2, border: "1px solid", borderColor: "divider", borderRadius: 1, display: "flex", flexDirection: "column" }}
                     >
-                      <Typography fontWeight={700}>{doc.doc_type}</Typography>
-                      <Typography variant="body2">{doc.file_name}</Typography>
+                      <Typography fontWeight={700} sx={{ mb: 1 }}>{doc.doc_type}</Typography>
+                      <Typography variant="body2" sx={{ mb: 1, wordBreak: "break-word" }}>{doc.file_name}</Typography>
 
                       {doc.url && (
                         <Button
                           size="small"
                           variant="outlined"
-                          sx={{ mt: 1 }}
+                          sx={{ mt: "auto" }}
                           component="a"
                           href={doc.url}
                           target="_blank"
@@ -682,7 +682,7 @@ export default function EmployeesEdit({
                       )}
                     </Box>
                   ))}
-                </Stack>
+                </Box>
               )}
 
             <Stack spacing={2}>
@@ -693,8 +693,8 @@ export default function EmployeesEdit({
                   </TextField>
 
                   <Button variant="outlined" component="label" fullWidth sx={{ justifyContent: "flex-start" }}>
-                    {d.file ? d.file.name : "Choose File"}
-                    <input type="file" hidden onChange={(e) => updateArrayRow("employee_documents", idx, { file: e.target.files?.[0] ?? null })} />
+                    {d.files?.length ? d.files[0].name : "Choose File"}
+                    <input type="file" hidden onChange={(e) => updateArrayRow("employee_documents", idx, { files: e.target.files ? Array.from(e.target.files) : [] })} />
                   </Button>
 
                   <IconButton onClick={() => removeRow("employee_documents", idx)}><DeleteOutlineOutlinedIcon /></IconButton>
