@@ -98,9 +98,15 @@ const DetailsDialog = ({ open, onClose, data, statusLabel }) => {
 
   const dateDisplay = getDateDisplay(data);
 
-  const trip = data.trip_details?.[0];
-  const startTime = trip?.start_date ? formatTime(trip.start_date) : "—";
-  const endTime = trip?.trip_end_datetime ? formatTime(trip.trip_end_datetime) : "—";
+  const trip = data.trip_details;
+
+  const isOutNow = !!trip && !trip.trip_end_datetime;
+
+  const tripStartDate = trip?.trip_start_datetime ? formatDate(trip.trip_start_datetime) : "—";
+  const tripStartTime = trip?.trip_start_datetime ? formatTime(trip.trip_start_datetime) : "—";
+
+  const tripEndDate = trip?.trip_end_datetime ? formatDate(trip.trip_end_datetime) : "—";
+  const tripEndTime = trip?.trip_end_datetime ? formatTime(trip.trip_end_datetime) : "—";
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
@@ -114,15 +120,52 @@ const DetailsDialog = ({ open, onClose, data, statusLabel }) => {
           <Row label="Trip Code" value={data.trip_code || "—"} />
           <Row label="Reason" value={data.reason || "—"} />
           <Row label="Destination" value={data.destinations || "—"} />
+
           <Row label="Date" value={dateDisplay} />
 
-          {/* Time fields (safe even if missing) */}
-          <Row label="Start Time" value={startTime} />
-          <Row label="End Time" value={endTime} />
-
-          {/* Extra */}
           {data.created_at && <Row label="Requested On" value={formatDate(data.created_at)} />}
           {data.reject_reason && <Row label="Reject Reason" value={data.reject_reason} />}
+
+          {trip && (
+            <Card sx={{ mt: 1.5, borderRadius: 2, border: "1px solid #e5e7eb" }}>
+              <CardContent>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.25 }}>
+                  <Typography fontWeight={900} sx={{ color: "#111827" }}>
+                    {isOutNow ? "Out Now" : "Trip Details"}
+                  </Typography>
+
+                  <Chip
+                    size="small"
+                    label={isOutNow ? "OUT NOW" : "COMPLETED"}
+                    sx={{
+                      bgcolor: isOutNow ? "#fff7ed" : "#ecfdf5",
+                      color: isOutNow ? "#9a3412" : "#047857",
+                      fontWeight: 800,
+                      borderRadius: 1,
+                    }}
+                  />
+                </Stack>
+
+                <Stack spacing={1}>
+                  <Row label="Start Date" value={tripStartDate} />
+                  <Row label="Start Time" value={tripStartTime} />
+
+                  <Row label="End Date" value={tripEndDate} />
+                  <Row label="End Time" value={tripEndTime} />
+
+                  <Row label="Start Odometer" value={trip.trip_start_odometer ?? "—"} />
+                  <Row label="End Odometer" value={trip.trip_end_odometer ?? "—"} />
+
+                  {trip.trip_start_odometer_photo && (
+                    <Row label="Start Odo Photo" value={trip.trip_start_odometer_photo} />
+                  )}
+                  {trip.trip_end_odometer_photo && (
+                    <Row label="End Odo Photo" value={trip.trip_end_odometer_photo} />
+                  )}
+                </Stack>
+              </CardContent>
+            </Card>
+          )}
         </Stack>
       </DialogContent>
 
