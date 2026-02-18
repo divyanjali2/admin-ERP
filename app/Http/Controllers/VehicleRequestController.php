@@ -12,7 +12,11 @@ class VehicleRequestController extends Controller
     public function dashboard(Request $request)
     {
         $today = Carbon::today();
+        $vehicleNo = $request->get('vehicle_no'); // search param
 
+        /**
+         * Helper: map latest trip detail (or null)
+         */
         $mapTripDetails = function ($vr) {
             $latest = $vr->tripDetails
                 ?->sortByDesc('trip_start_datetime')
@@ -34,6 +38,9 @@ class VehicleRequestController extends Controller
             ];
         };
 
+        /**
+         * Helper: standard request formatter
+         */
         $formatRequest = function ($vr) use ($mapTripDetails) {
             return [
                 'vehicle_request_id' => $vr->vehicle_request_id,
@@ -41,7 +48,7 @@ class VehicleRequestController extends Controller
                 'employee_id' => $vr->employee_id,
                 'vehicle_reg_no' => $vr->vehicle_reg_no,
 
-                // request dates (NOT trip dates)
+                // request date range (NOT trip dates)
                 'start_date' => optional($vr->start_date)->toDateString(),
                 'end_date' => optional($vr->end_date)->toDateString(),
                 'is_one_day' => (bool) ($vr->is_one_day ?? false),
@@ -54,56 +61,93 @@ class VehicleRequestController extends Controller
                 'reject_reason' => $vr->reject_reason,
 
                 'created_at' => optional($vr->created_at)->toDateString(),
+
+                // ✅ trip details for modal
                 'trip_details' => $mapTripDetails($vr),
             ];
         };
 
-        // Vehicles to be out today (approved + start_date = today)
+        /**
+         * ----------------------------------------------------
+         * ORIGINAL DASHBOARD LISTS (no search applied)
+         * ----------------------------------------------------
+         */
         $vehiclesToBeOutToday = VehicleRequest::with(['employee', 'tripDetails'])
             ->where('status', 'APPROVED')
             ->whereDate('start_date', $today)
+            ->orderByDesc('created_at')
             ->get();
 
-        // Pending
         $pendingRequests = VehicleRequest::with(['employee', 'tripDetails'])
             ->where('status', 'PENDING')
             ->orderByDesc('created_at')
             ->get();
 
-        // Approved
         $approvedRequests = VehicleRequest::with(['employee', 'tripDetails'])
             ->where('status', 'APPROVED')
             ->orderByDesc('created_at')
             ->get();
 
-        // Rejected
         $rejectedRequests = VehicleRequest::with(['employee', 'tripDetails'])
             ->where('status', 'REJECTED')
             ->orderByDesc('created_at')
             ->get();
 
+        // Stats (fixed casing)
         $totalRequests = VehicleRequest::count();
         $approvedCount = VehicleRequest::where('status', 'APPROVED')->count();
         $pendingCount  = VehicleRequest::where('status', 'PENDING')->count();
         $rejectedCount = VehicleRequest::where('status', 'REJECTED')->count();
 
-        // Format lists
-        $vehiclesToBeOutTodayFormatted = $vehiclesToBeOutToday->map($formatRequest)->values();
-        $pendingRequestsFormatted      = $pendingRequests->map($formatRequest)->values();
-        $approvedRequestsFormatted     = $approvedRequests->map($formatRequest)->values();
-        $rejectedRequestsFormatted     = $rejectedRequests->map($formatRequest)->values();
+        /**
+         * ----------------------------------------------------
+         * SEARCH RESULT LISTS (only if vehicle_no exists)
+         * ----------------------------------------------------
+         */
+        $currentTrips = collect();
+        $pastTrips = collect();
 
+        if ($vehicleNo) {
+            $searched = VehicleRequest::with(['employee', 'tripDetails'])
+                ->where('vehicle_reg_no', 'LIKE', "%{$vehicleNo}%")
+                ->orderByDesc('start_date')
+                ->get();
+
+            $currentTrips = $searched
+                ->filter(fn ($vr) => $vr->start_date && Carbon::parse($vr->start_date)->gte($today))
+                ->map($formatRequest)
+                ->values();
+
+            $pastTrips = $searched
+                ->filter(fn ($vr) => $vr->start_date && Carbon::parse($vr->start_date)->lt($today))
+                ->map($formatRequest)
+                ->values();
+        }
+
+        /**
+         * ----------------------------------------------------
+         * RETURN VIEW
+         * ----------------------------------------------------
+         */
         return Inertia::render('HRMS/VehicleRequestDashboard', [
-            'vehiclesToBeOutToday' => $vehiclesToBeOutTodayFormatted,
-            'pendingRequests'      => $pendingRequestsFormatted,
-            'approvedRequests'     => $approvedRequestsFormatted,
-            'rejectedRequests'     => $rejectedRequestsFormatted,
+            // original dashboard
+            'vehiclesToBeOutToday' => $vehiclesToBeOutToday->map($formatRequest)->values(),
+            'pendingRequests'      => $pendingRequests->map($formatRequest)->values(),
+            'approvedRequests'     => $approvedRequests->map($formatRequest)->values(),
+            'rejectedRequests'     => $rejectedRequests->map($formatRequest)->values(),
+
+            // search
+            'searchedVehicle' => $vehicleNo,
+            'currentTrips' => $currentTrips,
+            'pastTrips' => $pastTrips,
+
+            // stats
             'stats' => [
                 'totalRequests' => $totalRequests,
                 'approved' => $approvedCount,
                 'pending' => $pendingCount,
                 'rejected' => $rejectedCount,
-                'vehiclesToBeOutToday' => $vehiclesToBeOutTodayFormatted->count(),
+                'vehiclesToBeOutToday' => $vehiclesToBeOutToday->count(),
             ],
         ]);
     }

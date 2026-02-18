@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, router } from "@inertiajs/react";
 
@@ -259,8 +259,21 @@ export default function VehicleRequestDashboard({
   pendingRequests = [],
   approvedRequests = [],
   rejectedRequests = [],
+
+  searchedVehicle = "",
+  currentTrips = [],
+  pastTrips = [],
 }) {
+
   const [activeSection, setActiveSection] = useState("dashboard");
+  const [vehicleSearch, setVehicleSearch] = useState(searchedVehicle || "");
+
+  // Auto-switch to search section when a vehicle is searched
+  useEffect(() => {
+    if (searchedVehicle) {
+      setActiveSection("search");
+    }
+  }, [searchedVehicle]);
 
   // modal state
   const [open, setOpen] = useState(false);
@@ -279,6 +292,7 @@ export default function VehicleRequestDashboard({
     { id: "pending", label: "Pending Requests", icon: HourglassEmptyOutlinedIcon },
     { id: "approved", label: "Approved Requests", icon: CheckCircleOutlinedIcon },
     { id: "rejected", label: "Rejected Requests", icon: CancelOutlinedIcon },
+    { id: "search", label: "Search Trips", icon: DirectionsCarOutlinedIcon },
   ];
 
   const Section = ({ title, items, renderItem, emptyIcon, emptyText }) => (
@@ -353,6 +367,54 @@ export default function VehicleRequestDashboard({
           />
         );
 
+        case "search":
+  return (
+    <Box>
+      <Typography variant="h5" fontWeight={850} sx={{ mb: 3, color: "#111827" }}>
+        Search Results
+      </Typography>
+
+      {!searchedVehicle && (
+        <EmptyState icon={DirectionsCarOutlinedIcon} text="Search a vehicle number to view trips" />
+      )}
+
+      {!!searchedVehicle && !currentTrips.length && !pastTrips.length && (
+        <EmptyState icon={DirectionsCarOutlinedIcon} text="No trips found for this vehicle" />
+      )}
+
+      {currentTrips.length > 0 && (
+        <>
+          <Typography variant="subtitle1" fontWeight={900} sx={{ mb: 2, color: "#111827" }}>
+            Current & Future Trips
+          </Typography>
+          <Grid container spacing={2.5}>
+            {currentTrips.map((r) => (
+              <Grid item xs={12} sm={6} lg={4} key={r.vehicle_request_id}>
+                <RequestCard request={r} status={(r.status || "PENDING").toLowerCase()} onView={onView} />
+              </Grid>
+            ))}
+          </Grid>
+        </>
+      )}
+
+      {pastTrips.length > 0 && (
+        <>
+          <Typography variant="subtitle1" fontWeight={900} sx={{ mt: 4, mb: 2, color: "#111827" }}>
+            Past Trips
+          </Typography>
+          <Grid container spacing={2.5}>
+            {pastTrips.map((r) => (
+              <Grid item xs={12} sm={6} lg={4} key={r.vehicle_request_id}>
+                <RequestCard request={r} status={(r.status || "PENDING").toLowerCase()} onView={onView} />
+              </Grid>
+            ))}
+          </Grid>
+        </>
+      )}
+    </Box>
+  );
+
+
       default:
         return (
           <Box>
@@ -377,21 +439,23 @@ export default function VehicleRequestDashboard({
             </Grid>
 
             <Typography variant="subtitle1" fontWeight={800} sx={{ mt: 4, mb: 2, color: "#111827" }}>
-              Recent Activity
+              Upcoming Trips
             </Typography>
 
             <Grid container spacing={2.5}>
-              {!pendingRequests.length && !approvedRequests.length && !rejectedRequests.length && (
+              {approvedRequests
+                .filter((r) => r.trip_details && new Date(r.start_date) >= new Date())
+                .slice(0, 3)
+                .map((r) => (
+                  <Grid item xs={12} sm={6} lg={4} key={r.vehicle_request_id}>
+                    <RequestCard request={r} status="approved" onView={onView} />
+                  </Grid>
+                ))}
+              {!approvedRequests.filter((r) => r.trip_details && new Date(r.start_date) >= new Date()).length && (
                 <Grid item xs={12}>
-                  <EmptyState icon={DashboardOutlinedIcon} text="No recent activity" />
+                  <EmptyState icon={LocalShippingOutlinedIcon} text="No upcoming approved trips" />
                 </Grid>
               )}
-
-              {pendingRequests.slice(0, 3).map((r) => (
-                <Grid item xs={12} sm={6} lg={4} key={r.vehicle_request_id}>
-                  <RequestCard request={r} status="pending" onView={onView} />
-                </Grid>
-              ))}
             </Grid>
           </Box>
         );
@@ -429,7 +493,7 @@ export default function VehicleRequestDashboard({
 
             <List sx={{ p: 0 }}>
               {menuItems.map(({ id, label, icon: Icon }) => {
-                const active = activeSection === id;
+                const active = activeSection === "search" &&  id;
                 return (
                   <ListItemButton
                     key={id}
@@ -469,6 +533,55 @@ export default function VehicleRequestDashboard({
             </Button>
           </Stack>
         </Box>
+
+        <Paper sx={{ p: 2, mb: 3, borderRadius: 2, border: "1px solid #e5e7eb" }}>
+  <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+    <Box sx={{ flex: 1 }}>
+      <Typography variant="body2" fontWeight={800} sx={{ mb: 0.75, color: "#111827" }}>
+        Search by Vehicle Number
+      </Typography>
+
+      <Box
+        component="input"
+        value={vehicleSearch}
+        onChange={(e) => setVehicleSearch(e.target.value)}
+        placeholder="Ex: ABC-1234"
+        sx={{
+          width: "100%",
+          px: 1.5,
+          py: 1.25,
+          borderRadius: 1.5,
+          border: "1px solid #e5e7eb",
+          outline: "none",
+          fontSize: 14,
+          "&:focus": { borderColor: "#94a3b8" },
+        }}
+      />
+    </Box>
+
+    <Stack direction="row" spacing={1} alignItems="end">
+      <Button
+        variant="contained"
+        onClick={() => router.get(route("hrms.vehicle-request-dashboard"), { vehicle_no: vehicleSearch })}
+        sx={{ textTransform: "none", fontWeight: 800 }}
+      >
+        Search
+      </Button>
+
+      <Button
+        variant="outlined"
+        onClick={() => {
+          setVehicleSearch("");
+          router.get(route("hrms.vehicle-request-dashboard"));
+        }}
+        sx={{ textTransform: "none", fontWeight: 800 }}
+      >
+        Clear
+      </Button>
+    </Stack>
+  </Stack>
+</Paper>
+
 
         {/* MAIN */}
         <Box sx={{ flex: 1, p: { xs: 2, sm: 3, lg: 4 } }}>
