@@ -493,7 +493,7 @@ export default function VehicleRequestDashboard({
 
             <List sx={{ p: 0 }}>
               {menuItems.map(({ id, label, icon: Icon }) => {
-                const active = activeSection === "search" &&  id;
+                const active = activeSection === id;
                 return (
                   <ListItemButton
                     key={id}
@@ -534,59 +534,61 @@ export default function VehicleRequestDashboard({
           </Stack>
         </Box>
 
-        <Paper sx={{ p: 2, mb: 3, borderRadius: 2, border: "1px solid #e5e7eb" }}>
-  <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-    <Box sx={{ flex: 1 }}>
-      <Typography variant="body2" fontWeight={800} sx={{ mb: 0.75, color: "#111827" }}>
-        Search by Vehicle Number
-      </Typography>
-
-      <Box
-        component="input"
-        value={vehicleSearch}
-        onChange={(e) => setVehicleSearch(e.target.value)}
-        placeholder="Ex: ABC-1234"
-        sx={{
-          width: "100%",
-          px: 1.5,
-          py: 1.25,
-          borderRadius: 1.5,
-          border: "1px solid #e5e7eb",
-          outline: "none",
-          fontSize: 14,
-          "&:focus": { borderColor: "#94a3b8" },
-        }}
-      />
-    </Box>
-
-    <Stack direction="row" spacing={1} alignItems="end">
-      <Button
-        variant="contained"
-        onClick={() => router.get(route("hrms.vehicle-request-dashboard"), { vehicle_no: vehicleSearch })}
-        sx={{ textTransform: "none", fontWeight: 800 }}
-      >
-        Search
-      </Button>
-
-      <Button
-        variant="outlined"
-        onClick={() => {
-          setVehicleSearch("");
-          router.get(route("hrms.vehicle-request-dashboard"));
-        }}
-        sx={{ textTransform: "none", fontWeight: 800 }}
-      >
-        Clear
-      </Button>
-    </Stack>
-  </Stack>
-</Paper>
-
-
         {/* MAIN */}
         <Box sx={{ flex: 1, p: { xs: 2, sm: 3, lg: 4 } }}>
+          {activeSection === "search" && (
+            <Paper sx={{ p: 2, mb: 3, borderRadius: 2, border: "1px solid #e5e7eb" }}>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="body2" fontWeight={800} sx={{ mb: 0.75, color: "#111827" }}>
+                    Search by Vehicle Number
+                  </Typography>
+
+                  <Box
+                    component="input"
+                    value={vehicleSearch}
+                    onChange={(e) => setVehicleSearch(e.target.value)}
+                    placeholder="Ex: ABC-1234"
+                    sx={{
+                      width: "100%",
+                      px: 1.5,
+                      py: 1.25,
+                      borderRadius: 1.5,
+                      border: "1px solid #e5e7eb",
+                      outline: "none",
+                      fontSize: 14,
+                      "&:focus": { borderColor: "#94a3b8" },
+                    }}
+                  />
+                </Box>
+
+                <Stack direction="row" spacing={1} alignItems="end">
+                  <Button
+                    variant="contained"
+                    onClick={() => router.get(route("hrms.vehicle-request-dashboard"), { vehicle_no: vehicleSearch })}
+                    sx={{ textTransform: "none", fontWeight: 800 }}
+                  >
+                    Search
+                  </Button>
+
+                  <Button
+                    variant="outlined"
+                    onClick={() => {
+                      setVehicleSearch("");
+                      router.get(route("hrms.vehicle-request-dashboard"));
+                    }}
+                    sx={{ textTransform: "none", fontWeight: 800 }}
+                  >
+                    Clear
+                  </Button>
+                </Stack>
+              </Stack>
+            </Paper>
+          )}
+
           {content}
         </Box>
+
 
         {/* MODAL */}
         <DetailsDialog
