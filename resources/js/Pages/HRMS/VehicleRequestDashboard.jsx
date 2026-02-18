@@ -36,18 +36,18 @@ const SIDEBAR_WIDTH = 280;
 const formatDate = (d) =>
   d
     ? new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })
-    : "—";
+    : "";
 
 const formatTime = (d) =>
   d
     ? new Date(d).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
-    : "—";
+    : "";
 
 const getDateDisplay = (r) => {
   const start = formatDate(r.start_date);
   if (r.is_one_day) return start;
   const end = formatDate(r.end_date);
-  return `${start} — ${end}`;
+  return `${start}  ${end}`;
 };
 
 const EmptyState = ({ icon: Icon, text }) => (
@@ -588,7 +588,6 @@ export default function VehicleRequestDashboard({
 
           {content}
         </Box>
-
 
         {/* MODAL */}
         <DetailsDialog
