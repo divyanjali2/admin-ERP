@@ -37,7 +37,7 @@ const MODULE_SETS = {
     {
       title: "Vehicle Request Management",
       description: "Review, approve, and manage vehicle booking requests.",
-      href: "/hrms/vehicle-reauest-dashboard",
+      href: "/hrms/vehicle-request-dashboard",
       image: "/images/vehicle-request-management.webp",
     },
     {

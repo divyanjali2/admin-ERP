@@ -49,7 +49,7 @@ Route::get('/emp-dashboard', function () {
 
 Route::get('/leave-dashboard', [LeaveRequestController::class, 'dashboard'])->name('leave-dashboard');
 
-Route::get('/vehicle-reauest-dashboard', [VehicleRequestController::class, 'dashboard'])->name('vehicle-reauest-dashboard');
+Route::get('/vehicle-request-dashboard', [VehicleRequestController::class, 'dashboard'])->name('vehicle-request-dashboard');
 
 Route::get('/payroll-dashboard', function () {
     return Inertia::render('HRMS/PayrollDashboard');
