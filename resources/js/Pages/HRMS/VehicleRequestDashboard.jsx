@@ -418,22 +418,57 @@ export default function VehicleRequestDashboard({
       default:
         return (
           <Box>
-            <Typography variant="h5" fontWeight={850} sx={{ mb: 3, color: "#111827" }}>
-              Dashboard Overview
-            </Typography>
+            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
+              <Typography variant="h5" fontWeight={850} sx={{ color: "#111827" }}>
+                Dashboard Overview
+              </Typography>
+              <Box sx={{ width: 320 }}>
+                <Stack direction="row" spacing={1}>
+                  <Box
+                    component="input"
+                    value={vehicleSearch}
+                    onChange={(e) => setVehicleSearch(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter") {
+                        router.get(route("hrms.vehicle-request-dashboard"), { vehicle_no: vehicleSearch });
+                      }
+                    }}
+                    placeholder="Search vehicle..."
+                    sx={{
+                      flex: 1,
+                      px: 1.5,
+                      py: 1,
+                      borderRadius: 1.5,
+                      border: "1px solid #e5e7eb",
+                      outline: "none",
+                      fontSize: 14,
+                      "&:focus": { borderColor: "#94a3b8" },
+                    }}
+                  />
+                  <Button
+                    size="small"
+                    variant="contained"
+                    onClick={() => router.get(route("hrms.vehicle-request-dashboard"), { vehicle_no: vehicleSearch })}
+                    sx={{ textTransform: "none", fontWeight: 800 }}
+                  >
+                    Go
+                  </Button>
+                </Stack>
+              </Box>
+            </Stack>
 
             {/* STAT CARDS (side by side) */}
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={6} lg={3}>
+              <Grid item xs={12} sm={6} lg={4}>
                 <StatCard icon={CalendarTodayIcon} label="Out Today" value={vehiclesToBeOutToday.length} />
               </Grid>
-              <Grid item xs={12} sm={6} lg={3}>
+              <Grid item xs={12} sm={6} lg={4}>
                 <StatCard icon={HourglassEmptyOutlinedIcon} label="Pending" value={pendingRequests.length} />
               </Grid>
-              <Grid item xs={12} sm={6} lg={3}>
+              <Grid item xs={12} sm={6} lg={4}>
                 <StatCard icon={CheckCircleOutlinedIcon} label="Approved" value={approvedRequests.length} />
               </Grid>
-              <Grid item xs={12} sm={6} lg={3}>
+              <Grid item xs={12} sm={6} lg={4}>
                 <StatCard icon={CancelOutlinedIcon} label="Rejected" value={rejectedRequests.length} />
               </Grid>
             </Grid>
