@@ -40,4 +40,14 @@ class TransportService extends Model
     {
         return $this->belongsTo(Chauffer::class);
     }
+
+    public function tripDetails()
+    {
+        return $this->hasMany(TripDetail::class, 'transport_service_id');
+    }
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class, 'employee_id', 'employee_id');
+    }
 }

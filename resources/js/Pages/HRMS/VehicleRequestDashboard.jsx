@@ -129,6 +129,169 @@ const DetailsDialog = ({ open, onClose, data, statusLabel }) => {
   );
 };
 
+const ImagePreviewDialog = ({ open, onClose, src, title = "Preview" }) => (
+  <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <DialogTitle sx={{ fontWeight: 900 }}>{title}</DialogTitle>
+    <DialogContent dividers>
+      {!src ? (
+        <Typography>No image</Typography>
+      ) : (
+        <Box
+          component="img"
+          src={src}
+          alt={title}
+          sx={{
+            width: "100%",
+            height: "auto",
+            borderRadius: 2,
+            border: "1px solid #e5e7eb",
+            objectFit: "contain",
+          }}
+        />
+      )}
+    </DialogContent>
+    <DialogActions>
+      <Button onClick={onClose} sx={{ textTransform: "none" }}>
+        Close
+      </Button>
+    </DialogActions>
+  </Dialog>
+);
+
+const OdometerDialog = ({ open, onClose, data }) => {
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewSrc, setPreviewSrc] = useState("");
+  const [previewTitle, setPreviewTitle] = useState("");
+
+  const openPreview = (src, title) => {
+    setPreviewSrc(src);
+    setPreviewTitle(title);
+    setPreviewOpen(true);
+  };
+
+  if (!data) {
+    return (
+      <>
+        <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+          <DialogTitle sx={{ fontWeight: 900 }}>Odometer Details</DialogTitle>
+          <DialogContent dividers>
+            <Typography>No odometer details available.</Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={onClose} sx={{ textTransform: "none" }}>
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <ImagePreviewDialog
+          open={previewOpen}
+          onClose={() => setPreviewOpen(false)}
+          src={previewSrc}
+          title={previewTitle}
+        />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ fontWeight: 900 }}>Odometer Details</DialogTitle>
+
+        <DialogContent dividers>
+          <Stack spacing={2}>
+            <Row label="Trip ID" value={data.trip_detail_id ?? "—"} />
+            <Row label="Start DateTime" value={data.trip_start_datetime ?? "—"} />
+            <Row label="End DateTime" value={data.trip_end_datetime || "—"} />
+            <Row label="Start Odometer" value={data.trip_start_odometer ?? "—"} />
+            <Row label="End Odometer" value={data.trip_end_odometer ?? "—"} />
+            <Row label="Start Fuel %" value={data.start_trip_fuel ?? "—"} />
+            <Row label="End Fuel %" value={data.end_trip_fuel ?? "—"} />
+
+            {/* Thumbnails */}
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 1 }}>
+              {/* Start Photo */}
+              <Box sx={{ flex: 1 }}>
+                <Typography fontWeight={900} sx={{ mb: 1, color: "#111827" }}>
+                  Start Odometer Photo
+                </Typography>
+
+                {data.trip_start_odometer_photo ? (
+                  <Box
+                    component="img"
+                    src={data.trip_start_odometer_photo}
+                    alt="Start Odometer"
+                    onClick={() =>
+                      openPreview(data.trip_start_odometer_photo, "Start Odometer Photo")
+                    }
+                    sx={{
+                      width: "100%",
+                      maxWidth: 260,
+                      height: 160,              // ✅ fixed size
+                      borderRadius: 2,
+                      border: "1px solid #e5e7eb",
+                      objectFit: "cover",       // ✅ crop nicely
+                      cursor: "pointer",
+                      "&:hover": { opacity: 0.9 },
+                    }}
+                  />
+                ) : (
+                  <Typography sx={{ color: "#6b7280" }}>No image</Typography>
+                )}
+              </Box>
+
+              {/* End Photo */}
+              <Box sx={{ flex: 1 }}>
+                <Typography fontWeight={900} sx={{ mb: 1, color: "#111827" }}>
+                  End Odometer Photo
+                </Typography>
+
+                {data.trip_end_odometer_photo ? (
+                  <Box
+                    component="img"
+                    src={data.trip_end_odometer_photo}
+                    alt="End Odometer"
+                    onClick={() =>
+                      openPreview(data.trip_end_odometer_photo, "End Odometer Photo")
+                    }
+                    sx={{
+                      width: "100%",
+                      maxWidth: 260,
+                      height: 160,              // ✅ fixed size
+                      borderRadius: 2,
+                      border: "1px solid #e5e7eb",
+                      objectFit: "cover",
+                      cursor: "pointer",
+                      "&:hover": { opacity: 0.9 },
+                    }}
+                  />
+                ) : (
+                  <Typography sx={{ color: "#6b7280" }}>No image</Typography>
+                )}
+              </Box>
+            </Stack>
+          </Stack>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={onClose} sx={{ textTransform: "none" }}>
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Preview modal */}
+      <ImagePreviewDialog
+        open={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        src={previewSrc}
+        title={previewTitle}
+      />
+    </>
+  );
+};
+
 const statusToKey = (s) => (s ? String(s).toLowerCase() : "pending");
 
 export default function VehicleRequestDashboard({
@@ -148,6 +311,13 @@ export default function VehicleRequestDashboard({
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(null);
   const [selectedStatusLabel, setSelectedStatusLabel] = useState("");
+  const [odoOpen, setOdoOpen] = useState(false);
+  const [odoData, setOdoData] = useState(null);
+
+  const onOdometerView = (item) => {
+      setOdoData(item.trip_details || null);
+      setOdoOpen(true);
+  };
 
   const onView = (item) => {
     const sKey = statusToKey(item.status);
@@ -229,38 +399,16 @@ export default function VehicleRequestDashboard({
             <Typography variant="h5" fontWeight={900} sx={{ color: "#111827" }}>
               Vehicle Request Dashboard
             </Typography>
-            <Typography variant="body2" sx={{ color: "#6b7280" }}>
-              Dashboard + All Requests
-            </Typography>
           </Box>
 
-          <Stack direction="row" spacing={1} sx={{ width: { xs: "100%", md: 420 } }}>
-            <Button variant="contained" color="success" onClick={() => router.get("/hrms")} sx={{ textTransform: "none", fontWeight: 800 }} >
-              Back
-            </Button>
-            <TextField
-              size="small"
-              fullWidth
-              value={vehicleSearch}
-              onChange={(e) => setVehicleSearch(e.target.value)}
-              placeholder="Search vehicle number..."
-            />
+          <Stack direction="row" spacing={2} sx={{ width: { xs: "100%", md: 100 } }}>
             <Button
               variant="contained"
-              onClick={() => router.get(route("hrms.vehicle-request-dashboard"), { vehicle_no: vehicleSearch })}
+              color="success"
+              onClick={() => router.get("/hrms")}
               sx={{ textTransform: "none", fontWeight: 800 }}
             >
-              Go
-            </Button>
-            <Button
-              variant="outlined"
-              onClick={() => {
-                setVehicleSearch("");
-                router.get(route("hrms.vehicle-request-dashboard"));
-              }}
-              sx={{ textTransform: "none", fontWeight: 800 }}
-            >
-              Clear
+              Back
             </Button>
           </Stack>
         </Stack>
@@ -384,15 +532,26 @@ export default function VehicleRequestDashboard({
                             sx={{ bgcolor: s.bg, color: s.color, fontWeight: 800, borderRadius: 1 }}
                           />
                         </TableCell>
-                        <TableCell align="right">
+                        <Stack direction="row" spacing={1} justifyContent="flex-end">
                           <Button
                             size="small"
+                            variant="outlined"
                             onClick={() => onView(r)}
                             sx={{ textTransform: "none", fontWeight: 800 }}
                           >
                             View
                           </Button>
-                        </TableCell>
+
+                          <Button
+                            size="small"
+                            variant="contained"
+                            color="secondary"
+                            onClick={() => onOdometerView(r)}
+                            sx={{ textTransform: "none", fontWeight: 800 }}
+                          >
+                            Odometer
+                          </Button>
+                        </Stack>
                       </TableRow>
                     );
                   })
@@ -409,6 +568,11 @@ export default function VehicleRequestDashboard({
           data={selected}
           statusLabel={selectedStatusLabel}
         />
+        <OdometerDialog
+  open={odoOpen}
+  onClose={() => setOdoOpen(false)}
+  data={odoData}
+/>
       </Box>
     </AuthenticatedLayout>
   );

@@ -10,7 +10,7 @@ class TripDetail extends Model
     protected $primaryKey = 'trip_detail_id';
 
     protected $fillable = [
-        'vehicle_request_id',
+        'transport_service_id',
         'trip_start_datetime',
         'trip_end_datetime',
         'trip_start_odometer',

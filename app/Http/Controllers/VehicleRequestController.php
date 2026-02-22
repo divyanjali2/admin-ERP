@@ -18,21 +18,16 @@ class VehicleRequestController extends Controller
             $start = $ts->assigned_start_at ? Carbon::parse($ts->assigned_start_at) : null;
             $end   = $ts->assigned_end_at ? Carbon::parse($ts->assigned_end_at) : null;
 
+            $latestTrip = $ts->tripDetails
+                ?->sortByDesc('trip_start_datetime')
+                ->values()
+                ->first();
+
             return [
-                // keep same key used by React
                 'vehicle_request_id' => $ts->id,
-
-                // NEW: show type
                 'type' => $ts->type,
-
-                'chauffer_name' => $ts->chauffer_name,
-
                 'passenger_count' => $ts->passenger_count,
-
-                // vehicle number (from relation or stored string)
                 'vehicle_no' => $ts->vehicle_no,
-
-                // employee display (if you have employee relation; else show id or blank)
                 'employee_name' => $ts->employee?->full_name
                     ?? $ts->employee?->name
                     ?? ($ts->employee_id ? ('Employee #' . $ts->employee_id) : ''),
@@ -40,28 +35,43 @@ class VehicleRequestController extends Controller
                 'employee_id' => $ts->employee_id,
                 'manager_id' => $ts->manager_id,
 
-                // map assigned dates to what UI expects
+                // Chauffer (for fallback in React)
+                'chauffer_name' => $ts->chauffer_name,
+                'chauffer_phone' => $ts->chauffer_phone ?? null,
+
+                // Dates for UI
                 'start_date' => $start?->toDateString(),
                 'end_date' => $end?->toDateString(),
                 'is_one_day' => $start ? (!$end || $start->toDateString() === $end->toDateString()) : true,
 
-                // map existing fields to UI names
+                // UI mapping
                 'reason' => $ts->note,
                 'destinations' => $ts->dropoff_location,
                 'trip_code' => $ts->trip_code,
 
-                'status' => $ts->status,              // PENDING/APPROVED/REJECTED/CANCELLED
+                // Status
+                'status' => $ts->status,
                 'reject_reason' => $ts->reject_reason,
 
                 'created_at' => optional($ts->created_at)->toDateString(),
 
-                // you don’t have tripDetails here, keep null
-                'trip_details' => null,
+                // ✅ Odometer modal data (latest trip)
+                'trip_details' => $latestTrip ? [
+                    'trip_detail_id' => $latestTrip->trip_detail_id,
+                    'trip_start_datetime' => optional($latestTrip->trip_start_datetime)->toDateTimeString(),
+                    'trip_end_datetime' => optional($latestTrip->trip_end_datetime)->toDateTimeString(),
+                    'trip_start_odometer' => $latestTrip->trip_start_odometer,
+                    'trip_end_odometer' => $latestTrip->trip_end_odometer,
+                    'trip_start_odometer_photo' => $latestTrip->trip_start_odometer_photo,
+                    'trip_end_odometer_photo' => $latestTrip->trip_end_odometer_photo,
+                    'start_trip_fuel' => $latestTrip->start_trip_fuel,
+                    'end_trip_fuel' => $latestTrip->end_trip_fuel,
+                ] : null,
             ];
         };
 
-        $base = TransportService::query();
-            // ->with(['employee']);
+        // Base query (eager load tripDetails; add employee only if you actually have it)
+        $base = TransportService::with(['tripDetails']); // add 'employee' if exists: ->with(['tripDetails','employee'])
 
         // OUT TODAY = approved + start today
         $vehiclesToBeOutToday = (clone $base)
@@ -93,14 +103,13 @@ class VehicleRequestController extends Controller
             ->map($format)
             ->values();
 
-        // SEARCH (by reg no)
+        // SEARCH (vehicle_no string)
         $currentTrips = collect();
         $pastTrips = collect();
 
         if ($vehicleNo) {
             $searched = (clone $base)
-                // ->whereHas('vehicle', fn ($q) => $q->where('reg_no', 'LIKE', "%{$vehicleNo}%"))
-                ->orWhere('vehicle_no', 'LIKE', "%{$vehicleNo}%") // if you also store vehicle_no string
+                ->where('vehicle_no', 'LIKE', "%{$vehicleNo}%")
                 ->orderByDesc('assigned_start_at')
                 ->get()
                 ->map($format);
@@ -114,7 +123,7 @@ class VehicleRequestController extends Controller
                 ->values();
         }
 
-        // stats
+        // Stats
         $totalRequests = TransportService::count();
         $approvedCount = TransportService::where('status', 'APPROVED')->count();
         $pendingCount  = TransportService::where('status', 'PENDING')->count();
