@@ -2,22 +2,16 @@ import React, { useMemo, useState, useEffect } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, router } from "@inertiajs/react";
 
-import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
-import DirectionsCarOutlinedIcon from "@mui/icons-material/DirectionsCarOutlined";
-import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
-import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
-import HourglassEmptyOutlinedIcon from "@mui/icons-material/HourglassEmptyOutlined";
-import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import HourglassEmptyOutlinedIcon from "@mui/icons-material/HourglassEmptyOutlined";
+import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+import DirectionsCarOutlinedIcon from "@mui/icons-material/DirectionsCarOutlined";
 
 import {
   Box,
   Stack,
   Typography,
-  List,
-  ListItemButton,
-  ListItemText,
   Divider,
   Card,
   CardContent,
@@ -29,33 +23,30 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableContainer,
+  TextField,
 } from "@mui/material";
-
-const SIDEBAR_WIDTH = 280;
 
 const formatDate = (d) =>
   d
     ? new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })
     : "";
 
-const formatTime = (d) =>
-  d
-    ? new Date(d).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
-    : "";
-
 const getDateDisplay = (r) => {
   const start = formatDate(r.start_date);
   if (r.is_one_day) return start;
   const end = formatDate(r.end_date);
-  return `${start}  ${end}`;
+  return `${start} to ${end}`;
 };
-
-const EmptyState = ({ icon: Icon, text }) => (
-  <Paper sx={{ p: 4, textAlign: "center", borderRadius: 2, bgcolor: "#f8fafc" }}>
-    <Icon sx={{ fontSize: 44, color: "#94a3b8", mb: 1.5 }} />
-    <Typography sx={{ color: "#64748b" }}>{text}</Typography>
-  </Paper>
-);
 
 const StatCard = ({ icon: Icon, label, value }) => (
   <Card sx={{ borderRadius: 2, border: "1px solid #e5e7eb", width: "100%" }}>
@@ -91,91 +82,7 @@ const statusStyles = {
   pending: { label: "Pending", bg: "#f1f5f9", color: "#334155" },
   approved: { label: "Approved", bg: "#ecfdf5", color: "#047857" },
   rejected: { label: "Rejected", bg: "#fef2f2", color: "#b91c1c" },
-};
-
-const DetailsDialog = ({ open, onClose, data, statusLabel }) => {
-  if (!data) return null;
-
-  const dateDisplay = getDateDisplay(data);
-
-  const trip = data.trip_details;
-
-  const isOutNow = !!trip && !trip.trip_end_datetime;
-
-  const tripStartDate = trip?.trip_start_datetime ? formatDate(trip.trip_start_datetime) : "—";
-  const tripStartTime = trip?.trip_start_datetime ? formatTime(trip.trip_start_datetime) : "—";
-
-  const tripEndDate = trip?.trip_end_datetime ? formatDate(trip.trip_end_datetime) : "—";
-  const tripEndTime = trip?.trip_end_datetime ? formatTime(trip.trip_end_datetime) : "—";
-
-  return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle sx={{ fontWeight: 900 }}>
-        {data.vehicle_reg_no || "Vehicle"} — {statusLabel}
-      </DialogTitle>
-
-      <DialogContent dividers>
-        <Stack spacing={1.25}>
-          <Row label="Employee" value={data.employee_name || "—"} />
-          <Row label="Trip Code" value={data.trip_code || "—"} />
-          <Row label="Reason" value={data.reason || "—"} />
-          <Row label="Destination" value={data.destinations || "—"} />
-
-          <Row label="Date" value={dateDisplay} />
-
-          {data.created_at && <Row label="Requested On" value={formatDate(data.created_at)} />}
-          {data.reject_reason && <Row label="Reject Reason" value={data.reject_reason} />}
-
-          {trip && (
-            <Card sx={{ mt: 1.5, borderRadius: 2, border: "1px solid #e5e7eb" }}>
-              <CardContent>
-                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.25 }}>
-                  <Typography fontWeight={900} sx={{ color: "#111827" }}>
-                    {isOutNow ? "Out Now" : "Trip Details"}
-                  </Typography>
-
-                  <Chip
-                    size="small"
-                    label={isOutNow ? "OUT NOW" : "COMPLETED"}
-                    sx={{
-                      bgcolor: isOutNow ? "#fff7ed" : "#ecfdf5",
-                      color: isOutNow ? "#9a3412" : "#047857",
-                      fontWeight: 800,
-                      borderRadius: 1,
-                    }}
-                  />
-                </Stack>
-
-                <Stack spacing={1}>
-                  <Row label="Start Date" value={tripStartDate} />
-                  <Row label="Start Time" value={tripStartTime} />
-
-                  <Row label="End Date" value={tripEndDate} />
-                  <Row label="End Time" value={tripEndTime} />
-
-                  <Row label="Start Odometer" value={trip.trip_start_odometer ?? "—"} />
-                  <Row label="End Odometer" value={trip.trip_end_odometer ?? "—"} />
-
-                  {trip.trip_start_odometer_photo && (
-                    <Row label="Start Odo Photo" value={trip.trip_start_odometer_photo} />
-                  )}
-                  {trip.trip_end_odometer_photo && (
-                    <Row label="End Odo Photo" value={trip.trip_end_odometer_photo} />
-                  )}
-                </Stack>
-              </CardContent>
-            </Card>
-          )}
-        </Stack>
-      </DialogContent>
-
-      <DialogActions>
-        <Button onClick={onClose} sx={{ textTransform: "none" }}>
-          Close
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
+  cancelled: { label: "Cancelled", bg: "#f3f4f6", color: "#374151" },
 };
 
 const Row = ({ label, value }) => (
@@ -189,69 +96,40 @@ const Row = ({ label, value }) => (
   </Stack>
 );
 
-const RequestCard = ({ request, status = "pending", onView, hideOutNowDetails = false }) => {
-  const s = statusStyles[status] || statusStyles.pending;
-  const dateDisplay = getDateDisplay(request);
+const DetailsDialog = ({ open, onClose, data, statusLabel }) => {
+  if (!data) return null;
+
+  const dateDisplay = getDateDisplay(data);
 
   return (
-    <Card sx={{ borderRadius: 2, border: "1px solid #e5e7eb", height: "100%" }}>
-      <CardContent>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle sx={{ fontWeight: 900 }}>
+        {data.vehicle_no || "Vehicle"} — {statusLabel}
+      </DialogTitle>
+
+      <DialogContent dividers>
         <Stack spacing={1.25}>
-          <Stack direction="row" justifyContent="space-between" alignItems="start">
-            <Box>
-              <Typography variant="subtitle1" fontWeight={800} sx={{ color: "#111827" }}>
-                {request.vehicle_reg_no}
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#6b7280" }}>
-                {request.employee_name || "Employee"}
-              </Typography>
-            </Box>
-
-            <Chip
-              label={s.label}
-              sx={{ bgcolor: s.bg, color: s.color, fontWeight: 700, borderRadius: 1 }}
-              size="small"
-            />
-          </Stack>
-
-          <Divider />
-
-          <Stack spacing={0.75}>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <CalendarTodayIcon sx={{ fontSize: 18, color: "#6b7280" }} />
-              <Typography variant="body2" sx={{ color: "#374151" }}>
-                {dateDisplay}
-              </Typography>
-            </Stack>
-
-            <Typography variant="body2" sx={{ color: "#4b5563" }}>
-              <strong>Trip Code:</strong> {request.trip_code || "—"}
-            </Typography>
-
-            <Typography variant="body2" sx={{ color: "#4b5563" }}>
-              <strong>Reason:</strong> {request.reason || "—"}
-            </Typography>
-
-            {/* Out-now cards: keep these blank (no extra data on card) */}
-            {!hideOutNowDetails && (
-              <Typography variant="body2" sx={{ color: "#4b5563" }}>
-                <strong>Destination:</strong> {request.destinations || "—"}
-              </Typography>
-            )}
-          </Stack>
-
-          <Button
-            size="small"
-            onClick={() => onView?.(request, s.label)}
-            sx={{ mt: 1, alignSelf: "flex-start", textTransform: "none" }}
-          >
-            View Details
-          </Button>
+          <Row label="Employee" value={data.employee_name || data.chauffer_name || "—"} />
+          <Row label="Trip Code" value={data.trip_code || "—"} />
+          <Row label="Type" value={(data.type || "—").toUpperCase()} />
+          <Row label="Passengers" value={data.passenger_count ?? "—"} />
+          <Row label="Destination" value={data.destinations || "—"} />
+          <Row label="Date" value={dateDisplay} />
+          {data.created_at && <Row label="Requested On" value={formatDate(data.created_at)} />}
+          {data.reject_reason && <Row label="Reject Reason" value={data.reject_reason} />}
         </Stack>
-      </CardContent>
-    </Card>
+      </DialogContent>
+
+      <DialogActions>
+        <Button onClick={onClose} sx={{ textTransform: "none" }}>
+          Close
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 };
+
+const statusToKey = (s) => (s ? String(s).toLowerCase() : "pending");
 
 export default function VehicleRequestDashboard({
   auth,
@@ -264,365 +142,265 @@ export default function VehicleRequestDashboard({
   currentTrips = [],
   pastTrips = [],
 }) {
-
-  const [activeSection, setActiveSection] = useState("dashboard");
   const [vehicleSearch, setVehicleSearch] = useState(searchedVehicle || "");
 
-  // Auto-switch to search section when a vehicle is searched
-  useEffect(() => {
-    if (searchedVehicle) {
-      setActiveSection("search");
-    }
-  }, [searchedVehicle]);
-
-  // modal state
+  // modal
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(null);
   const [selectedStatusLabel, setSelectedStatusLabel] = useState("");
 
-  const onView = (item, statusLabel) => {
+  const onView = (item) => {
+    const sKey = statusToKey(item.status);
+    const label = statusStyles[sKey]?.label || "Pending";
     setSelected(item);
-    setSelectedStatusLabel(statusLabel);
+    setSelectedStatusLabel(label);
     setOpen(true);
   };
 
-  const menuItems = [
-    { id: "dashboard", label: "Dashboard", icon: DashboardOutlinedIcon },
-    { id: "out-today", label: "Out Today", icon: LocalShippingOutlinedIcon },
-    { id: "pending", label: "Pending Requests", icon: HourglassEmptyOutlinedIcon },
-    { id: "approved", label: "Approved Requests", icon: CheckCircleOutlinedIcon },
-    { id: "rejected", label: "Rejected Requests", icon: CancelOutlinedIcon },
-    { id: "search", label: "Search Trips", icon: DirectionsCarOutlinedIcon },
-  ];
+  // Combine all lists into one (dedupe by vehicle_request_id)
+  const allRequests = useMemo(() => {
+    const merged = [
+      ...vehiclesToBeOutToday,
+      ...pendingRequests,
+      ...approvedRequests,
+      ...rejectedRequests,
+      ...currentTrips,
+      ...pastTrips,
+    ];
 
-  const Section = ({ title, items, renderItem, emptyIcon, emptyText }) => (
-    <Box>
-      <Typography variant="h5" fontWeight={850} sx={{ mb: 3, color: "#111827" }}>
-        {title}
-      </Typography>
+    const map = new Map();
+    merged.forEach((x) => {
+      if (!x) return;
+      map.set(x.vehicle_request_id, x);
+    });
+    return Array.from(map.values());
+  }, [vehiclesToBeOutToday, pendingRequests, approvedRequests, rejectedRequests, currentTrips, pastTrips]);
 
-      {items.length ? <Grid container spacing={2.5}>{items.map(renderItem)}</Grid> : <EmptyState icon={emptyIcon} text={emptyText} />}
-    </Box>
-  );
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [q, setQ] = useState("");
 
-  const content = (() => {
-    switch (activeSection) {
-      case "out-today":
-        return (
-          <Section
-            title="Vehicles To Be Out Today"
-            items={vehiclesToBeOutToday}
-            emptyIcon={CalendarTodayIcon}
-            emptyText="No vehicles scheduled for today"
-            renderItem={(r) => (
-              <Grid item xs={12} sm={6} lg={4} key={r.vehicle_request_id}>
-                <RequestCard request={r} status="approved" onView={onView} />
-              </Grid>
-            )}
-          />
-        );
+  const filtered = useMemo(() => {
+    const needle = q.trim().toLowerCase();
 
-      case "pending":
-        return (
-          <Section
-            title="Pending Vehicle Requests"
-            items={pendingRequests}
-            emptyIcon={HourglassEmptyOutlinedIcon}
-            emptyText="No pending requests"
-            renderItem={(r) => (
-              <Grid item xs={12} sm={6} lg={4} key={r.vehicle_request_id}>
-                <RequestCard request={r} status="pending" onView={onView} />
-              </Grid>
-            )}
-          />
-        );
+    return allRequests
+      .filter((r) => {
+        if (statusFilter === "ALL") return true;
+        return String(r.status || "").toUpperCase() === statusFilter;
+      })
+      .filter((r) => {
+        if (!needle) return true;
 
-      case "approved":
-        return (
-          <Section
-            title="Approved Vehicle Requests"
-            items={approvedRequests}
-            emptyIcon={CheckCircleOutlinedIcon}
-            emptyText="No approved requests"
-            renderItem={(r) => (
-              <Grid item xs={12} sm={6} lg={4} key={r.vehicle_request_id}>
-                <RequestCard request={r} status="approved" onView={onView} />
-              </Grid>
-            )}
-          />
-        );
+        const fields = [
+          r.vehicle_no,
+          r.trip_code,
+          r.type,
+          r.employee_name,
+          r.chauffer_name,
+          r.destinations,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
 
-      case "rejected":
-        return (
-          <Section
-            title="Rejected Vehicle Requests"
-            items={rejectedRequests}
-            emptyIcon={CancelOutlinedIcon}
-            emptyText="No rejected requests"
-            renderItem={(r) => (
-              <Grid item xs={12} sm={6} lg={4} key={r.vehicle_request_id}>
-                <RequestCard request={r} status="rejected" onView={onView} />
-              </Grid>
-            )}
-          />
-        );
-
-        case "search":
-  return (
-    <Box>
-      <Typography variant="h5" fontWeight={850} sx={{ mb: 3, color: "#111827" }}>
-        Search Results
-      </Typography>
-
-      {!searchedVehicle && (
-        <EmptyState icon={DirectionsCarOutlinedIcon} text="Search a vehicle number to view trips" />
-      )}
-
-      {!!searchedVehicle && !currentTrips.length && !pastTrips.length && (
-        <EmptyState icon={DirectionsCarOutlinedIcon} text="No trips found for this vehicle" />
-      )}
-
-      {currentTrips.length > 0 && (
-        <>
-          <Typography variant="subtitle1" fontWeight={900} sx={{ mb: 2, color: "#111827" }}>
-            Current & Future Trips
-          </Typography>
-          <Grid container spacing={2.5}>
-            {currentTrips.map((r) => (
-              <Grid item xs={12} sm={6} lg={4} key={r.vehicle_request_id}>
-                <RequestCard request={r} status={(r.status || "PENDING").toLowerCase()} onView={onView} />
-              </Grid>
-            ))}
-          </Grid>
-        </>
-      )}
-
-      {pastTrips.length > 0 && (
-        <>
-          <Typography variant="subtitle1" fontWeight={900} sx={{ mt: 4, mb: 2, color: "#111827" }}>
-            Past Trips
-          </Typography>
-          <Grid container spacing={2.5}>
-            {pastTrips.map((r) => (
-              <Grid item xs={12} sm={6} lg={4} key={r.vehicle_request_id}>
-                <RequestCard request={r} status={(r.status || "PENDING").toLowerCase()} onView={onView} />
-              </Grid>
-            ))}
-          </Grid>
-        </>
-      )}
-    </Box>
-  );
-
-
-      default:
-        return (
-          <Box>
-            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-              <Typography variant="h5" fontWeight={850} sx={{ color: "#111827" }}>
-                Dashboard Overview
-              </Typography>
-              <Box sx={{ width: 320 }}>
-                <Stack direction="row" spacing={1}>
-                  <Box
-                    component="input"
-                    value={vehicleSearch}
-                    onChange={(e) => setVehicleSearch(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === "Enter") {
-                        router.get(route("hrms.vehicle-request-dashboard"), { vehicle_no: vehicleSearch });
-                      }
-                    }}
-                    placeholder="Search vehicle..."
-                    sx={{
-                      flex: 1,
-                      px: 1.5,
-                      py: 1,
-                      borderRadius: 1.5,
-                      border: "1px solid #e5e7eb",
-                      outline: "none",
-                      fontSize: 14,
-                      "&:focus": { borderColor: "#94a3b8" },
-                    }}
-                  />
-                  <Button
-                    size="small"
-                    variant="contained"
-                    onClick={() => router.get(route("hrms.vehicle-request-dashboard"), { vehicle_no: vehicleSearch })}
-                    sx={{ textTransform: "none", fontWeight: 800 }}
-                  >
-                    Go
-                  </Button>
-                </Stack>
-              </Box>
-            </Stack>
-
-            {/* STAT CARDS (side by side) */}
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6} lg={4}>
-                <StatCard icon={CalendarTodayIcon} label="Out Today" value={vehiclesToBeOutToday.length} />
-              </Grid>
-              <Grid item xs={12} sm={6} lg={4}>
-                <StatCard icon={HourglassEmptyOutlinedIcon} label="Pending" value={pendingRequests.length} />
-              </Grid>
-              <Grid item xs={12} sm={6} lg={4}>
-                <StatCard icon={CheckCircleOutlinedIcon} label="Approved" value={approvedRequests.length} />
-              </Grid>
-              <Grid item xs={12} sm={6} lg={4}>
-                <StatCard icon={CancelOutlinedIcon} label="Rejected" value={rejectedRequests.length} />
-              </Grid>
-            </Grid>
-
-            <Typography variant="subtitle1" fontWeight={800} sx={{ mt: 4, mb: 2, color: "#111827" }}>
-              Upcoming Trips
-            </Typography>
-
-            <Grid container spacing={2.5}>
-              {approvedRequests
-                .filter((r) => r.trip_details && new Date(r.start_date) >= new Date())
-                .slice(0, 3)
-                .map((r) => (
-                  <Grid item xs={12} sm={6} lg={4} key={r.vehicle_request_id}>
-                    <RequestCard request={r} status="approved" onView={onView} />
-                  </Grid>
-                ))}
-              {!approvedRequests.filter((r) => r.trip_details && new Date(r.start_date) >= new Date()).length && (
-                <Grid item xs={12}>
-                  <EmptyState icon={LocalShippingOutlinedIcon} text="No upcoming approved trips" />
-                </Grid>
-              )}
-            </Grid>
-          </Box>
-        );
-    }
-  })();
+        return fields.includes(needle);
+      })
+      .sort((a, b) => {
+        // sort by start_date desc
+        const da = a.start_date ? new Date(a.start_date).getTime() : 0;
+        const db = b.start_date ? new Date(b.start_date).getTime() : 0;
+        return db - da;
+      });
+  }, [allRequests, statusFilter, q]);
 
   return (
     <AuthenticatedLayout user={auth.user}>
       <Head title="Vehicle Request Dashboard" />
 
-      <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f8fafc" }}>
-        {/* SIDEBAR (WHITE) */}
-        <Box
-          sx={{
-            width: SIDEBAR_WIDTH,
-            bgcolor: "#ffffff",
-            borderRight: "1px solid #e5e7eb",
-            p: 2.5,
-            position: "sticky",
-            top: 0,
-            height: "100vh",
-          }}
+      <Box sx={{ minHeight: "100vh", bgcolor: "#f8fafc", p: { xs: 2, sm: 3, lg: 4 } }}>
+        {/* HEADER + SEARCH */}
+        <Stack
+          direction={{ xs: "column", md: "row" }}
+          justifyContent="space-between"
+          alignItems={{ xs: "stretch", md: "center" }}
+          spacing={2}
+          sx={{ mb: 3 }}
         >
-          <Stack spacing={2.5}>
-            <Box>
-              <Typography variant="subtitle1" fontWeight={900} sx={{ color: "#111827" }}>
-                Vehicle Management
-              </Typography>
-              <Typography variant="caption" sx={{ color: "#6b7280" }}>
-                Dashboard
-              </Typography>
-            </Box>
+          <Box>
+            <Typography variant="h5" fontWeight={900} sx={{ color: "#111827" }}>
+              Vehicle Request Dashboard
+            </Typography>
+            <Typography variant="body2" sx={{ color: "#6b7280" }}>
+              Dashboard + All Requests
+            </Typography>
+          </Box>
 
-            <Divider />
-
-            <List sx={{ p: 0 }}>
-              {menuItems.map(({ id, label, icon: Icon }) => {
-                const active = activeSection === id;
-                return (
-                  <ListItemButton
-                    key={id}
-                    onClick={() => setActiveSection(id)}
-                    sx={{
-                      mb: 0.75,
-                      borderRadius: 1.5,
-                      color: active ? "#111827" : "#374151",
-                      bgcolor: active ? "#f1f5f9" : "transparent",
-                      border: active ? "1px solid #e5e7eb" : "1px solid transparent",
-                      "&:hover": { bgcolor: "#f8fafc" },
-                    }}
-                  >
-                    <Icon sx={{ mr: 1.5, fontSize: 20, color: active ? "#111827" : "#6b7280" }} />
-                    <ListItemText primary={label} primaryTypographyProps={{ variant: "body2", fontWeight: 700 }} />
-                  </ListItemButton>
-                );
-              })}
-            </List>
-
-            <Divider />
-
+          <Stack direction="row" spacing={1} sx={{ width: { xs: "100%", md: 420 } }}>
+            <Button variant="contained" color="success" onClick={() => router.get("/hrms")} sx={{ textTransform: "none", fontWeight: 800 }} >
+              Back
+            </Button>
+            <TextField
+              size="small"
+              fullWidth
+              value={vehicleSearch}
+              onChange={(e) => setVehicleSearch(e.target.value)}
+              placeholder="Search vehicle number..."
+            />
+            <Button
+              variant="contained"
+              onClick={() => router.get(route("hrms.vehicle-request-dashboard"), { vehicle_no: vehicleSearch })}
+              sx={{ textTransform: "none", fontWeight: 800 }}
+            >
+              Go
+            </Button>
             <Button
               variant="outlined"
-              fullWidth
-              onClick={() => router.get("/hrms")}
-              sx={{
-                textTransform: "none",
-                borderRadius: 1.5,
-                fontWeight: 800,
-                borderColor: "#e5e7eb",
-                color: "#111827",
-                "&:hover": { borderColor: "#cbd5e1", bgcolor: "#f8fafc" },
+              onClick={() => {
+                setVehicleSearch("");
+                router.get(route("hrms.vehicle-request-dashboard"));
               }}
+              sx={{ textTransform: "none", fontWeight: 800 }}
             >
-              ← Back to HRMS
+              Clear
             </Button>
           </Stack>
-        </Box>
+        </Stack>
 
-        {/* MAIN */}
-        <Box sx={{ flex: 1, p: { xs: 2, sm: 3, lg: 4 } }}>
-          {activeSection === "search" && (
-            <Paper sx={{ p: 2, mb: 3, borderRadius: 2, border: "1px solid #e5e7eb" }}>
-              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-                <Box sx={{ flex: 1 }}>
-                  <Typography variant="body2" fontWeight={800} sx={{ mb: 0.75, color: "#111827" }}>
-                    Search by Vehicle Number
-                  </Typography>
+        {/* STATS */}
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid item xs={12} sm={6} lg={3}>
+            <StatCard icon={CalendarTodayIcon} label="Out Today" value={vehiclesToBeOutToday.length} />
+          </Grid>
+          <Grid item xs={12} sm={6} lg={3}>
+            <StatCard icon={HourglassEmptyOutlinedIcon} label="Pending" value={pendingRequests.length} />
+          </Grid>
+          <Grid item xs={12} sm={6} lg={3}>
+            <StatCard icon={CheckCircleOutlinedIcon} label="Approved" value={approvedRequests.length} />
+          </Grid>
+          <Grid item xs={12} sm={6} lg={3}>
+            <StatCard icon={CancelOutlinedIcon} label="Rejected" value={rejectedRequests.length} />
+          </Grid>
+        </Grid>
 
-                  <Box
-                    component="input"
-                    value={vehicleSearch}
-                    onChange={(e) => setVehicleSearch(e.target.value)}
-                    placeholder="Ex: ABC-1234"
-                    sx={{
-                      width: "100%",
-                      px: 1.5,
-                      py: 1.25,
-                      borderRadius: 1.5,
-                      border: "1px solid #e5e7eb",
-                      outline: "none",
-                      fontSize: 14,
-                      "&:focus": { borderColor: "#94a3b8" },
-                    }}
-                  />
-                </Box>
+        {/* ALL REQUESTS TABLE */}
+        <Paper sx={{ p: 2, borderRadius: 2, border: "1px solid #e5e7eb" }}>
+          <Stack
+            direction={{ xs: "column", md: "row" }}
+            spacing={2}
+            justifyContent="space-between"
+            alignItems={{ xs: "stretch", md: "center" }}
+            sx={{ mb: 2 }}
+          >
+            <Stack direction="row" spacing={1} alignItems="center">
+              <DirectionsCarOutlinedIcon sx={{ color: "#6b7280" }} />
+              <Typography variant="subtitle1" fontWeight={900} sx={{ color: "#111827" }}>
+                All Requests
+              </Typography>
+              <Chip size="small" label={`${filtered.length}`} sx={{ bgcolor: "#f1f5f9" }} />
+            </Stack>
 
-                <Stack direction="row" spacing={1} alignItems="end">
-                  <Button
-                    variant="contained"
-                    onClick={() => router.get(route("hrms.vehicle-request-dashboard"), { vehicle_no: vehicleSearch })}
-                    sx={{ textTransform: "none", fontWeight: 800 }}
-                  >
-                    Search
-                  </Button>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <InputLabel>Status</InputLabel>
+                <Select
+                  value={statusFilter}
+                  label="Status"
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <MenuItem value="ALL">All</MenuItem>
+                  <MenuItem value="PENDING">Pending</MenuItem>
+                  <MenuItem value="APPROVED">Approved</MenuItem>
+                  <MenuItem value="REJECTED">Rejected</MenuItem>
+                  <MenuItem value="CANCELLED">Cancelled</MenuItem>
+                </Select>
+              </FormControl>
 
-                  <Button
-                    variant="outlined"
-                    onClick={() => {
-                      setVehicleSearch("");
-                      router.get(route("hrms.vehicle-request-dashboard"));
-                    }}
-                    sx={{ textTransform: "none", fontWeight: 800 }}
-                  >
-                    Clear
-                  </Button>
-                </Stack>
-              </Stack>
-            </Paper>
-          )}
+              <TextField
+                size="small"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Filter by vehicle / employee / trip code..."
+                sx={{ width: { xs: "100%", sm: 360 } }}
+              />
+            </Stack>
+          </Stack>
 
-          {content}
-        </Box>
+          <Divider sx={{ mb: 2 }} />
+
+          <TableContainer>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 900 }}>Vehicle</TableCell>
+                  <TableCell sx={{ fontWeight: 900 }}>Employee / Chauffer</TableCell>
+                  <TableCell sx={{ fontWeight: 900 }}>Type</TableCell>
+                  <TableCell sx={{ fontWeight: 900 }}>Trip Code</TableCell>
+                  <TableCell sx={{ fontWeight: 900 }}>Date</TableCell>
+                  <TableCell sx={{ fontWeight: 900 }}>Passengers</TableCell>
+                  <TableCell sx={{ fontWeight: 900 }}>Status</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 900 }}>
+                    Action
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+
+              <TableBody>
+                {!filtered.length ? (
+                  <TableRow>
+                    <TableCell colSpan={8}>
+                      <Box sx={{ py: 4, textAlign: "center", color: "#64748b" }}>
+                        No results found.
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filtered.map((r) => {
+                    const sKey = statusToKey(r.status);
+                    const s = statusStyles[sKey] || statusStyles.pending;
+
+                    return (
+                      <TableRow key={r.vehicle_request_id} hover>
+                        <TableCell sx={{ fontWeight: 800, color: "#111827" }}>
+                          {r.vehicle_no || "—"}
+                        </TableCell>
+                        <TableCell sx={{ color: "#374151" }}>
+                          {r.employee_name || r.chauffer_name || "Employee"}
+                        </TableCell>
+                        <TableCell sx={{ color: "#374151" }}>
+                          {(r.type || "—").toUpperCase()}
+                        </TableCell>
+                        <TableCell sx={{ color: "#374151" }}>
+                          {r.trip_code || "—"}
+                        </TableCell>
+                        <TableCell sx={{ color: "#374151" }}>
+                          {getDateDisplay(r)}
+                        </TableCell>
+                        <TableCell sx={{ color: "#374151" }}>
+                          {r.passenger_count ?? "—"}
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            size="small"
+                            label={s.label}
+                            sx={{ bgcolor: s.bg, color: s.color, fontWeight: 800, borderRadius: 1 }}
+                          />
+                        </TableCell>
+                        <TableCell align="right">
+                          <Button
+                            size="small"
+                            onClick={() => onView(r)}
+                            sx={{ textTransform: "none", fontWeight: 800 }}
+                          >
+                            View
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
 
         {/* MODAL */}
         <DetailsDialog
