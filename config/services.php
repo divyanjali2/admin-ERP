@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'erp_sync' => [
+        'key' => env('ERP_SYNC_KEY'),
+    ],
+
 ];
