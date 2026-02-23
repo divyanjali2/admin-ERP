@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, router, useForm, usePage } from "@inertiajs/react";
 
@@ -33,7 +33,12 @@ const ATTENDANCE_TYPE = ["Fingerprint", "Biometric", "Manual"];
 const EMPLOYMENT_TYPE = ["Full-Time", "Contract"];
 const EMPLOYMENT_LEVEL = ["Probation", "Confirmed"];
 const ADDRESS_TYPE = ["Residential", "Emergency", "Other"];
-const CONTACT_TYPE = ["Personal Email", "Work Email", "Whatsapp Number", "Alternate Phone"];
+const CONTACT_TYPE = [
+  "Personal Email",
+  "Work Email",
+  "Whatsapp Number",
+  "Alternate Phone",
+];
 const PAY_FREQUENCY = ["Monthly", "Weekly"];
 const SALARY_CURRENCY = ["LKR", "USD"];
 const DOC_TYPES = [
@@ -59,6 +64,9 @@ const BANKS = [
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+const isEmpty = (v) =>
+  v === null || v === undefined || String(v).trim() === "";
+
 export default function EmployeesCreate({
   auth,
   departments = [],
@@ -81,7 +89,7 @@ export default function EmployeesCreate({
     marital_status: "Single",
     nationality: "Sri Lankan",
     blood_group: "",
-    epf_number: "",
+    epf_number: "", 
     attendance_type: "Fingerprint",
 
     // user
@@ -97,7 +105,6 @@ export default function EmployeesCreate({
     probation_end_date: "",
     reporting_manager_id: "",
 
-    // contacts (multiple)
     contacts: [
       { contact_type: "Work Email", contact_value: "", is_primary: true },
       { contact_type: "Whatsapp Number", contact_value: "", is_primary: true },
@@ -140,10 +147,105 @@ export default function EmployeesCreate({
   });
 
   const [alert, setAlert] = useState({ open: false, type: "info", message: "" });
+  const [touched, setTouched] = useState({});
+  const submittedRef = useRef(false);
 
-  const tf = (key, fallback = "") => ({
-    error: Boolean(errors?.[key]),
-    helperText: errors?.[key] || fallback || "",
+  const markTouched = (key) => setTouched((p) => ({ ...p, [key]: true }));
+
+  const requiredRules = useMemo(() => {
+    return {
+      // BASIC
+      surname: !isEmpty(data.surname),
+      first_name: !isEmpty(data.first_name),
+      last_name: !isEmpty(data.last_name),
+      date_of_birth: !isEmpty(data.date_of_birth),
+      gender: !isEmpty(data.gender),
+      employment_status: !isEmpty(data.employment_status),
+      nationality: !isEmpty(data.nationality),
+      attendance_type: !isEmpty(data.attendance_type),
+
+
+      // BANK (make them required)
+...Object.fromEntries(
+  (data.bank_accounts || []).flatMap((_, idx) => ([
+    [`bank_accounts.${idx}.bank_name`, !isEmpty(data.bank_accounts?.[idx]?.bank_name)],
+    [`bank_accounts.${idx}.bank_account_number`, !isEmpty(data.bank_accounts?.[idx]?.bank_account_number)],
+    [`bank_accounts.${idx}.bank_branch_name`, !isEmpty(data.bank_accounts?.[idx]?.bank_branch_name)],
+  ]))
+),
+
+// YEARLY LEAVE (required rows)
+yearly_leave: (data.yearly_leave?.length || 0) > 0,
+
+...Object.fromEntries(
+  (data.yearly_leave || []).flatMap((_, idx) => ([
+    [`yearly_leave.${idx}.leave_policy_id`, !isEmpty(data.yearly_leave?.[idx]?.leave_policy_id)],
+    [`yearly_leave.${idx}.leave_entitlement`, !isEmpty(data.yearly_leave?.[idx]?.leave_entitlement)],
+  ]))
+),
+
+
+
+      // JOB
+      department_id: !isEmpty(data.department_id),
+      job_title_id: !isEmpty(data.job_title_id),
+      employment_type: !isEmpty(data.employment_type),
+      employment_level: !isEmpty(data.employment_level),
+      date_of_joining: !isEmpty(data.date_of_joining),
+
+      // CONTACTS (since you seed them, we require their values)
+      "contacts.0.contact_value": !isEmpty(data.contacts?.[0]?.contact_value),
+      "contacts.1.contact_value": !isEmpty(data.contacts?.[1]?.contact_value),
+
+      // ADDRESS (first one)
+      "addresses.0.address_type": !isEmpty(data.addresses?.[0]?.address_type),
+      "addresses.0.address_line_1": !isEmpty(data.addresses?.[0]?.address_line_1),
+      "addresses.0.city": !isEmpty(data.addresses?.[0]?.city),
+      "addresses.0.country": !isEmpty(data.addresses?.[0]?.country),
+
+      // EMERGENCY CONTACT (first one)
+      "emergency_contacts.0.name": !isEmpty(data.emergency_contacts?.[0]?.name),
+      "emergency_contacts.0.relationship": !isEmpty(data.emergency_contacts?.[0]?.relationship),
+      "emergency_contacts.0.phone": !isEmpty(data.emergency_contacts?.[0]?.phone),
+
+      // COMPENSATION (first component)
+      "compensation.salary_currency": !isEmpty(data.compensation?.salary_currency),
+      "compensation.pay_frequency": !isEmpty(data.compensation?.pay_frequency),
+      "compensation.effective_from": !isEmpty(data.compensation?.effective_from),
+      "compensation.components.0.component_type": !isEmpty(data.compensation?.components?.[0]?.component_type),
+      "compensation.components.0.component_name": !isEmpty(data.compensation?.components?.[0]?.component_name),
+      "compensation.components.0.amount": !isEmpty(data.compensation?.components?.[0]?.amount),
+
+              'yearly_leave.required' : 'At least one leave policy is required.',
+        'yearly_leave.min' : 'At least one leave policy must be added.',
+        'yearly_leave.*.leave_policy_id.required' : 'Leave policy is required.',
+        'yearly_leave.*.leave_entitlement.required' : 'Leave entitlement is required.',
+
+    };
+  }, [data]);
+
+  const requiredErrors = useMemo(() => {
+    const out = {};
+    for (const [k, ok] of Object.entries(requiredRules)) {
+      if (!ok) out[k] = "This field is required.";
+    }
+    return out;
+  }, [requiredRules]);
+
+  const tf = (key, fallback = "") => {
+    const serverErr = errors?.[key];
+    const showRequired = (touched[key] || submittedRef.current) && requiredErrors?.[key];
+
+    return {
+      error: Boolean(serverErr) || Boolean(showRequired),
+      helperText: serverErr || showRequired || fallback || "",
+    };
+  };
+
+  // required field props shortcut
+  const req = (key, fallback = "") => ({
+    ...tf(key, fallback),
+    onBlur: () => markTouched(key),
   });
 
   const workEmail = useMemo(() => {
@@ -168,6 +270,22 @@ export default function EmployeesCreate({
 
   const submit = (e) => {
     e.preventDefault();
+    submittedRef.current = true;
+
+    setTouched((prev) => {
+      const next = { ...prev };
+      Object.keys(requiredRules).forEach((k) => (next[k] = true));
+      return next;
+    });
+
+    if (Object.keys(requiredErrors).length > 0) {
+      setAlert({
+        open: true,
+        type: "error",
+        message: "Please fill all required fields before saving.",
+      });
+      return;
+    }
 
     if (isWorkEmailInvalid) {
       setAlert({
@@ -192,9 +310,6 @@ export default function EmployeesCreate({
           timer: 1800,
           showConfirmButton: false,
         });
-
-        // Optional redirect after save:
-        // router.get("/hrms/employees");
       },
 
       onError: () => {
@@ -219,14 +334,12 @@ export default function EmployeesCreate({
     next[idx] = { ...next[idx], [key]: value };
     setData("contacts", next);
   };
-
   const addContact = () => {
     setData("contacts", [
       ...data.contacts,
       { contact_type: "Personal Email", contact_value: "", is_primary: false },
     ]);
   };
-
   const removeContact = (idx) => {
     const next = data.contacts.filter((_, i) => i !== idx);
     setData("contacts", next);
@@ -237,7 +350,6 @@ export default function EmployeesCreate({
     next[idx] = { ...next[idx], [key]: value };
     setData("addresses", next);
   };
-
   const addAddress = () => {
     setData("addresses", [
       ...data.addresses,
@@ -251,7 +363,6 @@ export default function EmployeesCreate({
       },
     ]);
   };
-
   const removeAddress = (idx) => {
     const next = data.addresses.filter((_, i) => i !== idx);
     setData("addresses", next);
@@ -262,14 +373,12 @@ export default function EmployeesCreate({
     next[idx] = { ...next[idx], [key]: value };
     setData("emergency_contacts", next);
   };
-
   const addEmergency = () => {
     setData("emergency_contacts", [
       ...data.emergency_contacts,
-      { name: "", relationship: "", phone: ""},
+      { name: "", relationship: "", phone: "" },
     ]);
   };
-
   const removeEmergency = (idx) => {
     const next = data.emergency_contacts.filter((_, i) => i !== idx);
     setData("emergency_contacts", next);
@@ -280,14 +389,12 @@ export default function EmployeesCreate({
     next[idx] = { ...next[idx], [key]: value };
     setData("bank_accounts", next);
   };
-
   const addBank = () => {
     setData("bank_accounts", [
       ...data.bank_accounts,
       { bank_name: "", bank_account_number: "", bank_branch_name: "" },
     ]);
   };
-
   const removeBank = (idx) => {
     const next = data.bank_accounts.filter((_, i) => i !== idx);
     setData("bank_accounts", next);
@@ -296,20 +403,17 @@ export default function EmployeesCreate({
   const setComp = (key, value) => {
     setData("compensation", { ...data.compensation, [key]: value });
   };
-
   const setCompComponent = (idx, key, value) => {
     const next = [...data.compensation.components];
     next[idx] = { ...next[idx], [key]: value };
     setComp("components", next);
   };
-
   const addCompComponent = () => {
     setComp("components", [
       ...data.compensation.components,
       { component_type: "Allowance", component_name: "", amount: "" },
     ]);
   };
-
   const removeCompComponent = (idx) => {
     const next = data.compensation.components.filter((_, i) => i !== idx);
     setComp("components", next);
@@ -320,14 +424,12 @@ export default function EmployeesCreate({
     next[idx] = { ...next[idx], [key]: value };
     setData("employee_documents", next);
   };
-
   const addDocument = () => {
     setData("employee_documents", [
       ...data.employee_documents,
       { doc_type: "Profile Photo", files: [] },
     ]);
   };
-
   const removeDocument = (idx) => {
     setData("employee_documents", data.employee_documents.filter((_, i) => i !== idx));
   };
@@ -337,11 +439,9 @@ export default function EmployeesCreate({
     next[idx] = { ...next[idx], [key]: value };
     setData("experience", next);
   };
-
   const addExperience = () => {
     setData("experience", [...data.experience, { previous_employer: "", total_years: "" }]);
   };
-
   const removeExperience = (idx) => {
     setData("experience", data.experience.filter((_, i) => i !== idx));
   };
@@ -351,11 +451,9 @@ export default function EmployeesCreate({
     next[idx] = { ...next[idx], [key]: value };
     setData("yearly_leave", next);
   };
-
   const addYearlyLeave = () => {
     setData("yearly_leave", [...data.yearly_leave, { leave_policy_id: "", leave_entitlement: "" }]);
   };
-
   const removeYearlyLeave = (idx) => {
     setData("yearly_leave", data.yearly_leave.filter((_, i) => i !== idx));
   };
@@ -385,10 +483,7 @@ export default function EmployeesCreate({
       <Head title="Create Employee" />
 
       <Collapse in={alert.open} sx={{ mb: 2 }}>
-        <Alert
-          severity={alert.type || "info"}
-          onClose={() => setAlert((p) => ({ ...p, open: false }))}
-        >
+        <Alert severity={alert.type || "info"} onClose={() => setAlert((p) => ({ ...p, open: false }))}>
           {alert.message}
         </Alert>
       </Collapse>
@@ -414,14 +509,14 @@ export default function EmployeesCreate({
                 value={data.surname}
                 onChange={(e) => setData("surname", e.target.value)}
                 fullWidth
-                {...tf("surname")}
+                {...req("surname")}
               />
               <TextField
                 label="First Name"
                 value={data.first_name}
                 onChange={(e) => setData("first_name", e.target.value)}
                 fullWidth
-                {...tf("first_name")}
+                {...req("first_name")}
               />
               <TextField
                 label="Middle Name"
@@ -434,7 +529,7 @@ export default function EmployeesCreate({
                 value={data.last_name}
                 onChange={(e) => setData("last_name", e.target.value)}
                 fullWidth
-                {...tf("last_name")}
+                {...req("last_name")}
               />
             </Stack>
 
@@ -453,7 +548,7 @@ export default function EmployeesCreate({
                   slotProps={{
                     textField: {
                       fullWidth: true,
-                      ...tf("date_of_birth"),
+                      ...req("date_of_birth"),
                     },
                   }}
                 />
@@ -465,7 +560,7 @@ export default function EmployeesCreate({
                 value={data.gender}
                 onChange={(e) => setData("gender", e.target.value)}
                 fullWidth
-                {...tf("gender")}
+                {...req("gender")}
               >
                 {GENDERS.map((g) => (
                   <MenuItem key={g} value={g}>
@@ -494,6 +589,7 @@ export default function EmployeesCreate({
                 value={data.employment_status}
                 onChange={(e) => setData("employment_status", e.target.value)}
                 fullWidth
+                {...req("employment_status")}
               >
                 {EMPLOYMENT_STATUS.map((s) => (
                   <MenuItem key={s} value={s}>
@@ -509,6 +605,7 @@ export default function EmployeesCreate({
                 value={data.nationality}
                 onChange={(e) => setData("nationality", e.target.value)}
                 fullWidth
+                {...req("nationality")}
               />
 
               <TextField
@@ -517,6 +614,7 @@ export default function EmployeesCreate({
                 value={data.attendance_type}
                 onChange={(e) => setData("attendance_type", e.target.value)}
                 fullWidth
+                {...req("attendance_type")}
               >
                 {ATTENDANCE_TYPE.map((a) => (
                   <MenuItem key={a} value={a}>
@@ -529,7 +627,9 @@ export default function EmployeesCreate({
                 label="EPF Number"
                 value={data.epf_number}
                 onChange={(e) => setData("epf_number", e.target.value)}
+                onBlur={() => markTouched("epf_number")}
                 fullWidth
+                {...tf("epf_number")}
               />
 
               <TextField
@@ -560,7 +660,7 @@ export default function EmployeesCreate({
                 value={data.department_id}
                 onChange={(e) => setData("department_id", e.target.value)}
                 fullWidth
-                {...tf("department_id")}
+                {...req("department_id")}
               >
                 {departments.map((d) => (
                   <MenuItem key={d.department_id} value={d.department_id}>
@@ -575,7 +675,7 @@ export default function EmployeesCreate({
                 value={data.job_title_id}
                 onChange={(e) => setData("job_title_id", e.target.value)}
                 fullWidth
-                {...tf("job_title_id")}
+                {...req("job_title_id")}
               >
                 {jobTitles.map((j) => (
                   <MenuItem key={j.job_title_id} value={j.job_title_id}>
@@ -590,6 +690,7 @@ export default function EmployeesCreate({
                 value={data.employment_type}
                 onChange={(e) => setData("employment_type", e.target.value)}
                 fullWidth
+                {...req("employment_type")}
               >
                 {EMPLOYMENT_TYPE.map((x) => (
                   <MenuItem key={x} value={x}>
@@ -604,6 +705,7 @@ export default function EmployeesCreate({
                 value={data.employment_level}
                 onChange={(e) => setData("employment_level", e.target.value)}
                 fullWidth
+                {...req("employment_level")}
               >
                 {EMPLOYMENT_LEVEL.map((x) => (
                   <MenuItem key={x} value={x}>
@@ -620,6 +722,7 @@ export default function EmployeesCreate({
                 InputLabelProps={{ shrink: true }}
                 value={data.date_of_joining}
                 onChange={(e) => setData("date_of_joining", e.target.value)}
+                onBlur={() => markTouched("date_of_joining")}
                 inputProps={{ max: new Date().toISOString().split("T")[0] }}
                 fullWidth
                 {...tf("date_of_joining")}
@@ -631,6 +734,7 @@ export default function EmployeesCreate({
                 InputLabelProps={{ shrink: true }}
                 value={data.probation_end_date}
                 onChange={(e) => setData("probation_end_date", e.target.value)}
+                onBlur={() => markTouched("probation_end_date")}
                 inputProps={{ min: new Date().toISOString().split("T")[0] }}
                 fullWidth
                 {...tf("probation_end_date")}
@@ -664,12 +768,7 @@ export default function EmployeesCreate({
 
             <Stack spacing={2}>
               {data.experience.map((x, idx) => (
-                <Stack
-                  key={idx}
-                  direction={{ xs: "column", sm: "row" }}
-                  spacing={2}
-                  alignItems="center"
-                >
+                <Stack key={idx} direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="center">
                   <TextField
                     label="Previous Employer"
                     value={x.previous_employer}
@@ -704,22 +803,14 @@ export default function EmployeesCreate({
             <Stack spacing={2}>
               {data.contacts.map((c, idx) => {
                 const key = `contacts.${idx}.contact_value`;
-                const serverErr = errors?.[key];
-                const isEmailField = c.contact_type === "Work Email";
-                const localEmailErr = isEmailField && c.contact_value && !emailRegex.test(c.contact_value);
+                const isWork = c.contact_type === "Work Email";
+                const localEmailErr = isWork && c.contact_value && !emailRegex.test(c.contact_value);
 
-                const error = Boolean(serverErr) || Boolean(localEmailErr);
-                const helperText =
-                  serverErr ||
-                  (localEmailErr ? "Enter a valid email address." : "");
+                const base = tf(key);
+                const showReq = (touched[key] || submittedRef.current) && requiredErrors?.[key];
 
                 return (
-                  <Stack
-                    key={idx}
-                    direction={{ xs: "column", sm: "row" }}
-                    spacing={2}
-                    alignItems="center"
-                  >
+                  <Stack key={idx} direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="center">
                     <TextField
                       select
                       label="Contact Type"
@@ -738,9 +829,14 @@ export default function EmployeesCreate({
                       label="Contact Value"
                       value={c.contact_value}
                       onChange={(e) => setContact(idx, "contact_value", e.target.value)}
+                      onBlur={() => markTouched(key)}
                       fullWidth
-                      error={error}
-                      helperText={helperText}
+                      error={base.error || Boolean(localEmailErr)}
+                      helperText={
+                        errors?.[key] ||
+                        showReq ||
+                        (localEmailErr ? "Enter a valid email address." : "")
+                      }
                     />
 
                     <IconButton onClick={() => removeContact(idx)} aria-label="remove-contact">
@@ -756,13 +852,7 @@ export default function EmployeesCreate({
             {/* ================= USER ================= */}
             <Typography fontWeight={900}>Login (User)</Typography>
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <TextField
-                label="User Email"
-                value={data.user_email}
-                disabled
-                fullWidth
-                {...tf("user_email")}
-              />
+              <TextField label="User Email" value={data.user_email} disabled fullWidth {...tf("user_email")} />
               <TextField
                 label="User Password"
                 type="password"
@@ -794,6 +884,7 @@ export default function EmployeesCreate({
                         value={a.address_type}
                         onChange={(e) => setAddress(idx, "address_type", e.target.value)}
                         fullWidth
+                        {...(idx === 0 ? req(`addresses.${idx}.address_type`) : { onBlur: () => markTouched(`addresses.${idx}.address_type`), ...tf(`addresses.${idx}.address_type`) })}
                       >
                         {ADDRESS_TYPE.map((t) => (
                           <MenuItem key={t} value={t}>
@@ -807,7 +898,7 @@ export default function EmployeesCreate({
                         value={a.address_line_1}
                         onChange={(e) => setAddress(idx, "address_line_1", e.target.value)}
                         fullWidth
-                        {...tf(`addresses.${idx}.address_line_1`)}
+                        {...(idx === 0 ? req(`addresses.${idx}.address_line_1`) : { onBlur: () => markTouched(`addresses.${idx}.address_line_1`), ...tf(`addresses.${idx}.address_line_1`) })}
                       />
 
                       <TextField
@@ -815,7 +906,7 @@ export default function EmployeesCreate({
                         value={a.city}
                         onChange={(e) => setAddress(idx, "city", e.target.value)}
                         fullWidth
-                        {...tf(`addresses.${idx}.city`)}
+                        {...(idx === 0 ? req(`addresses.${idx}.city`) : { onBlur: () => markTouched(`addresses.${idx}.city`), ...tf(`addresses.${idx}.city`) })}
                       />
 
                       <IconButton onClick={() => removeAddress(idx)} aria-label="remove-address">
@@ -829,13 +920,14 @@ export default function EmployeesCreate({
                         value={a.country}
                         onChange={(e) => setAddress(idx, "country", e.target.value)}
                         fullWidth
-                        {...tf(`addresses.${idx}.country`)}
+                        {...(idx === 0 ? req(`addresses.${idx}.country`) : { onBlur: () => markTouched(`addresses.${idx}.country`), ...tf(`addresses.${idx}.country`) })}
                       />
 
                       <TextField
                         label="Postal Code"
                         value={a.postal_code}
                         onChange={(e) => setAddress(idx, "postal_code", e.target.value)}
+                        onBlur={() => markTouched(`addresses.${idx}.postal_code`)}
                         fullWidth
                         {...tf(`addresses.${idx}.postal_code`)}
                       />
@@ -857,36 +949,28 @@ export default function EmployeesCreate({
 
             <Stack spacing={2}>
               {data.emergency_contacts.map((ec, idx) => (
-                <Stack
-                  key={idx}
-                  direction={{ xs: "column", sm: "row" }}
-                  spacing={2}
-                  alignItems="center"
-                >
+                <Stack key={idx} direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="center">
                   <TextField
                     label="Name"
                     value={ec.name}
                     onChange={(e) => setEmergency(idx, "name", e.target.value)}
                     fullWidth
-                    {...tf(`emergency_contacts.${idx}.name`)}
+                    {...(idx === 0 ? req(`emergency_contacts.${idx}.name`) : { onBlur: () => markTouched(`emergency_contacts.${idx}.name`), ...tf(`emergency_contacts.${idx}.name`) })}
                   />
-
                   <TextField
                     label="Relationship"
                     value={ec.relationship}
                     onChange={(e) => setEmergency(idx, "relationship", e.target.value)}
                     fullWidth
-                    {...tf(`emergency_contacts.${idx}.relationship`)}
+                    {...(idx === 0 ? req(`emergency_contacts.${idx}.relationship`) : { onBlur: () => markTouched(`emergency_contacts.${idx}.relationship`), ...tf(`emergency_contacts.${idx}.relationship`) })}
                   />
-
                   <TextField
                     label="Phone"
                     value={ec.phone}
                     onChange={(e) => setEmergency(idx, "phone", e.target.value)}
                     fullWidth
-                    {...tf(`emergency_contacts.${idx}.phone`)}
+                    {...(idx === 0 ? req(`emergency_contacts.${idx}.phone`) : { onBlur: () => markTouched(`emergency_contacts.${idx}.phone`), ...tf(`emergency_contacts.${idx}.phone`) })}
                   />
-
                   <IconButton onClick={() => removeEmergency(idx)} aria-label="remove-emergency">
                     <DeleteOutlineOutlinedIcon />
                   </IconButton>
@@ -904,52 +988,52 @@ export default function EmployeesCreate({
               </Button>
             </Stack>
 
-            <Stack spacing={2}>
-              {data.bank_accounts.map((b, idx) => (
-                <Stack
-                  key={idx}
-                  direction={{ xs: "column", sm: "row" }}
-                  spacing={2}
-                  alignItems="center"
-                >
-                  <TextField
-                    select
-                    label="Bank Name"
-                    value={b.bank_name}
-                    onChange={(e) => setBank(idx, "bank_name", e.target.value)}
-                    fullWidth
-                    {...tf(`bank_accounts.${idx}.bank_name`)}
-                  >
-                    <MenuItem value="">Select Bank</MenuItem>
-                    {BANKS.map((bank) => (
-                      <MenuItem key={bank} value={bank}>
-                        {bank}
-                      </MenuItem>
-                    ))}
-                  </TextField>
+        <Stack spacing={2}>
+  {data.bank_accounts.map((b, idx) => (
+    <Stack
+      key={idx}
+      direction={{ xs: "column", sm: "row" }}
+      spacing={2}
+      alignItems="center"
+    >
+      <TextField
+        select
+        label="Bank Name"
+        value={b.bank_name}
+        onChange={(e) => setBank(idx, "bank_name", e.target.value)}
+        fullWidth
+        {...req(`bank_accounts.${idx}.bank_name`)}
+      >
+        <MenuItem value="">Select Bank</MenuItem>
+        {BANKS.map((bank) => (
+          <MenuItem key={bank} value={bank}>
+            {bank}
+          </MenuItem>
+        ))}
+      </TextField>
 
-                  <TextField
-                    label="Bank Account Number"
-                    value={b.bank_account_number}
-                    onChange={(e) => setBank(idx, "bank_account_number", e.target.value)}
-                    fullWidth
-                    {...tf(`bank_accounts.${idx}.bank_account_number`)}
-                  />
+      <TextField
+        label="Bank Account Number"
+        value={b.bank_account_number}
+        onChange={(e) => setBank(idx, "bank_account_number", e.target.value)}
+        fullWidth
+        {...req(`bank_accounts.${idx}.bank_account_number`)}
+      />
 
-                  <TextField
-                    label="Bank Branch Name"
-                    value={b.bank_branch_name}
-                    onChange={(e) => setBank(idx, "bank_branch_name", e.target.value)}
-                    fullWidth
-                    {...tf(`bank_accounts.${idx}.bank_branch_name`)}
-                  />
+      <TextField
+        label="Bank Branch Name"
+        value={b.bank_branch_name}
+        onChange={(e) => setBank(idx, "bank_branch_name", e.target.value)}
+        fullWidth
+        {...req(`bank_accounts.${idx}.bank_branch_name`)}
+      />
 
-                  <IconButton onClick={() => removeBank(idx)} aria-label="remove-bank">
-                    <DeleteOutlineOutlinedIcon />
-                  </IconButton>
-                </Stack>
-              ))}
-            </Stack>
+      <IconButton onClick={() => removeBank(idx)} aria-label="remove-bank">
+        <DeleteOutlineOutlinedIcon />
+      </IconButton>
+    </Stack>
+  ))}
+</Stack>
 
             <Divider />
 
@@ -963,6 +1047,7 @@ export default function EmployeesCreate({
                 value={data.compensation.salary_currency}
                 onChange={(e) => setComp("salary_currency", e.target.value)}
                 fullWidth
+                {...req("compensation.salary_currency")}
               >
                 {SALARY_CURRENCY.map((c) => (
                   <MenuItem key={c} value={c}>
@@ -977,6 +1062,7 @@ export default function EmployeesCreate({
                 value={data.compensation.pay_frequency}
                 onChange={(e) => setComp("pay_frequency", e.target.value)}
                 fullWidth
+                {...req("compensation.pay_frequency")}
               >
                 {PAY_FREQUENCY.map((p) => (
                   <MenuItem key={p} value={p}>
@@ -992,7 +1078,7 @@ export default function EmployeesCreate({
                 value={data.compensation.effective_from}
                 onChange={(e) => setComp("effective_from", e.target.value)}
                 fullWidth
-                {...tf("compensation.effective_from")}
+                {...req("compensation.effective_from")}
               />
 
               <TextField
@@ -1001,6 +1087,7 @@ export default function EmployeesCreate({
                 InputLabelProps={{ shrink: true }}
                 value={data.compensation.effective_to}
                 onChange={(e) => setComp("effective_to", e.target.value)}
+                onBlur={() => markTouched("compensation.effective_to")}
                 fullWidth
                 {...tf("compensation.effective_to")}
               />
@@ -1015,18 +1102,16 @@ export default function EmployeesCreate({
 
             <Stack spacing={2}>
               {data.compensation.components.map((cc, idx) => (
-                <Stack
-                  key={idx}
-                  direction={{ xs: "column", sm: "row" }}
-                  spacing={2}
-                  alignItems="center"
-                >
+                <Stack key={idx} direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="center">
                   <TextField
                     select
                     label="Type"
                     value={cc.component_type}
                     onChange={(e) => setCompComponent(idx, "component_type", e.target.value)}
                     fullWidth
+                    {...(idx === 0
+                      ? req(`compensation.components.${idx}.component_type`)
+                      : { onBlur: () => markTouched(`compensation.components.${idx}.component_type`), ...tf(`compensation.components.${idx}.component_type`) })}
                   >
                     {["Basic", "Allowance", "Deduction"].map((t) => (
                       <MenuItem key={t} value={t}>
@@ -1040,6 +1125,9 @@ export default function EmployeesCreate({
                     value={cc.component_name}
                     onChange={(e) => setCompComponent(idx, "component_name", e.target.value)}
                     fullWidth
+                    {...(idx === 0
+                      ? req(`compensation.components.${idx}.component_name`)
+                      : { onBlur: () => markTouched(`compensation.components.${idx}.component_name`), ...tf(`compensation.components.${idx}.component_name`) })}
                   />
 
                   <TextField
@@ -1048,7 +1136,9 @@ export default function EmployeesCreate({
                     value={cc.amount}
                     onChange={(e) => setCompComponent(idx, "amount", e.target.value)}
                     fullWidth
-                    {...tf(`compensation.components.${idx}.amount`)}
+                    {...(idx === 0
+                      ? req(`compensation.components.${idx}.amount`)
+                      : { onBlur: () => markTouched(`compensation.components.${idx}.amount`), ...tf(`compensation.components.${idx}.amount`) })}
                   />
 
                   <IconButton onClick={() => removeCompComponent(idx)} aria-label="remove-comp-component">
@@ -1070,19 +1160,14 @@ export default function EmployeesCreate({
 
             <Stack spacing={2}>
               {data.yearly_leave.map((yl, idx) => (
-                <Stack
-                  key={idx}
-                  direction={{ xs: "column", sm: "row" }}
-                  spacing={2}
-                  alignItems="center"
-                >
+                <Stack key={idx} direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="center">
                   <TextField
                     select
                     label="Leave Policy"
                     value={yl.leave_policy_id}
                     onChange={(e) => setYearlyLeave(idx, "leave_policy_id", e.target.value)}
                     fullWidth
-                    {...tf(`yearly_leave.${idx}.leave_policy_id`)}
+                    {...req(`yearly_leave.${idx}.leave_policy_id`)}
                   >
                     <MenuItem value="">Select policy</MenuItem>
                     {leavePolicies.map((lp) => (
@@ -1098,7 +1183,7 @@ export default function EmployeesCreate({
                     value={yl.leave_entitlement}
                     onChange={(e) => setYearlyLeave(idx, "leave_entitlement", e.target.value)}
                     fullWidth
-                    {...tf(`yearly_leave.${idx}.leave_entitlement`)}
+                    {...req(`yearly_leave.${idx}.leave_entitlement`)}
                   />
 
                   <IconButton onClick={() => removeYearlyLeave(idx)} aria-label="remove-yearly-leave">
@@ -1120,12 +1205,7 @@ export default function EmployeesCreate({
 
             <Stack spacing={2}>
               {data.employee_documents.map((d, idx) => (
-                <Stack
-                  key={idx}
-                  direction={{ xs: "column", sm: "row" }}
-                  spacing={2}
-                  alignItems="center"
-                >
+                <Stack key={idx} direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="center">
                   <TextField
                     select
                     label="Document Type"
@@ -1140,20 +1220,13 @@ export default function EmployeesCreate({
                     ))}
                   </TextField>
 
-                  <Button
-                    variant="outlined"
-                    component="label"
-                    fullWidth
-                    sx={{ justifyContent: "flex-start" }}
-                  >
+                  <Button variant="outlined" component="label" fullWidth sx={{ justifyContent: "flex-start" }}>
                     {d.files?.length ? `${d.files.length} file(s) selected` : "Choose Files"}
                     <input
                       type="file"
                       hidden
                       multiple
-                      onChange={(e) =>
-                        setDocument(idx, "files", Array.from(e.target.files || []))
-                      }
+                      onChange={(e) => setDocument(idx, "files", Array.from(e.target.files || []))}
                     />
                   </Button>
 

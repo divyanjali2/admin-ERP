@@ -26,7 +26,7 @@ return new class extends Migration {
             $table->string('nationality', 100)->nullable();
             $table->string('blood_group', 10)->nullable();
 
-            $table->string('epf_number', 50)->nullable();
+            $table->string('epf_number', 50)->nullable()->unique();
 
             $table->string('attendance_type', 20); 
             $table->char('created_by', 36);

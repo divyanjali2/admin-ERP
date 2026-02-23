@@ -138,13 +138,13 @@ class EmployeeController extends Controller
                 'emergency_contacts.*.address' => ['nullable', 'string', 'max:255'],
 
                 'experience' => ['nullable', 'array'],
-                'experience.*.previous_employer' => ['required_with:experience', 'string', 'max:150'],
+                'experience.*.previous_employer' => ['nullable', 'string', 'max:150'],
                 'experience.*.total_years' => ['nullable', 'numeric'],
 
                 'bank_accounts' => ['nullable', 'array'],
                 'bank_accounts.*.bank_name' => ['required_with:bank_accounts', 'string', 'max:150'],
                 'bank_accounts.*.bank_account_number' => ['required_with:bank_accounts', 'string', 'max:50'],
-                'bank_accounts.*.bank_branch_name' => ['nullable', 'string', 'max:150'],
+                'bank_accounts.*.bank_branch_name' => ['required_with:bank_accounts', 'string', 'max:150'],
 
                 'compensation' => ['nullable', 'array'],
                 'compensation.salary_currency' => ['required_with:compensation', 'string', 'size:3'],
@@ -156,9 +156,9 @@ class EmployeeController extends Controller
                 'compensation.components.*.component_name' => ['required_with:compensation.components', 'string', 'max:120'],
                 'compensation.components.*.amount' => ['required_with:compensation.components', 'numeric'],
 
-                'yearly_leave' => ['nullable', 'array'],
-                'yearly_leave.*.leave_policy_id' => ['nullable', 'integer', 'exists:leave_policies,leave_policy_id'],
-                'yearly_leave.*.leave_entitlement' => ['nullable', 'integer', 'min:0'],
+                'yearly_leave' => ['required', 'array', 'min:1'],
+                'yearly_leave.*.leave_policy_id' => ['required','integer','exists:leave_policies,leave_policy_id'],
+                'yearly_leave.*.leave_entitlement' => ['required','integer','min:0'],
 
                 'employee_documents' => ['nullable','array'],
                 'employee_documents.*.doc_type' => ['required','string','max:30'],
@@ -223,7 +223,7 @@ class EmployeeController extends Controller
                     'employee_id'          => $employee->employee_id,
                     'bank_name'            => $b['bank_name'],
                     'bank_account_number'  => $b['bank_account_number'],
-                    'bank_branch_name'     => $b['bank_branch_name'] ?? null,
+                    'bank_branch_name'     => $b['bank_branch_name'],
                 ]);
             }
 
@@ -376,7 +376,7 @@ class EmployeeController extends Controller
             'bankAccounts',
             'experiences',
             'documents',
-            'yearlyLeaveBalances.policy',     // ✅ this
+            'yearlyLeaveBalances.policy',     
             'compensations.components',
         ]);
 
@@ -598,7 +598,6 @@ class EmployeeController extends Controller
                 ]);
             }
 
-            // bank replace (skip empty)
             EmployeeBankAccount::where('employee_id', $employee->employee_id)->delete();
             foreach (($validated['bank_accounts'] ?? []) as $b) {
                 if (empty($b['bank_name']) && empty($b['bank_account_number']) && empty($b['bank_branch_name'])) continue;
