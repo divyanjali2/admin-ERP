@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\VehicleRequest;
+use App\Models\TransportService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
@@ -12,136 +12,133 @@ class VehicleRequestController extends Controller
     public function dashboard(Request $request)
     {
         $today = Carbon::today();
-        $vehicleNo = $request->get('vehicle_no'); // search param
+        $vehicleNo = $request->get('vehicle_no');
 
-        /**
-         * Helper: map latest trip detail (or null)
-         */
-        $mapTripDetails = function ($vr) {
-            $latest = $vr->tripDetails
+        $format = function ($ts) {
+            $start = $ts->assigned_start_at ? Carbon::parse($ts->assigned_start_at) : null;
+            $end   = $ts->assigned_end_at ? Carbon::parse($ts->assigned_end_at) : null;
+
+            $latestTrip = $ts->tripDetails
                 ?->sortByDesc('trip_start_datetime')
                 ->values()
                 ->first();
 
-            if (!$latest) return null;
-
             return [
-                'trip_detail_id' => $latest->trip_detail_id,
-                'trip_start_datetime' => optional($latest->trip_start_datetime)->toDateTimeString(),
-                'trip_end_datetime' => optional($latest->trip_end_datetime)->toDateTimeString(),
-                'trip_start_odometer' => $latest->trip_start_odometer,
-                'trip_end_odometer' => $latest->trip_end_odometer,
-                'trip_start_odometer_photo' => $latest->trip_start_odometer_photo,
-                'trip_end_odometer_photo' => $latest->trip_end_odometer_photo,
-                'created_at' => optional($latest->created_at)->toDateTimeString(),
-                'updated_at' => optional($latest->updated_at)->toDateTimeString(),
+                'vehicle_request_id' => $ts->id,
+                'type' => $ts->type,
+                'passenger_count' => $ts->passenger_count,
+                'vehicle_no' => $ts->vehicle_no,
+                'employee_name' => $ts->employee?->full_name
+                    ?? $ts->employee?->name
+                    ?? ($ts->employee_id ? ('Employee #' . $ts->employee_id) : ''),
+
+                'employee_id' => $ts->employee_id,
+                'manager_id' => $ts->manager_id,
+
+                // Chauffer (for fallback in React)
+                'chauffer_name' => $ts->chauffer_name,
+                'chauffer_phone' => $ts->chauffer_phone ?? null,
+
+                // Dates for UI
+                'start_date' => $start?->toDateString(),
+                'end_date' => $end?->toDateString(),
+                'is_one_day' => $start ? (!$end || $start->toDateString() === $end->toDateString()) : true,
+
+                // UI mapping
+                'reason' => $ts->note,
+                'destinations' => $ts->dropoff_location,
+                'trip_code' => $ts->trip_code,
+
+                // Status
+                'status' => $ts->status,
+                'reject_reason' => $ts->reject_reason,
+
+                'created_at' => optional($ts->created_at)->toDateString(),
+
+                // ✅ Odometer modal data (latest trip)
+                'trip_details' => $latestTrip ? [
+                    'trip_detail_id' => $latestTrip->trip_detail_id,
+                    'trip_start_datetime' => optional($latestTrip->trip_start_datetime)->toDateTimeString(),
+                    'trip_end_datetime' => optional($latestTrip->trip_end_datetime)->toDateTimeString(),
+                    'trip_start_odometer' => $latestTrip->trip_start_odometer,
+                    'trip_end_odometer' => $latestTrip->trip_end_odometer,
+                    'trip_start_odometer_photo' => $latestTrip->trip_start_odometer_photo,
+                    'trip_end_odometer_photo' => $latestTrip->trip_end_odometer_photo,
+                    'start_trip_fuel' => $latestTrip->start_trip_fuel,
+                    'end_trip_fuel' => $latestTrip->end_trip_fuel,
+                ] : null,
             ];
         };
 
-        /**
-         * Helper: standard request formatter
-         */
-        $formatRequest = function ($vr) use ($mapTripDetails) {
-            return [
-                'vehicle_request_id' => $vr->vehicle_request_id,
-                'employee_name' => trim(($vr->employee?->first_name ?? '') . ' ' . ($vr->employee?->last_name ?? '')),
-                'employee_id' => $vr->employee_id,
-                'vehicle_reg_no' => $vr->vehicle_reg_no,
+        // Base query (eager load tripDetails; add employee only if you actually have it)
+        $base = TransportService::with(['tripDetails']); // add 'employee' if exists: ->with(['tripDetails','employee'])
 
-                // request date range (NOT trip dates)
-                'start_date' => optional($vr->start_date)->toDateString(),
-                'end_date' => optional($vr->end_date)->toDateString(),
-                'is_one_day' => (bool) ($vr->is_one_day ?? false),
-
-                'reason' => $vr->reason,
-                'destinations' => $vr->destinations,
-                'trip_code' => $vr->trip_code,
-
-                'status' => $vr->status,
-                'reject_reason' => $vr->reject_reason,
-
-                'created_at' => optional($vr->created_at)->toDateString(),
-
-                // ✅ trip details for modal
-                'trip_details' => $mapTripDetails($vr),
-            ];
-        };
-
-        /**
-         * ----------------------------------------------------
-         * ORIGINAL DASHBOARD LISTS (no search applied)
-         * ----------------------------------------------------
-         */
-        $vehiclesToBeOutToday = VehicleRequest::with(['employee', 'tripDetails'])
+        // OUT TODAY = approved + start today
+        $vehiclesToBeOutToday = (clone $base)
             ->where('status', 'APPROVED')
-            ->whereDate('start_date', $today)
-            ->orderByDesc('created_at')
-            ->get();
+            ->whereDate('assigned_start_at', $today)
+            ->orderByDesc('assigned_start_at')
+            ->get()
+            ->map($format)
+            ->values();
 
-        $pendingRequests = VehicleRequest::with(['employee', 'tripDetails'])
+        $pendingRequests = (clone $base)
             ->where('status', 'PENDING')
-            ->orderByDesc('created_at')
-            ->get();
+            ->orderByDesc('assigned_start_at')
+            ->get()
+            ->map($format)
+            ->values();
 
-        $approvedRequests = VehicleRequest::with(['employee', 'tripDetails'])
+        $approvedRequests = (clone $base)
             ->where('status', 'APPROVED')
-            ->orderByDesc('created_at')
-            ->get();
+            ->orderByDesc('assigned_start_at')
+            ->get()
+            ->map($format)
+            ->values();
 
-        $rejectedRequests = VehicleRequest::with(['employee', 'tripDetails'])
+        $rejectedRequests = (clone $base)
             ->where('status', 'REJECTED')
-            ->orderByDesc('created_at')
-            ->get();
+            ->orderByDesc('assigned_start_at')
+            ->get()
+            ->map($format)
+            ->values();
 
-        // Stats (fixed casing)
-        $totalRequests = VehicleRequest::count();
-        $approvedCount = VehicleRequest::where('status', 'APPROVED')->count();
-        $pendingCount  = VehicleRequest::where('status', 'PENDING')->count();
-        $rejectedCount = VehicleRequest::where('status', 'REJECTED')->count();
-
-        /**
-         * ----------------------------------------------------
-         * SEARCH RESULT LISTS (only if vehicle_no exists)
-         * ----------------------------------------------------
-         */
+        // SEARCH (vehicle_no string)
         $currentTrips = collect();
         $pastTrips = collect();
 
         if ($vehicleNo) {
-            $searched = VehicleRequest::with(['employee', 'tripDetails'])
-                ->where('vehicle_reg_no', 'LIKE', "%{$vehicleNo}%")
-                ->orderByDesc('start_date')
-                ->get();
+            $searched = (clone $base)
+                ->where('vehicle_no', 'LIKE', "%{$vehicleNo}%")
+                ->orderByDesc('assigned_start_at')
+                ->get()
+                ->map($format);
 
             $currentTrips = $searched
-                ->filter(fn ($vr) => $vr->start_date && Carbon::parse($vr->start_date)->gte($today))
-                ->map($formatRequest)
+                ->filter(fn ($x) => $x['start_date'] && Carbon::parse($x['start_date'])->gte($today))
                 ->values();
 
             $pastTrips = $searched
-                ->filter(fn ($vr) => $vr->start_date && Carbon::parse($vr->start_date)->lt($today))
-                ->map($formatRequest)
+                ->filter(fn ($x) => $x['start_date'] && Carbon::parse($x['start_date'])->lt($today))
                 ->values();
         }
 
-        /**
-         * ----------------------------------------------------
-         * RETURN VIEW
-         * ----------------------------------------------------
-         */
-        return Inertia::render('HRMS/VehicleRequestDashboard', [
-            // original dashboard
-            'vehiclesToBeOutToday' => $vehiclesToBeOutToday->map($formatRequest)->values(),
-            'pendingRequests'      => $pendingRequests->map($formatRequest)->values(),
-            'approvedRequests'     => $approvedRequests->map($formatRequest)->values(),
-            'rejectedRequests'     => $rejectedRequests->map($formatRequest)->values(),
+        // Stats
+        $totalRequests = TransportService::count();
+        $approvedCount = TransportService::where('status', 'APPROVED')->count();
+        $pendingCount  = TransportService::where('status', 'PENDING')->count();
+        $rejectedCount = TransportService::where('status', 'REJECTED')->count();
 
-            // search
+        return Inertia::render('HRMS/VehicleRequestDashboard', [
+            'vehiclesToBeOutToday' => $vehiclesToBeOutToday,
+            'pendingRequests' => $pendingRequests,
+            'approvedRequests' => $approvedRequests,
+            'rejectedRequests' => $rejectedRequests,
+
             'searchedVehicle' => $vehicleNo,
             'currentTrips' => $currentTrips,
             'pastTrips' => $pastTrips,
 
-            // stats
             'stats' => [
                 'totalRequests' => $totalRequests,
                 'approved' => $approvedCount,

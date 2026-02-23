@@ -62,6 +62,14 @@ const MODULE_SETS = {
       image: "/images/payroll.webp",
     },
   ],
+  // TRANSPORT: [
+  //   {
+  //     title: "Fleet & Booking Operations",
+  //     description: "Manage transfer schedules and shuttle schedules.",
+  //     href: "/schedules/transport-dashboard",
+  //     image: "/images/transport-operations.webp",
+  //   },
+  // ],
 };
 
 function ModuleCard({ item }) {
@@ -140,15 +148,32 @@ export default function HRMS({ auth }) {
 
   const modules = useMemo(() => {
     if (role === "admin") {
-      const adminModules = [...allModules, ...(MODULE_SETS.ADMIN || [])];
-      return adminModules.filter((m, i, arr) => arr.findIndex((x) => x.href === m.href) === i);
+      const adminModules = [
+        ...allModules,
+        ...(MODULE_SETS.ADMIN || []),
+        ...(MODULE_SETS.TRANSPORT || []),
+      ];
+      return adminModules.filter(
+        (m, i, arr) => arr.findIndex((x) => x.href === m.href) === i
+      );
     }
 
-    if (dept === "hr" || dept.includes("human")) return MODULE_SETS.HR || [];
-    if (dept === "finance" || dept.includes("finan")) return MODULE_SETS.FINANCE || [];
+    if (dept === "hr" || dept.includes("human"))
+      return MODULE_SETS.HR || [];
+
+    if (dept === "finance" || dept.includes("finan"))
+      return MODULE_SETS.FINANCE || [];
+
+    if (
+      dept.includes("transfer") ||
+      dept.includes("rent a car") ||
+      dept.includes("rental")
+    )
+      return MODULE_SETS.TRANSPORT || [];
 
     return [];
   }, [role, dept, allModules]);
+
 
   return (
     <AuthenticatedLayout user={auth.user}>

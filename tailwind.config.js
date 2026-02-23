@@ -14,6 +14,7 @@ export default {
         extend: {
             fontFamily: {
                 sans: ['Cambria'],
+                playfair: ['"Playfair Display"', 'serif'],
             },
         },
     },

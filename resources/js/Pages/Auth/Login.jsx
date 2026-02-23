@@ -23,26 +23,51 @@ export default function Login({ status, canResetPassword }) {
         <GuestLayout>
             <Head title="Log in" />
 
-            <div className="grid grid-cols-1 md:grid-cols-2">
+            <div className="relative mx-auto max-w-5xl">
 
-                {/* Left Column - Image */}
-                <div className="hidden md:flex items-center justify-center p-10">
-                    <img
-                        src="/images/login-img.webp"
-                        alt="Login Illustration"
-                        className="max-h-100 object-contain transition-transform duration-300 hover:scale-105"
-                    />
-                </div>
+                {/* ================= RIGHT INFO CARD ================= */}
+                <div className="relative rounded-2xl border border-slate-200 bg-slate-50 shadow-xl">
+                    <div className="grid grid-cols-1 lg:grid-cols-1 items-center gap-8 px-8 py-12 lg:px-12 lg:py-14 lg:pl-[440px]">
 
-                {/* Right Column - Form */}
-                <div className="p-5 sm:p-5 flex items-center justify-center">
-                    <div className="w-full max-w-md">
-                       <div className="flex justify-center mb-6">
+                        {/* LEFT TEXT SECTION */}
+                        <div className="flex flex-col items-center justify-center text-center lg:text-center">
                             <img
                                 src="/images/logo.webp"
-                                alt="ERP Logo"
-                                className="h-20 w-auto object-contain transition-transform duration-300 hover:scale-105"
+                                alt="Company Logo"
+                                className="mx-auto lg:mx-0 mb-2 w-[12rem] object-contain"
                             />
+
+                            <h1 className="text-xl lg:text-3xl font-bold text-slate-900 font-playfair">
+                                Explore Enterprise Suite (EES)
+                            </h1>
+
+                            <p className="mt-3 text-sm lg:text-base text-slate-600 leading-relaxed max-w-lg mx-auto lg:mx-0">
+                                Enter your credentials to access the Enterprise Suite portal.
+                                Manage internal tools, employee services, and secure
+                                enterprise workflows from one centralized platform.
+                            </p>
+                        </div>
+
+                        {/* RIGHT IMAGE */}
+                        {/* <div className="hidden lg:flex justify-end">
+                            <img
+                                src="/images/login-img.webp"
+                                alt="Login Illustration"
+                                className="w-[22rem] max-w-full object-contain transition-transform duration-300 hover:scale-[1.03]"
+                            />
+                        </div> */}
+
+                    </div>
+                </div>
+
+
+                {/* ================= LOGIN CARD (OVERLAY) ================= */}
+                <div className="mt-6 lg:mt-0 lg:absolute lg:right-[38rem] lg:top-1/2 lg:-translate-y-1/2 w-full lg:w-[380px] z-20">
+                    <div className="rounded-xl bg-white shadow-2xl border border-slate-200 p-7">
+                        <div className="text-center mb-2">
+                            <h2 className="text-lg font-semibold text-slate-900">
+                                Welcome Back..
+                            </h2>
                         </div>
 
                         {status && (
@@ -51,17 +76,17 @@ export default function Login({ status, canResetPassword }) {
                             </div>
                         )}
 
-                        <form onSubmit={submit} className="space-y-5">
+                        <form onSubmit={submit} className="space-y-4">
 
-                            {/* Username */}
+                            {/* Email */}
                             <div>
                                 <TextInput
                                     id="email"
                                     type="text"
                                     name="email"
                                     value={data.email}
-                                    className="block w-full rounded-lg border-gray-300 px-4 py-3 focus:border-indigo-500 focus:ring-indigo-500 transition"
-                                    placeholder="Username"
+                                    className="block w-full rounded-lg border-slate-300 px-4 py-3 focus:border-indigo-500 focus:ring-indigo-500 transition"
+                                    placeholder="Enter email"
                                     autoComplete="username"
                                     isFocused={true}
                                     onChange={(e) => setData('email', e.target.value)}
@@ -76,8 +101,8 @@ export default function Login({ status, canResetPassword }) {
                                     type="password"
                                     name="password"
                                     value={data.password}
-                                    className="block w-full rounded-lg border-gray-300 px-4 py-3 focus:border-indigo-500 focus:ring-indigo-500 transition"
-                                    placeholder="Password"
+                                    className="block w-full rounded-lg border-slate-300 px-4 py-3 focus:border-indigo-500 focus:ring-indigo-500 transition"
+                                    placeholder="Enter password"
                                     autoComplete="current-password"
                                     onChange={(e) => setData('password', e.target.value)}
                                 />
@@ -85,36 +110,32 @@ export default function Login({ status, canResetPassword }) {
                             </div>
 
                             {/* Remember + Forgot */}
-                            <div className="flex items-center justify-between">
-                                <label className="flex items-center gap-2">
+                            <div className="flex items-center justify-between text-xs">
+                                <label className="flex items-center gap-2 text-slate-600">
                                     <Checkbox
                                         name="remember"
                                         checked={data.remember}
-                                        onChange={(e) =>
-                                            setData('remember', e.target.checked)
-                                        }
+                                        onChange={(e) => setData('remember', e.target.checked)}
                                     />
-                                    <span className="text-sm text-gray-600">
-                                        Remember me
-                                    </span>
+                                    Remember me
                                 </label>
 
                                 {canResetPassword && (
                                     <Link
                                         href={route('password.request')}
-                                        className="text-sm text-gray-500 hover:text-gray-900"
+                                        className="text-slate-500 hover:text-slate-900"
                                     >
-                                        Forgot password?
+                                        Forgot Password?
                                     </Link>
                                 )}
                             </div>
 
-                            {/* Button */}
+                            {/* Login Button */}
                             <PrimaryButton
-                                className="w-full justify-center bg-blue-950 py-3 text-white hover:bg-blue-800 transition"
+                                className="w-full justify-center bg-[#0A4A87] hover:bg-[#083a6b] py-3 text-white transition"
                                 disabled={processing}
                             >
-                                Log in
+                                LOG IN
                             </PrimaryButton>
 
                             {/* Footer */}
@@ -124,7 +145,7 @@ export default function Login({ status, canResetPassword }) {
                                 <div className="relative inline-block group cursor-pointer">
                                     <span className="hover:text-gray-700">Terms of Use</span>
 
-                                    <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-64 rounded-md bg-gray-800 text-white text-[11px] px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
+                                    <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-64 rounded-lg bg-gray-800 text-white text-[11px] px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
                                         Use of this system is restricted to authorized personnel only. 
                                         All activities may be monitored and logged.
                                     </div>
@@ -136,17 +157,17 @@ export default function Login({ status, canResetPassword }) {
                                 <div className="relative inline-block group cursor-pointer">
                                     <span className="hover:text-gray-700">Privacy Policy</span>
 
-                                    <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-64 rounded-md bg-gray-800 text-white text-[11px] px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
+                                    <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-64 rounded-lg bg-gray-800 text-white text-[11px] px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
                                         Personal data is processed securely and in accordance with 
                                         company data protection standards.
                                     </div>
                                 </div>
 
-                                <div className="mt-2 text-black font-extrabold">
-                                    Developed and Maintained by IT Department of Explore Vacations © {new Date().getFullYear()}
+                                <div className="mt-3 text-slate-800 font-semibold">
+                                    Developed and Maintained by IT Department of Explore Holdings © {new Date().getFullYear()}
                                 </div>
-
                             </div>
+
                         </form>
                     </div>
                 </div>

@@ -1,25 +1,12 @@
-import { Link } from '@inertiajs/react';
-
 export default function GuestLayout({ children }) {
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4">
+        <div className="relative min-h-screen overflow-hidden bg-slate-100 flex items-center justify-center px-4 py-10">
+            <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-indigo-200/40" />
+            <div className="pointer-events-none absolute -bottom-28 -right-28 h-80 w-80 rounded-full bg-purple-200/30" />
+            <div className="pointer-events-none absolute top-10 right-10 h-40 w-40 rounded-full bg-blue-200/20" />
 
-            <div className="w-full max-w-5xl">
-
-                {/* Top Logo */}
-                {/* <div className="flex justify-center mb-6">
-                    <img
-                        src="/images/logo.webp"
-                        alt="Logo"
-                        className="w-40"
-                    />
-                </div> */}
-
-                {/* Card */}
-                <div className="overflow-hidden bg-white shadow-xl sm:rounded-2xl p-5">
-                    {children}
-                </div>
-
+            <div className="w-full max-w-6xl relative">
+                {children}
             </div>
         </div>
     );
