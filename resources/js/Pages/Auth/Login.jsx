@@ -27,7 +27,7 @@ export default function Login({ status, canResetPassword }) {
 
                 {/* ================= RIGHT INFO CARD ================= */}
                 <div className="relative rounded-2xl border border-slate-200 bg-slate-50 shadow-xl">
-                    <div className="grid grid-cols-1 lg:grid-cols-1 items-center gap-8 px-8 py-12 lg:px-12 lg:py-14 lg:pl-[440px]">
+                    <div className="grid grid-cols-1 lg:grid-cols-1 items-center gap-8 px-8 py-12 lg:px-12 lg:py-14 lg:pr-[500px]">
 
                         {/* LEFT TEXT SECTION */}
                         <div className="flex flex-col items-center justify-center text-center lg:text-center">
@@ -62,7 +62,7 @@ export default function Login({ status, canResetPassword }) {
 
 
                 {/* ================= LOGIN CARD (OVERLAY) ================= */}
-                <div className="mt-6 lg:mt-0 lg:absolute lg:right-[38rem] lg:top-1/2 lg:-translate-y-1/2 w-full lg:w-[380px] z-20">
+                <div className="mt-6 lg:mt-0 lg:absolute lg:right-[3rem] lg:top-1/2 lg:-translate-y-1/2 w-full lg:w-[380px] z-20">
                     <div className="rounded-xl bg-white shadow-2xl border border-slate-200 p-7">
                         <div className="text-center mb-2">
                             <h2 className="text-lg font-semibold text-slate-900">
