@@ -46,6 +46,7 @@ class VehicleRequestController extends Controller
 
                 // UI mapping
                 'reason' => $ts->note,
+                'start_destinations' => $ts->pickup_location,
                 'destinations' => $ts->dropoff_location,
                 'trip_code' => $ts->trip_code,
 

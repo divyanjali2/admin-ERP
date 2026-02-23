@@ -113,7 +113,8 @@ const DetailsDialog = ({ open, onClose, data, statusLabel }) => {
           <Row label="Trip Code" value={data.trip_code || "—"} />
           <Row label="Type" value={(data.type || "—").toUpperCase()} />
           <Row label="Passengers" value={data.passenger_count ?? "—"} />
-          <Row label="Destination" value={data.destinations || "—"} />
+          <Row label="Start Destination" value={data.start_destinations || "—"} />
+          <Row label="End Destination" value={data.destinations || "—"} />
           <Row label="Date" value={dateDisplay} />
           {data.created_at && <Row label="Requested On" value={formatDate(data.created_at)} />}
           {data.reject_reason && <Row label="Reject Reason" value={data.reject_reason} />}
