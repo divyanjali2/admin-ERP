@@ -15,6 +15,16 @@ import {
 } from "@mui/material";
 
 const SUITE_SETS = {
+//   "Senior Management": [
+//     {
+//       key: "exec",
+//       title: "EXECUTIVE SUITE",
+//       description: "Dashboards, approvals, KPIs, and organization overview",
+//       href: "/suite-services?type=executive",
+//       image: "/images/executive-suite.webp",
+//     },
+//   ],
+
   HR: [
     {
       key: "hr",
@@ -24,6 +34,7 @@ const SUITE_SETS = {
       image: "/images/hr-suite.webp",
     },
   ],
+
   IT: [
     {
       key: "it",
@@ -31,6 +42,86 @@ const SUITE_SETS = {
       description: "Tickets, assets, access, compliance & IT operations",
       href: "/suite-services?type=it",
       image: "/images/it-suite.webp",
+    },
+  ],
+
+  FINANCE: [
+    {
+      key: "finance",
+      title: "FINANCE SUITE",
+      description: "Invoicing, accounting, payments, and financial reporting",
+      href: "/suite-services?type=finance",
+      image: "/images/finance-suite.webp",
+    },
+  ],
+
+  "Marketing Department": [
+    {
+      key: "marketing",
+      title: "MARKETING SUITE",
+      description: "Campaigns, leads, content planning, and performance tracking",
+      href: "/suite-services?type=marketing",
+      image: "/images/marketing-suite.webp",
+    },
+  ],
+
+  "Digital Marketing Department": [
+    {
+      key: "digital_marketing",
+      title: "DIGITAL MARKETING SUITE",
+      description: "Ads, social, SEO, analytics, and conversion reporting",
+      href: "/suite-services?type=digital-marketing",
+      image: "/images/digital-marketing-suite.webp",
+    },
+  ],
+
+  "Procurement Department": [
+    {
+      key: "procurement",
+      title: "PROCUREMENT SUITE",
+      description: "Suppliers, purchase requests, POs, and approvals",
+      href: "/suite-services?type=procurement",
+      image: "/images/procurement-suite.webp",
+    },
+  ],
+
+  "Fleet Management Department": [
+    {
+      key: "fleet",
+      title: "FLEET MANAGEMENT SUITE",
+      description: "Vehicles, maintenance, fuel logs, and utilization",
+      href: "/suite-services?type=fleet",
+      image: "/images/fleet-suite.webp",
+    },
+  ],
+
+  "Rent a Car Department": [
+    {
+      key: "rentacar",
+      title: "RENT A CAR SUITE",
+      description: "Bookings, availability, contracts, and billing",
+      href: "/suite-services?type=rent-a-car",
+      image: "/images/rentacar-suite.webp",
+    },
+  ],
+
+  "Transfers Department": [
+    {
+      key: "transfers",
+      title: "TRANSFERS SUITE",
+      description: "Transfer scheduling, driver assignment, and trip tracking",
+      href: "/suite-services?type=transfers",
+      image: "/images/transfers-suite.webp",
+    },
+  ],
+
+  "Airport Parking": [
+    {
+      key: "parking",
+      title: "AIRPORT PARKING SUITE",
+      description: "Slots, reservations, check-in/out, and revenue tracking",
+      href: "/suite-services?type=airport-parking",
+      image: "/images/parking-suite.webp",
     },
   ],
 };
@@ -139,25 +230,42 @@ export default function Suites({ auth }) {
     message: "",
   });
 
-  const allSuites = useMemo(() => {
-    const all = [...(SUITE_SETS.HR || []), ...(SUITE_SETS.IT || [])];
-    return all.filter(
-      (m, i, arr) => arr.findIndex((x) => x.href === m.href) === i
-    );
-  }, []);
+// normalize keys once
+const normalize = (s) => String(s || "").trim().toLowerCase();
 
-  // figure out what the user is authorized for
-  const authorizedKeys = useMemo(() => {
-    if (role === "admin") return new Set(["hr", "it"]);
+const allSuites = useMemo(() => {
+  const all = Object.values(SUITE_SETS).flat(); // <-- includes everything
+  return all.filter(
+    (m, i, arr) => arr.findIndex((x) => x.href === m.href) === i
+  );
+}, []);
 
-    const keys = new Set();
-    if (dept === "hr" || dept.includes("human")) keys.add("hr");
-    if (dept === "it" || dept.includes("information") || dept.includes("tech"))
-      keys.add("it");
+const authorizedKeys = useMemo(() => {
+  // admin sees all
+  if (role === "admin") return new Set(allSuites.map((s) => s.key));
 
-    return keys;
-  }, [role, dept]);
+  // senior management = admin
+  if (normalize(deptRaw) === "senior management")
+    return new Set(allSuites.map((s) => s.key));
 
+  // department-based: allow only suites for that department name
+  // IMPORTANT: match the department key in SUITE_SETS by normalizing
+  const deptName = normalize(
+    page.props?.auth?.department ??
+      page.props?.auth?.user?.department ??
+      auth?.department ??
+      auth?.user?.department ??
+      ""
+  );
+
+  // find matching SUITE_SETS key
+  const matchedKey = Object.keys(SUITE_SETS).find(
+    (k) => normalize(k) === deptName
+  );
+
+  const allowed = matchedKey ? SUITE_SETS[matchedKey] : [];
+  return new Set(allowed.map((s) => s.key));
+}, [role, allSuites, page.props, auth]);
   // show ALL suites, but disable unauthorized ones
   const suites = useMemo(() => allSuites, [allSuites]);
 
