@@ -31,7 +31,7 @@ const SUITE_SETS = {
       title: "HR SUITE",
       description: "Employee, leave, payroll, onboarding & HR workflows",
       href: "/suite-services?type=hr",
-      image: "/images/hr-suite.webp",
+      image: "/images/hr.webp",
     },
   ],
 
@@ -41,7 +41,7 @@ const SUITE_SETS = {
       title: "IT SUITE",
       description: "Tickets, assets, access, compliance & IT operations",
       href: "/suite-services?type=it",
-      image: "/images/it-suite.webp",
+      image: "/images/it.webp",
     },
   ],
 
@@ -51,7 +51,7 @@ const SUITE_SETS = {
       title: "FINANCE SUITE",
       description: "Invoicing, accounting, payments, and financial reporting",
       href: "/suite-services?type=finance",
-      image: "/images/finance-suite.webp",
+      image: "/images/finance.webp",
     },
   ],
 
@@ -61,7 +61,7 @@ const SUITE_SETS = {
       title: "MARKETING SUITE",
       description: "Campaigns, leads, content planning, and performance tracking",
       href: "/suite-services?type=marketing",
-      image: "/images/marketing-suite.webp",
+      image: "/images/marketing.webp",
     },
   ],
 
@@ -71,7 +71,7 @@ const SUITE_SETS = {
       title: "DIGITAL MARKETING SUITE",
       description: "Ads, social, SEO, analytics, and conversion reporting",
       href: "/suite-services?type=digital-marketing",
-      image: "/images/digital-marketing-suite.webp",
+      image: "/images/digital-marketing.webp",
     },
   ],
 
@@ -81,7 +81,7 @@ const SUITE_SETS = {
       title: "PROCUREMENT SUITE",
       description: "Suppliers, purchase requests, POs, and approvals",
       href: "/suite-services?type=procurement",
-      image: "/images/procurement-suite.webp",
+      image: "/images/procurement.webp",
     },
   ],
 
@@ -91,7 +91,7 @@ const SUITE_SETS = {
       title: "FLEET MANAGEMENT SUITE",
       description: "Vehicles, maintenance, fuel logs, and utilization",
       href: "/suite-services?type=fleet",
-      image: "/images/fleet-suite.webp",
+      image: "/images/fleet.webp",
     },
   ],
 
@@ -101,7 +101,7 @@ const SUITE_SETS = {
       title: "RENT A CAR SUITE",
       description: "Bookings, availability, contracts, and billing",
       href: "/suite-services?type=rent-a-car",
-      image: "/images/rentacar-suite.webp",
+      image: "/images/rentacar.webp",
     },
   ],
 
@@ -111,7 +111,7 @@ const SUITE_SETS = {
       title: "TRANSFERS SUITE",
       description: "Transfer scheduling, driver assignment, and trip tracking",
       href: "/suite-services?type=transfers",
-      image: "/images/transfers-suite.webp",
+      image: "/images/transfers.webp",
     },
   ],
 
@@ -121,7 +121,7 @@ const SUITE_SETS = {
       title: "AIRPORT PARKING SUITE",
       description: "Slots, reservations, check-in/out, and revenue tracking",
       href: "/suite-services?type=airport-parking",
-      image: "/images/parking-suite.webp",
+      image: "/images/airport-parking.webp",
     },
   ],
 };
