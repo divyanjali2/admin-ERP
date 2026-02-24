@@ -23,14 +23,14 @@ const services = [
   // },
   {
     title: "FMS",
-    description: "Fleet Management System",
+    description: "Operational",
     href: "https://exploredrive.lk/",
     external: true,
     image: "/images/fms.webp",
   },
   {
     title: "ERP",
-    description: "Enterprise Resource Planning System",
+    description: "Administrative",
     href: "/hrms",
     external: false,
     image: "/images/hrms.webp",
