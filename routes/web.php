@@ -20,7 +20,6 @@ Route::get('/services', function () {
     return Inertia::render('Services');
 })->middleware(['auth', 'verified'])->name('services');
 
-
 // Dashboard (protected)
 Route::get('/dashboard', function () {
     return redirect()->route('services');
@@ -33,9 +32,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('/hrms', function () {
-    return Inertia::render('HRMS');
-})->middleware(['auth', 'verified'])->name('hrms');
+Route::get('/suite-services', function () {
+    return Inertia::render('SuiteServices');
+})->middleware(['auth', 'verified'])->name('suite-services');
 
 Route::get('/admin', function () {
     return Inertia::render('Admin');

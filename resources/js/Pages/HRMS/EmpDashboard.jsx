@@ -39,7 +39,7 @@ const NAVY_2 = "#0F2A44";
 const drawerWidth = 260;
 
 const navItems = [
-  { label: "HRMS Home", href: "/hrms", icon: <HomeOutlinedIcon /> },
+  { label: "HRMS Home", href: "/suite-services", icon: <HomeOutlinedIcon /> },
   { label: "Dashboard", href: "/hrms/emp-dashboard", icon: <DashboardOutlinedIcon /> },
   { label: "Employees", href: "/hrms/employees", icon: <PeopleAltOutlinedIcon /> },
 ];

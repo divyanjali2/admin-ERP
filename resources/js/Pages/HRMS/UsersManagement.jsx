@@ -110,7 +110,7 @@ export default function UsersManagement({ auth }) {
         <Box sx={{ width: "100%" }}>
           <Button
             startIcon={<ArrowBackIcon />}
-            onClick={() => router.get("/hrms")}
+            onClick={() => router.get("/suite-services")}
             sx={{ mb: 3 }}
           >
             Back

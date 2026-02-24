@@ -46,7 +46,7 @@ import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
 const drawerWidth = 260;
 
 const navItems = [
-  { label: "HRMS Home", href: "/hrms", icon: <HomeOutlinedIcon /> },
+  { label: "HRMS Home", href: "/suite-services", icon: <HomeOutlinedIcon /> },
   { label: "Dashboard", href: "/hrms/emp-dashboard", icon: <DashboardOutlinedIcon /> },
   { label: "Employees", href: "/hrms/employees", icon: <PeopleAltOutlinedIcon /> },
   { label: "Departments", href: "/hrms/departments", icon: <ApartmentOutlinedIcon /> },

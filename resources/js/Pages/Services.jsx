@@ -31,7 +31,7 @@ const services = [
   {
     title: "ADMINISTRATIVE",
     // description: "Fleet Management System",
-    href: "/hrms",
+    href: "/suite-services",
     external: false,
     image: "/images/fms.webp",
   },

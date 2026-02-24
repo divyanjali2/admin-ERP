@@ -69,7 +69,7 @@ export default function Leave({ auth, employeesOnLeave = [], pendingRequests = [
           <List disablePadding>
 
             <ListItemButton
-              onClick={() => router.get("/hrms")}
+              onClick={() => router.get("/suite-services")}
               sx={{
                 borderRadius: 2,
                 mb: 0.5,

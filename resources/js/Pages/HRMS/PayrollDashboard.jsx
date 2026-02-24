@@ -65,7 +65,7 @@ export default function Leave({ auth }) {
 
             <Button
               variant="outlined"
-              href="/hrms"
+              href="/suite-services"
               sx={{
                 color: NAVY,
                 borderColor: "#cbd5e1",

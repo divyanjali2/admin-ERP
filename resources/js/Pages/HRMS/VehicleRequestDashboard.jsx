@@ -406,7 +406,7 @@ export default function VehicleRequestDashboard({
             <Button
               variant="contained"
               color="success"
-              onClick={() => router.get("/hrms")}
+              onClick={() => router.get("/suite-services")}
               sx={{ textTransform: "none", fontWeight: 800 }}
             >
               Back
