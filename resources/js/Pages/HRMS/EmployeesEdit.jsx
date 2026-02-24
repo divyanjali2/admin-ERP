@@ -231,6 +231,7 @@ export default function EmployeesEdit({
     router.post(
       `/hrms/employees/${employee.employee_id}`,
       {
+        forceFormData: true,
         _method: "put",
         ...cleanedPayload,
       },

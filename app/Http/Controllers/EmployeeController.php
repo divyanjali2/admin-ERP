@@ -416,13 +416,12 @@ class EmployeeController extends Controller
         ]);
     }
 
-
     public function update(Request $request, Employee $employee)
     {
-        Log::info('EMPLOYEE UPDATE: incoming', [
-            'content_type' => $request->header('Content-Type'),
-            'all_keys' => array_keys($request->all()),
-        ]);
+        // Log::info('EMPLOYEE UPDATE: incoming', [
+        //     'content_type' => $request->header('Content-Type'),
+        //     'all_keys' => array_keys($request->all()),
+        // ]);
 
         $validated = $request->validate([
             'employment_status' => ['required','string','max:20'],
@@ -438,12 +437,8 @@ class EmployeeController extends Controller
                 Rule::unique('employees','epf_number')->ignore($employee->employee_id,'employee_id')
             ],
             'attendance_type' => ['required','string','max:20'],
-
-            // user fields (optional)
             'user_email' => ['nullable','email','max:255'],
             'user_password' => ['nullable','string','min:6'],
-
-            // job
             'department_id' => ['required','integer','exists:departments,department_id'],
             'job_title_id' => ['required','integer','exists:job_titles,job_title_id'],
             'employment_type' => ['required','string','max:20'],
@@ -451,14 +446,10 @@ class EmployeeController extends Controller
             'date_of_joining' => ['required','date'],
             'probation_end_date' => ['nullable','date','after_or_equal:date_of_joining'],
             'reporting_manager_id' => ['nullable','integer','exists:employees,employee_id'],
-
-            // contacts
             'contacts' => ['required','array','min:1'],
             'contacts.*.contact_type' => ['required','string','max:30'],
             'contacts.*.contact_value' => ['required','string','max:255'],
             'contacts.*.is_primary' => ['nullable','boolean'],
-
-            // addresses
             'addresses' => ['required','array','min:1'],
             'addresses.*.address_type' => ['required','string','max:20'],
             'addresses.*.address_line_1' => ['required','string','max:255'],
@@ -466,26 +457,18 @@ class EmployeeController extends Controller
             'addresses.*.country' => ['required','string','max:100'],
             'addresses.*.postal_code' => ['nullable','string','max:20'],
             'addresses.*.is_current' => ['nullable','boolean'],
-
-            // emergency (tolerant)
             'emergency_contacts' => ['nullable','array'],
             'emergency_contacts.*.name' => ['nullable','string','max:150'],
             'emergency_contacts.*.relationship' => ['nullable','string','max:100'],
             'emergency_contacts.*.phone' => ['nullable','string','max:30'],
             'emergency_contacts.*.address' => ['nullable','string','max:255'],
-
-            // experience (tolerant)
             'experience' => ['nullable','array'],
             'experience.*.previous_employer' => ['nullable','string','max:150'],
             'experience.*.total_years' => ['nullable','numeric'],
-
-            // bank (tolerant)
             'bank_accounts' => ['nullable','array'],
             'bank_accounts.*.bank_name' => ['nullable','string','max:150'],
             'bank_accounts.*.bank_account_number' => ['nullable','string','max:50'],
             'bank_accounts.*.bank_branch_name' => ['nullable','string','max:150'],
-
-            // comp
             'compensation' => ['nullable','array'],
             'compensation.salary_currency' => ['nullable','string','size:3'],
             'compensation.pay_frequency' => ['nullable','string','max:10'],
@@ -495,22 +478,16 @@ class EmployeeController extends Controller
             'compensation.components.*.component_type' => ['nullable','string','max:10'],
             'compensation.components.*.component_name' => ['nullable','string','max:120'],
             'compensation.components.*.amount' => ['nullable','numeric'],
-
-            // yearly leave
             'yearly_leave' => ['nullable','array'],
             'yearly_leave.*.leave_policy_id' => ['required','integer','exists:leave_policies,leave_policy_id'],
             'yearly_leave.*.leave_entitlement' => ['required','integer'],
-
-            // docs
             'employee_documents' => ['nullable','array'],
             'employee_documents.*.doc_type' => ['required','string','max:30'],
             'employee_documents.*.files' => ['nullable','array'],
             'employee_documents.*.files.*' => ['file','max:10240'],
-
         ]);
 
         DB::transaction(function () use ($employee, $validated) {
-
             $employee->update([
                 'employment_status' => $validated['employment_status'],
                 'full_name' => $validated['full_name'],
@@ -540,7 +517,6 @@ class EmployeeController extends Controller
                 ]
             );
 
-            // contacts replace
             EmployeeContact::where('employee_id', $employee->employee_id)->delete();
             foreach ($validated['contacts'] as $c) {
                 EmployeeContact::create([
@@ -613,8 +589,8 @@ class EmployeeController extends Controller
             if (!empty($rows)) {
                 DB::table('employee_yearly_leave_balance')->upsert(
                     $rows,
-                    ['employee_id', 'leave_policy_id'],   // conflict columns (matches your PK)
-                    ['leave_entitlement']                 // columns to update
+                    ['employee_id', 'leave_policy_id'],  
+                    ['leave_entitlement']            
                 );
             }
 
@@ -625,10 +601,9 @@ class EmployeeController extends Controller
                 ->whereNotIn('leave_policy_id', $policyIds)
                 ->delete();
 
-            Log::info('YEARLY LEAVE saved count', [
-                'count' => EmployeeYearlyLeaveBalance::where('employee_id', $employee->employee_id)->count()
-                ]);
-
+            // Log::info('YEARLY LEAVE saved count', [
+            //     'count' => EmployeeYearlyLeaveBalance::where('employee_id', $employee->employee_id)->count()
+            //     ]);
 
             // compensation latest + components
             if (!empty($validated['compensation'] ?? null)) {
@@ -670,9 +645,7 @@ class EmployeeController extends Controller
             foreach (($validated['employee_documents'] ?? []) as $doc) {
                 $files = $doc['files'] ?? [];
 
-                // ✅ Skip doc row if no files selected
                 if (count($files) === 0) continue;
-
                 foreach ($files as $file) {
                     $path = $file->store("employees/{$employee->employee_id}/documents", 'public');
 
@@ -695,13 +668,9 @@ class EmployeeController extends Controller
                     ]);
                 }
             }
-
-
         });
 
-        return redirect()
-            ->route('hrms.employees.index')
-            ->with('success', 'Employee updated successfully.');
+        return redirect()->route('hrms.employees.index')->with('success', 'Employee updated successfully.');
     }
 
     public function destroy(Employee $employee)
