@@ -32,6 +32,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+Route::get('/suites', function () {
+    return Inertia::render('Suites');
+})->middleware(['auth', 'verified'])->name('suite');
+
 Route::get('/suite-services', function () {
     return Inertia::render('SuiteServices');
 })->middleware(['auth', 'verified'])->name('suite-services');
