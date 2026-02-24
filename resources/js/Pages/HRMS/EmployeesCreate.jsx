@@ -164,27 +164,24 @@ export default function EmployeesCreate({
       nationality: !isEmpty(data.nationality),
       attendance_type: !isEmpty(data.attendance_type),
 
-
       // BANK (make them required)
-...Object.fromEntries(
-  (data.bank_accounts || []).flatMap((_, idx) => ([
-    [`bank_accounts.${idx}.bank_name`, !isEmpty(data.bank_accounts?.[idx]?.bank_name)],
-    [`bank_accounts.${idx}.bank_account_number`, !isEmpty(data.bank_accounts?.[idx]?.bank_account_number)],
-    [`bank_accounts.${idx}.bank_branch_name`, !isEmpty(data.bank_accounts?.[idx]?.bank_branch_name)],
-  ]))
-),
+      ...Object.fromEntries(
+        (data.bank_accounts || []).flatMap((_, idx) => ([
+          [`bank_accounts.${idx}.bank_name`, !isEmpty(data.bank_accounts?.[idx]?.bank_name)],
+          [`bank_accounts.${idx}.bank_account_number`, !isEmpty(data.bank_accounts?.[idx]?.bank_account_number)],
+          [`bank_accounts.${idx}.bank_branch_name`, !isEmpty(data.bank_accounts?.[idx]?.bank_branch_name)],
+        ]))
+      ),
 
-// YEARLY LEAVE (required rows)
-yearly_leave: (data.yearly_leave?.length || 0) > 0,
+      // YEARLY LEAVE (required rows)
+      yearly_leave: (data.yearly_leave?.length || 0) > 0,
 
-...Object.fromEntries(
-  (data.yearly_leave || []).flatMap((_, idx) => ([
-    [`yearly_leave.${idx}.leave_policy_id`, !isEmpty(data.yearly_leave?.[idx]?.leave_policy_id)],
-    [`yearly_leave.${idx}.leave_entitlement`, !isEmpty(data.yearly_leave?.[idx]?.leave_entitlement)],
-  ]))
-),
-
-
+      ...Object.fromEntries(
+        (data.yearly_leave || []).flatMap((_, idx) => ([
+          [`yearly_leave.${idx}.leave_policy_id`, !isEmpty(data.yearly_leave?.[idx]?.leave_policy_id)],
+          [`yearly_leave.${idx}.leave_entitlement`, !isEmpty(data.yearly_leave?.[idx]?.leave_entitlement)],
+        ]))
+      ),
 
       // JOB
       department_id: !isEmpty(data.department_id),
@@ -216,10 +213,10 @@ yearly_leave: (data.yearly_leave?.length || 0) > 0,
       "compensation.components.0.component_name": !isEmpty(data.compensation?.components?.[0]?.component_name),
       "compensation.components.0.amount": !isEmpty(data.compensation?.components?.[0]?.amount),
 
-              'yearly_leave.required' : 'At least one leave policy is required.',
-        'yearly_leave.min' : 'At least one leave policy must be added.',
-        'yearly_leave.*.leave_policy_id.required' : 'Leave policy is required.',
-        'yearly_leave.*.leave_entitlement.required' : 'Leave entitlement is required.',
+      'yearly_leave.required' : 'At least one leave policy is required.',
+      'yearly_leave.min' : 'At least one leave policy must be added.',
+      'yearly_leave.*.leave_policy_id.required' : 'Leave policy is required.',
+      'yearly_leave.*.leave_entitlement.required' : 'Leave entitlement is required.',
 
     };
   }, [data]);
