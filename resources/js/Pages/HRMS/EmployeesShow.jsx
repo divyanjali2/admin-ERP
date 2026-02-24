@@ -224,7 +224,7 @@ const jobTitleName =
                   { key: "name", label: "Name" },
                   { key: "relationship", label: "Relationship" },
                   { key: "phone", label: "Phone" },
-                  { key: "address", label: "Address" },
+                  // { key: "address", label: "Address" },
                 ]}
                 rows={emergencyContacts}
                 emptyText="No emergency contacts"
