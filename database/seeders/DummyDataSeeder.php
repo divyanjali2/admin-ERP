@@ -64,8 +64,9 @@ class DummyDataSeeder extends Seeder
         DB::table('leave_policies')->upsert(
             [
                 ['name' => 'Annual Leave'],
-                ['name' => 'Sick Leave'],
+                ['name' => 'Medical Leave'],
                 ['name' => 'Casual Leave'],
+                ['name' => 'Half Day'],
             ],
             ['name'],
             ['name']
