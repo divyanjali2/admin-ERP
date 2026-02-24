@@ -42,7 +42,7 @@ export default function EmployeeShow({ auth, employee }) {
     [];
 
   const fullName = useMemo(() => {
-    return `${employee?.first_name ?? ""} ${employee?.last_name ?? ""}`.trim() || "-";
+    return `${employee?.preferred_name  ?? ""}`.trim() || "-";
   }, [employee]);
 
   const onlyDate = (v) => {
@@ -56,7 +56,7 @@ export default function EmployeeShow({ auth, employee }) {
 const managerName = (job) => {
   const m = job?.reportingManager ?? job?.reporting_manager ?? null;
   if (!m) return fmt(job?.reporting_manager_id);
-  const name = `${m.first_name ?? ""} ${m.last_name ?? ""}`.trim();
+  const name = `${m.preferred_name  ?? ""}`.trim();
   return name || fmt(job?.reporting_manager_id);
 };
 
@@ -160,8 +160,7 @@ const jobTitleName =
               <KVGrid
                 items={[
                   { k: "Employee Code", v: employee?.employee_code },
-                  { k: "Name", v: fullName },
-                  { k: "Surname", v: employee?.surname },
+                  { k: "Preferred Name", v: fullName },
                   { k: "DOB", v: employee?.date_of_birth },
                   { k: "Gender", v: employee?.gender },
                   { k: "Marital Status", v: employee?.marital_status },

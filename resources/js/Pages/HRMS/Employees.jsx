@@ -74,8 +74,7 @@ const closeUserMenu = () => setUserMenuAnchor(null);
   const { data, setData, post, put, processing, reset, errors } = useForm({
     id: null,
     employee_code: "",
-    first_name: "",
-    last_name: "",
+    preferred_name : "",
     work_email: "",
     department: "",
   });
@@ -88,7 +87,6 @@ const closeUserMenu = () => setUserMenuAnchor(null);
     setData({
       id: null,
       employee_code: "",
-      first_name: "",
       last_name: "",
       work_email: "",
       department: "",
@@ -104,7 +102,7 @@ const openEdit = (row) => router.get(`/hrms/employees/${row.id}/edit`);
 
 
   const saveForm = () => {
-    if (!data.employee_code || !data.first_name || !data.last_name) return;
+    if (!data.employee_code || !data.last_name) return;
 
     if (mode === "create") {
       post("/hrms/employees", {
@@ -147,10 +145,10 @@ const openEdit = (row) => router.get(`/hrms/employees/${row.id}/edit`);
       { field: "employee_code", headerName: "EMP Code", flex: 1, minWidth: 160 },
       {
         field: "name",
-        headerName: "Full Name",
+        headerName: "Employee Name",
         flex: 1.2,
         minWidth: 220,
-        valueGetter: (value, row) => `${row?.first_name ?? ""} ${row?.last_name ?? ""}`.trim(),
+        valueGetter: (value, row) => `${row?.preferred_name ?? ""}`.trim(),
         sortComparator: (v1, v2) => (v1 ?? "").localeCompare(v2 ?? ""),
       },
       { field: "department", headerName: "Department", flex: 1, minWidth: 160 },
@@ -429,11 +427,11 @@ const openEdit = (row) => router.get(`/hrms/employees/${row.id}/edit`);
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                 <TextField
                   label="First Name"
-                  value={data.first_name}
-                  onChange={(e) => setData("first_name", e.target.value)}
+                  value={data.preferred_name }
+                  onChange={(e) => setData("preferred_name ", e.target.value)}
                   fullWidth
-                  error={!!errors.first_name}
-                  helperText={errors.first_name}
+                  error={!!errors.preferred_name }
+                  helperText={errors.preferred_name }
                 />
                 <TextField
                   label="Last Name"

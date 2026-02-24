@@ -79,10 +79,8 @@ export default function EmployeesCreate({
     // employees
     employee_code: "",
     employment_status: "Active",
-    surname: "",
-    first_name: "",
-    middle_name: "",
-    last_name: "",
+    full_name: "",
+    preferred_name: "",
     date_of_birth: "",
     gender: "Male",
     marital_status: "Single",
@@ -154,9 +152,8 @@ export default function EmployeesCreate({
   const requiredRules = useMemo(() => {
     return {
       // BASIC
-      surname: !isEmpty(data.surname),
-      first_name: !isEmpty(data.first_name),
-      last_name: !isEmpty(data.last_name),
+      full_name: !isEmpty(data.full_name),
+      preferred_name: !isEmpty(data.preferred_name),
       date_of_birth: !isEmpty(data.date_of_birth),
       gender: !isEmpty(data.gender),
       employment_status: !isEmpty(data.employment_status),
@@ -500,32 +497,18 @@ export default function EmployeesCreate({
             <Typography fontWeight={900}>Basic Details</Typography>
 
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <TextField
-                label="Surname"
-                value={data.surname}
-                onChange={(e) => setData("surname", e.target.value)}
-                fullWidth
-                {...req("surname")}
-              />
-              <TextField
-                label="First Name"
-                value={data.first_name}
-                onChange={(e) => setData("first_name", e.target.value)}
-                fullWidth
-                {...req("first_name")}
-              />
-              <TextField
-                label="Middle Name"
-                value={data.middle_name}
-                onChange={(e) => setData("middle_name", e.target.value)}
+            <TextField
+                label="Full Name"
+                value={data.full_name}
+                onChange={(e) => setData("full_name", e.target.value)}
                 fullWidth
               />
               <TextField
-                label="Last Name"
-                value={data.last_name}
-                onChange={(e) => setData("last_name", e.target.value)}
+                label="Preferred Name"
+                value={data.preferred_name}
+                onChange={(e) => setData("preferred_name", e.target.value)}
                 fullWidth
-                {...req("last_name")}
+                {...req("preferred_name")}
               />
             </Stack>
 
@@ -746,7 +729,7 @@ export default function EmployeesCreate({
                 <MenuItem value="">None</MenuItem>
                 {employees.map((e) => (
                   <MenuItem key={e.employee_id ?? e.id} value={e.employee_id ?? e.id}>
-                    {(e.first_name ?? "") + " " + (e.last_name ?? "")} ({e.employee_code ?? ""})
+                    {(e.preferred_name ?? "")} ({e.employee_code ?? ""})
                   </MenuItem>
                 ))}
               </TextField>

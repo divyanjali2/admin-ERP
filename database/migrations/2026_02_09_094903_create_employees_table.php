@@ -14,10 +14,8 @@ return new class extends Migration {
             $table->string('employment_status', 20); 
             $table->dateTime('date_created');
 
-            $table->string('surname', 100);
-            $table->string('first_name', 100);
-            $table->string('middle_name', 100)->nullable();
-            $table->string('last_name', 100);
+            $table->string('full_name', 100);
+            $table->string('preferred_name', 100);
 
             $table->date('date_of_birth');
             $table->string('gender', 10); 
@@ -33,7 +31,7 @@ return new class extends Migration {
             $table->char('last_updated_by', 36);
             $table->dateTime('last_updated_date');
 
-            $table->index(['last_name', 'first_name'], 'idx_emp_name');
+            $table->index(['full_name', 'preferred_name'], 'idx_emp_name');
             $table->index(['employment_status'], 'idx_emp_status');
             $table->unique(['epf_number'], 'uq_epf_number'); 
         });

@@ -37,10 +37,10 @@ class LeaveRequestController extends Controller
                 ->first();
 
             return [
-                'name' => trim(($lr->employee->first_name ?? '') . ' ' . ($lr->employee->last_name ?? '')),
+                'name' => trim(($lr->employee->preferred_name ?? '')),
                 'type' => $lr->policy?->name ?? null,
                 'department' => $lr->employee?->job?->department?->name ?? null,
-                'manager' => trim(($lr->overseeMember?->first_name ?? '') . ' ' . ($lr->overseeMember?->last_name ?? '')),
+                'manager' => trim(($lr->overseeMember?->preferred_name ?? '')),
                 'leave_request_id' => $lr->leave_request_id,
                 'start' => optional($lr->leave_start_date)->toDateString(),
                 'end' => optional($lr->leave_end_date)->toDateString(),
@@ -55,23 +55,23 @@ class LeaveRequestController extends Controller
 
         $pendingList = $pending->map(function ($lr) {
             return [
-                'name' => trim(($lr->employee->first_name ?? '') . ' ' . ($lr->employee->last_name ?? '')),
+                'name' => trim(($lr->employee->preferred_name ?? '')),
                 'days' => (string) $lr->number_of_days . ' Day(s)',
                 'reason' => (string) $lr->reason . ' Day(s)',
                 'department' => $lr->employee?->job?->department?->name ?? null,
-                'manager' => trim(($lr->overseeMember?->first_name ?? '') . ' ' . ($lr->overseeMember?->last_name ?? '')),
+                'manager' => trim(($lr->overseeMember?->preferred_name ?? '')),
                 'leave_request_id' => $lr->leave_request_id,
                 'start' => optional($lr->leave_start_date)->toDateString(),
                 'end' => optional($lr->leave_end_date)->toDateString(),
             ];
         });
 
-        $employees = Employee::orderBy('first_name')
-            ->select('employee_id', 'employee_code', 'first_name', 'last_name')
+        $employees = Employee::orderBy('preferred_name')
+            ->select('employee_id', 'employee_code', 'preferred_name')
             ->get()
             ->map(fn ($e) => [
                 'id' => $e->employee_id,
-                'name' => trim(($e->first_name ?? '') . ' ' . ($e->last_name ?? '')),
+                'name' => trim(($e->preferred_name ?? '')),
                 'code' => $e->employee_code,
             ]);
 

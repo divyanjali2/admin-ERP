@@ -123,10 +123,8 @@ export default function EmployeesEdit({
 
   const { data, setData, processing, errors } = useForm({
     employment_status: employee?.employment_status ?? "Active",
-    surname: employee?.surname ?? "",
-    first_name: employee?.first_name ?? "",
-    middle_name: employee?.middle_name ?? "",
-    last_name: employee?.last_name ?? "",
+    full_name: employee?.full_name ?? "",
+    preferred_name: employee?.preferred_name ?? "",
     date_of_birth: asDate(employee?.date_of_birth),
     gender: employee?.gender ?? "Male",
     marital_status: employee?.marital_status ?? "Single",
@@ -314,10 +312,8 @@ export default function EmployeesEdit({
             <Typography fontWeight={900}>Basic Details</Typography>
 
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <TextField label="Surname" value={data.surname} onChange={(e) => setData("surname", e.target.value)} error={!!errors.surname} helperText={errors.surname} fullWidth />
-              <TextField label="First Name" value={data.first_name} onChange={(e) => setData("first_name", e.target.value)} error={!!errors.first_name} helperText={errors.first_name} fullWidth />
-              <TextField label="Middle Name" value={data.middle_name} onChange={(e) => setData("middle_name", e.target.value)} fullWidth />
-              <TextField label="Last Name" value={data.last_name} onChange={(e) => setData("last_name", e.target.value)} error={!!errors.last_name} helperText={errors.last_name} fullWidth />
+              <TextField label="Surname" value={data.full_name} onChange={(e) => setData("full_name", e.target.value)} error={!!errors.full_name} helperText={errors.full_name} fullWidth />
+              <TextField label="Preferred Name" value={data.preferred_name} onChange={(e) => setData("preferred_name", e.target.value)} error={!!errors.preferred_name} helperText={errors.preferred_name} fullWidth />
             </Stack>
 
             <Stack direction={{ xs: "column", sm: "row" }} spacing={4}>
@@ -373,7 +369,7 @@ export default function EmployeesEdit({
                 <MenuItem value="">None</MenuItem>
                 {employees.map((e) => (
                   <MenuItem key={e.employee_id ?? e.id} value={e.employee_id ?? e.id}>
-                    {(e.first_name ?? "") + " " + (e.last_name ?? "")} ({e.employee_code ?? ""})
+                    {(e.preferred_name ?? "") + " " + (e.employee_code ?? "")}
                   </MenuItem>
                 ))}
               </TextField>

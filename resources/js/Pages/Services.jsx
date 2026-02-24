@@ -25,14 +25,14 @@ const services = [
     title: "OPERATIONAL",
     // description: "Enterprise Resource Planning System",
     href: "https://exploredrive.lk/",
-    external: false,
+    external: true,
     image: "/images/hrms.webp",
   },
   {
     title: "ADMINISTRATIVE",
     // description: "Fleet Management System",
     href: "/hrms",
-    external: true,
+    external: false,
     image: "/images/fms.webp",
   },
 ];

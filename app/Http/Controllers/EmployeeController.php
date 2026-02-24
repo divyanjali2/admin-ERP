@@ -40,8 +40,7 @@ class EmployeeController extends Controller
             ->select([
                 'employee_id',
                 'employee_code',
-                'first_name',
-                'last_name',
+                'preferred_name',
                 'employment_status',
             ])
             ->latest('last_updated_date')
@@ -49,8 +48,7 @@ class EmployeeController extends Controller
             ->map(fn ($e) => [
                 'id' => $e->employee_id,
                 'employee_code' => $e->employee_code,
-                'first_name' => $e->first_name,
-                'last_name' => $e->last_name,                
+                'preferred_name' => $e->preferred_name,
                 'employment_status' => $e->employment_status,
                 'work_email' => $e->contacts
                     ->firstWhere('contact_type', 'Work_Email')
@@ -72,7 +70,7 @@ class EmployeeController extends Controller
         'departments' => Department::orderBy('name')->get(['department_id','name']),
         'jobTitles' => JobTitle::orderBy('name')->get(['job_title_id','name']),
         'leavePolicies' => LeavePolicy::orderBy('name')->get(['leave_policy_id','name']),
-        'employees' => Employee::orderBy('first_name')->get(['employee_id','employee_code','first_name','last_name']),
+        'employees' => Employee::orderBy('preferred_name')->get(['employee_id','employee_code','preferred_name']),
         ]);
     }
 
@@ -95,10 +93,8 @@ class EmployeeController extends Controller
             $validated = $request->validate([
                 // 'employee_code' => ['required', 'string', 'max:50', 'unique:employees,employee_code'],
                 'employment_status' => ['required', 'string', 'max:20'],
-                'surname' => ['required', 'string', 'max:100'],
-                'first_name' => ['required', 'string', 'max:100'],
-                'middle_name' => ['nullable', 'string', 'max:100'],
-                'last_name' => ['required', 'string', 'max:100'],
+                'full_name' => ['required', 'string', 'max:100'],
+                'preferred_name' => ['required', 'string', 'max:100'],
                 'date_of_birth' => ['required', 'date'],
                 'gender' => ['required', 'string', 'max:10'],
                 'marital_status' => ['nullable', 'string', 'max:10'],
@@ -173,7 +169,7 @@ class EmployeeController extends Controller
             DB::beginTransaction();
 
             $user = User::create([
-                'name' => $validated['first_name'] . ' ' . $validated['last_name'],
+                'name' => $validated['preferred_name'],
                 'email' => $validated['user_email'],
                 'password' => Hash::make($validated['user_password']),
             ]);
@@ -185,10 +181,8 @@ class EmployeeController extends Controller
                 'user_id' => $user->id,
                 'employment_status' => $validated['employment_status'],
                 'date_created' => now(),
-                'surname' => $validated['surname'],
-                'first_name' => $validated['first_name'],
-                'middle_name' => $validated['middle_name'] ?? null,
-                'last_name' => $validated['last_name'],
+                'full_name' => $validated['full_name'],
+                'preferred_name' => $validated['preferred_name'],
                 'date_of_birth' => $validated['date_of_birth'],
                 'gender' => $validated['gender'],
                 'marital_status' => $validated['marital_status'] ?? null,
@@ -292,7 +286,7 @@ class EmployeeController extends Controller
                 if (count($files) === 0) continue;
 
                 foreach ($files as $file) {
-                    $empFolder = Str::slug(trim(($employee->first_name ?? '').' '.($employee->last_name ?? '')));
+                    $empFolder = Str::slug(trim(($employee->preferred_name ?? '')));
                     $docFolder = Str::slug($doc['doc_type'] ?? 'other');
 
                     if ($empFolder === '') $empFolder = 'employee-'.$employee->employee_id;
@@ -418,7 +412,7 @@ class EmployeeController extends Controller
             'departments' => Department::orderBy('name')->get(['department_id','name']),
             'jobTitles' => JobTitle::orderBy('name')->get(['job_title_id','name']),
             'leavePolicies' => LeavePolicy::orderBy('name')->get(['leave_policy_id','name']),
-            'employees' => Employee::orderBy('first_name')->get(['employee_id','employee_code','first_name','last_name']),
+            'employees' => Employee::orderBy('preferred_name')->get(['employee_id','employee_code','preferred_name']),
         ]);
     }
 
@@ -432,10 +426,8 @@ class EmployeeController extends Controller
 
         $validated = $request->validate([
             'employment_status' => ['required','string','max:20'],
-            'surname' => ['required','string','max:100'],
-            'first_name' => ['required','string','max:100'],
-            'middle_name' => ['nullable','string','max:100'],
-            'last_name' => ['required','string','max:100'],
+            'full_name' => ['required','string','max:100'],
+            'preferred_name' => ['required','string','max:100'],
             'date_of_birth' => ['required','date'],
             'gender' => ['required','string','max:10'],
             'marital_status' => ['nullable','string','max:10'],
@@ -521,10 +513,8 @@ class EmployeeController extends Controller
 
             $employee->update([
                 'employment_status' => $validated['employment_status'],
-                'surname' => $validated['surname'],
-                'first_name' => $validated['first_name'],
-                'middle_name' => $validated['middle_name'] ?? null,
-                'last_name' => $validated['last_name'],
+                'full_name' => $validated['full_name'],
+                'preferred_name' => $validated['preferred_name'],
                 'date_of_birth' => $validated['date_of_birth'],
                 'gender' => $validated['gender'],
                 'marital_status' => $validated['marital_status'] ?? null,
@@ -737,7 +727,7 @@ class EmployeeController extends Controller
         // ===== Birthdays (today + next 7 days) =====
         $birthdaysAll = (clone $activeEmployeesQ)
             ->whereNotNull('date_of_birth')
-            ->get(['employee_id','first_name','last_name','employee_code','date_of_birth'])
+            ->get(['employee_id','preferred_name','employee_code','date_of_birth'])
             ->map(function ($e) use ($today) {
                 $dob  = Carbon::parse($e->date_of_birth);
                 $next = $dob->copy()->year($today->year);
@@ -746,7 +736,7 @@ class EmployeeController extends Controller
                 return [
                     'employee_id'   => $e->employee_id,
                     'employee_code' => $e->employee_code,
-                    'name'          => trim(($e->first_name ?? '').' '.($e->last_name ?? '')),
+                    'name'          => trim(($e->preferred_name ?? '')),
                     'date_of_birth' => $dob->toDateString(),
                     'next_birthday' => $next->toDateString(),
                     'days_left'     => $today->diffInDays($next),
@@ -761,7 +751,7 @@ class EmployeeController extends Controller
         $mapEmp = fn ($row) => [
             'employee_id'   => $row->employee_id,
             'employee_code' => $row->employee_code,
-            'name'          => trim(($row->first_name ?? '').' '.($row->last_name ?? '')),
+            'name'          => trim(($row->preferred_name ?? '')),
         ];
 
         // ===== Probation ending (next 14 days) from employee_job =====
@@ -778,8 +768,7 @@ class EmployeeController extends Controller
                 'employee_job.employee_id',
                 'employee_job.probation_end_date',
                 'employees.employee_code',
-                'employees.first_name',
-                'employees.last_name',
+                'employees.preferred_name',
             ])
             ->map(function ($row) use ($today, $mapEmp) {
                 $end = Carbon::parse($row->probation_end_date);
@@ -805,8 +794,7 @@ class EmployeeController extends Controller
                 'employee_job.employee_id',
                 'employee_job.date_of_joining',
                 'employees.employee_code',
-                'employees.first_name',
-                'employees.last_name',
+                'employees.preferred_name',
             ])
             ->map(fn ($row) => $mapEmp($row) + [
                 'date_of_joining' => Carbon::parse($row->date_of_joining)->toDateString(),
