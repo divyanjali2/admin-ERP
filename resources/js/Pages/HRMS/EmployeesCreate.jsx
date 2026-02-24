@@ -1192,7 +1192,6 @@ export default function EmployeesCreate({
 
             <Divider />
 
-            {/* ================= DOCUMENTS ================= */}
             <Stack direction="row" justifyContent="space-between" alignItems="center">
               <Typography fontWeight={900}>Documents</Typography>
               <Button startIcon={<AddOutlinedIcon />} onClick={addDocument}>
