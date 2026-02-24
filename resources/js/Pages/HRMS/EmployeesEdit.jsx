@@ -313,7 +313,14 @@ export default function EmployeesEdit({
 
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
               <TextField label="Surname" value={data.full_name} onChange={(e) => setData("full_name", e.target.value)} error={!!errors.full_name} helperText={errors.full_name} fullWidth />
-              <TextField label="Preferred Name" value={data.preferred_name} onChange={(e) => setData("preferred_name", e.target.value)} error={!!errors.preferred_name} helperText={errors.preferred_name} fullWidth />
+              <TextField label="Preferred Name" value={data.preferred_name} onChange={(e) => setData("preferred_name", e.target.value)} error={!!errors.preferred_name} helperText={errors.preferred_name}
+                sx={{
+                  width: {
+                    xs: "100%",
+                    sm: "50%",
+                  },
+                }}
+              />            
             </Stack>
 
             <Stack direction={{ xs: "column", sm: "row" }} spacing={4}>
