@@ -160,7 +160,8 @@ const jobTitleName =
               <KVGrid
                 items={[
                   { k: "Employee Code", v: employee?.employee_code },
-                  { k: "Preferred Name", v: fullName },
+                  { k: "Full Name", v: employee?.full_name },
+                  { k: "Preferred Names", v: employee?.preferred_name },
                   { k: "DOB", v: employee?.date_of_birth },
                   { k: "Gender", v: employee?.gender },
                   { k: "Marital Status", v: employee?.marital_status },
@@ -206,10 +207,9 @@ const jobTitleName =
               <SimpleTable
                 columns={[
                   { key: "address_type", label: "Type" },
-                  { key: "address_line_1", label: "Line 1" },
+                  { key: "address_line_1", label: "Address" },
                   { key: "city", label: "City" },
                   { key: "country", label: "Country" },
-                  { key: "postal_code", label: "Postal Code" },
                 ]}
                 rows={addresses}
                 emptyText="No addresses"

@@ -502,6 +502,7 @@ export default function EmployeesCreate({
                 value={data.full_name}
                 onChange={(e) => setData("full_name", e.target.value)}
                 sx={{ flex: 1 }}   
+                {...req("full_name")}
               />
 
               <Stack direction="row" spacing={0} fullWidth>
@@ -919,12 +920,6 @@ export default function EmployeesCreate({
                         {...(idx === 0 ? req(`addresses.${idx}.city`) : { onBlur: () => markTouched(`addresses.${idx}.city`), ...tf(`addresses.${idx}.city`) })}
                       />
 
-                      <IconButton onClick={() => removeAddress(idx)} aria-label="remove-address">
-                        <DeleteOutlineOutlinedIcon />
-                      </IconButton>
-                    </Stack>
-
-                    <Stack direction={{ xs: "column", sm: "row" }} spacing={4}>
                       <TextField
                         label="Country"
                         value={a.country}
@@ -933,15 +928,23 @@ export default function EmployeesCreate({
                         {...(idx === 0 ? req(`addresses.${idx}.country`) : { onBlur: () => markTouched(`addresses.${idx}.country`), ...tf(`addresses.${idx}.country`) })}
                       />
 
-                      <TextField
+                      <IconButton onClick={() => removeAddress(idx)} aria-label="remove-address">
+                        <DeleteOutlineOutlinedIcon />
+                      </IconButton>
+                    </Stack>
+
+                    {/* <Stack direction={{ xs: "column", sm: "row" }} spacing={4}> */}
+
+
+                      {/* <TextField
                         label="Postal Code"
                         value={a.postal_code}
                         onChange={(e) => setAddress(idx, "postal_code", e.target.value)}
                         onBlur={() => markTouched(`addresses.${idx}.postal_code`)}
                         fullWidth
                         {...tf(`addresses.${idx}.postal_code`)}
-                      />
-                    </Stack>
+                      /> */}
+                    {/* </Stack> */}
                   </Stack>
                 </Box>
               ))}
