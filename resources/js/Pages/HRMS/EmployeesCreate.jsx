@@ -496,22 +496,53 @@ export default function EmployeesCreate({
             {/* ================= BASIC ================= */}
             <Typography fontWeight={900}>Basic Details</Typography>
 
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-            <TextField
-                label="Full Name"
+           <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+              <TextField
+                label="Full Name with Surname"
                 value={data.full_name}
                 onChange={(e) => setData("full_name", e.target.value)}
-                fullWidth
+                sx={{ flex: 1 }}   
               />
-              <TextField
-                label="Preferred Name"
-                value={data.preferred_name}
-                onChange={(e) => setData("preferred_name", e.target.value)}
-                fullWidth
-                {...req("preferred_name")}
-              />
-            </Stack>
 
+              <Stack direction="row" spacing={0} fullWidth>
+                <TextField
+                  label="Preferred Names"
+                  value={data.preferred_name_first || ""}
+                  onChange={(e) => {
+                    const first = e.target.value;
+                    const second = data.preferred_name_second || "";
+                    setData("preferred_name_first", first);
+                    setData("preferred_name", `${first} ${second}`.trim());
+                  }}
+                  fullWidth
+                  {...req("preferred_name")}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderTopRightRadius: 0,
+                      borderBottomRightRadius: 0,
+                    },
+                  }}
+                />
+
+                <TextField
+                  label=""
+                  value={data.preferred_name_second || ""}
+                  onChange={(e) => {
+                    const second = e.target.value;
+                    const first = data.preferred_name_first || "";
+                    setData("preferred_name_second", second);
+                    setData("preferred_name", `${first} ${second}`.trim());
+                  }}
+                  fullWidth
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderTopLeftRadius: 0,
+                      borderBottomLeftRadius: 0,
+                    },
+                  }}
+                />
+              </Stack>
+            </Stack>
             <Stack direction={{ xs: "column", sm: "row" }} spacing={4}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
