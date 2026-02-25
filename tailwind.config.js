@@ -15,6 +15,7 @@ export default {
             fontFamily: {
                 sans: ['Cambria'],
                 playfair: ['"Playfair Display"', 'serif'],
+                  bree: ['"Bree Serif"', 'serif'],   
             },
         },
     },

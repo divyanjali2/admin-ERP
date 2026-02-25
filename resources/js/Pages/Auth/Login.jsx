@@ -22,7 +22,6 @@ export default function Login({ status, canResetPassword }) {
     return (
         <GuestLayout>
             <Head title="Log in" />
-
             <div className="relative mx-auto max-w-5xl">
 
                 {/* ================= RIGHT INFO CARD ================= */}
@@ -31,16 +30,10 @@ export default function Login({ status, canResetPassword }) {
 
                         {/* LEFT TEXT SECTION */}
                         <div className="flex flex-col items-center justify-center text-center lg:text-center">
-                            <img
-                                src="/images/logo.webp"
-                                alt="Company Logo"
-                                className="mx-auto lg:mx-0 mb-2 w-[12rem] object-contain"
-                            />
-
-                            <h1 className="text-xl lg:text-3xl font-bold text-slate-900 font-playfair">
+                            <img src="/images/logo.webp" alt="Company Logo" className="mx-auto lg:mx-0 w-[12rem] object-contain" />
+                            <h1 className="text-xl lg:text-3xl font-bold text-slate-900 font-bree">
                                 Explore Enterprise Suite (EES)
                             </h1>
-
                             <p className="mt-3 text-sm lg:text-base text-slate-600 leading-relaxed max-w-lg mx-auto lg:mx-0">
                                 Enter your credentials to access the Enterprise Suite portal.
                                 Manage internal tools, employee services, and secure
@@ -56,10 +49,8 @@ export default function Login({ status, canResetPassword }) {
                                 className="w-[22rem] max-w-full object-contain transition-transform duration-300 hover:scale-[1.03]"
                             />
                         </div> */}
-
                     </div>
                 </div>
-
 
                 {/* ================= LOGIN CARD (OVERLAY) ================= */}
                 <div className="mt-6 lg:mt-0 lg:absolute lg:right-[3rem] lg:top-1/2 lg:-translate-y-1/2 w-full lg:w-[380px] z-20">
@@ -112,11 +103,7 @@ export default function Login({ status, canResetPassword }) {
                             {/* Remember + Forgot */}
                             <div className="flex items-center justify-between text-xs">
                                 <label className="flex items-center gap-2 text-slate-600">
-                                    <Checkbox
-                                        name="remember"
-                                        checked={data.remember}
-                                        onChange={(e) => setData('remember', e.target.checked)}
-                                    />
+                                    <Checkbox name="remember" checked={data.remember} onChange={(e) => setData('remember', e.target.checked)} />
                                     Remember me
                                 </label>
 
