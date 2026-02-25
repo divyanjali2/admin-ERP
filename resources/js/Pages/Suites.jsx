@@ -15,15 +15,46 @@ import {
 } from "@mui/material";
 
 const SUITE_SETS = {
-//   "Senior Management": [
-//     {
-//       key: "exec",
-//       title: "EXECUTIVE SUITE",
-//       description: "Dashboards, approvals, KPIs, and organization overview",
-//       href: "/suite-services?type=executive",
-//       image: "/images/executive-suite.webp",
-//     },
-//   ],
+
+  "Airport Parking": [
+    {
+      key: "parking",
+      title: "AIRPORT PARKING SUITE",
+      description: "Slots, reservations, check-in/out, and revenue tracking",
+      href: "/suite-services?type=airport-parking",
+      image: "/images/airport-parking.webp",
+    },
+  ],
+
+  "Digital Marketing Department": [
+    {
+      key: "digital_marketing",
+      title: "DIGITAL MARKETING SUITE",
+      description: "Ads, social, SEO, analytics, and conversion reporting",
+      href: "/suite-services?type=digital-marketing",
+      image: "/images/digital-marketing.webp",
+    },
+  ],
+
+  "Fleet Management Department": [
+    {
+      key: "fleet",
+      title: "FLEET MANAGEMENT SUITE",
+      description: "Vehicles, maintenance, fuel logs, and utilization",
+      href: "/suite-services?type=fleet",
+      image: "/images/fleet.webp",
+    },
+  ],
+
+  FINANCE: [
+    {
+      key: "finance",
+      title: "FINANCE SUITE",
+      description: "Invoicing, accounting, payments, and financial reporting",
+      href: "/suite-services?type=finance",
+      image: "/images/finance.webp",
+    },
+  ],
 
   HR: [
     {
@@ -45,16 +76,6 @@ const SUITE_SETS = {
     },
   ],
 
-  FINANCE: [
-    {
-      key: "finance",
-      title: "FINANCE SUITE",
-      description: "Invoicing, accounting, payments, and financial reporting",
-      href: "/suite-services?type=finance",
-      image: "/images/finance.webp",
-    },
-  ],
-
   "Marketing Department": [
     {
       key: "marketing",
@@ -65,16 +86,6 @@ const SUITE_SETS = {
     },
   ],
 
-  "Digital Marketing Department": [
-    {
-      key: "digital_marketing",
-      title: "DIGITAL MARKETING SUITE",
-      description: "Ads, social, SEO, analytics, and conversion reporting",
-      href: "/suite-services?type=digital-marketing",
-      image: "/images/digital-marketing.webp",
-    },
-  ],
-
   "Procurement Department": [
     {
       key: "procurement",
@@ -82,16 +93,6 @@ const SUITE_SETS = {
       description: "Suppliers, purchase requests, POs, and approvals",
       href: "/suite-services?type=procurement",
       image: "/images/procurement.webp",
-    },
-  ],
-
-  "Fleet Management Department": [
-    {
-      key: "fleet",
-      title: "FLEET MANAGEMENT SUITE",
-      description: "Vehicles, maintenance, fuel logs, and utilization",
-      href: "/suite-services?type=fleet",
-      image: "/images/fleet.webp",
     },
   ],
 
@@ -112,16 +113,6 @@ const SUITE_SETS = {
       description: "Transfer scheduling, driver assignment, and trip tracking",
       href: "/suite-services?type=transfers",
       image: "/images/transfers.webp",
-    },
-  ],
-
-  "Airport Parking": [
-    {
-      key: "parking",
-      title: "AIRPORT PARKING SUITE",
-      description: "Slots, reservations, check-in/out, and revenue tracking",
-      href: "/suite-services?type=airport-parking",
-      image: "/images/airport-parking.webp",
     },
   ],
 };
