@@ -16,6 +16,7 @@ export default {
                 sans: ['Cambria'],
                 playfair: ['"Playfair Display"', 'serif'],
                   bree: ['"Bree Serif"', 'serif'],   
+                  cinzel: ['"Cinzel Decorative"', 'serif'],   
             },
         },
     },

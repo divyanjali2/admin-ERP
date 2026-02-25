@@ -6,8 +6,7 @@
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
         <link rel="icon" type="image/png" href="favicon.ico" />
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Oldenburg&family=Shantell+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
-
+        <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&display=swap" rel="stylesheet">
         <!-- Scripts -->
         @routes
         @viteReactRefresh

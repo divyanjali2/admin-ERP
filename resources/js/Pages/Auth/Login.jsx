@@ -31,7 +31,7 @@ export default function Login({ status, canResetPassword }) {
                         {/* LEFT TEXT SECTION */}
                         <div className="flex flex-col items-center justify-center text-center lg:text-center">
                             <img src="/images/logo.webp" alt="Company Logo" className="mx-auto lg:mx-0 w-[12rem] object-contain" />
-                            <h1 className="text-xl lg:text-3xl font-bold text-slate-900 font-bree">
+                            <h1 className="text-xl lg:text-2xl font-bold text-slate-900 font-cinzel">
                                 Explore Enterprise Suite (EES)
                             </h1>
                             <p className="mt-3 text-sm lg:text-base text-slate-600 leading-relaxed max-w-lg mx-auto lg:mx-0">
