@@ -17,6 +17,7 @@ class VehicleRequestController extends Controller
         $format = function ($ts) {
             $start = $ts->assigned_start_at ? Carbon::parse($ts->assigned_start_at) : null;
             $end   = $ts->assigned_end_at ? Carbon::parse($ts->assigned_end_at) : null;
+            $photoBase = rtrim(config('app.url'), '/') . '/mobile-api/';
 
             $latestTrip = $ts->tripDetails
                 ?->sortByDesc('trip_start_datetime')
@@ -64,13 +65,19 @@ class VehicleRequestController extends Controller
                     'trip_end_datetime' => optional($latestTrip->trip_end_datetime)->toDateTimeString(),
                     'trip_start_odometer' => $latestTrip->trip_start_odometer,
                     'trip_end_odometer' => $latestTrip->trip_end_odometer,
-                    'trip_start_odometer_photo' => $latestTrip->trip_start_odometer_photo,
-                    'trip_end_odometer_photo' => $latestTrip->trip_end_odometer_photo,
+
+                    'trip_start_odometer_photo' => $latestTrip->trip_start_odometer_photo
+                        ? $photoBase . ltrim($latestTrip->trip_start_odometer_photo, '/')
+                        : null,
+
+                    'trip_end_odometer_photo' => $latestTrip->trip_end_odometer_photo
+                        ? $photoBase . ltrim($latestTrip->trip_end_odometer_photo, '/')
+                        : null,
                     'start_trip_fuel' => $latestTrip->start_trip_fuel,
                     'end_trip_fuel' => $latestTrip->end_trip_fuel,
-                ] : null,
-            ];
-        };
+                                    ] : null,
+                                ];
+                            };
 
         // Base query (eager load relations)
         $base = TransportService::with(['tripDetails', 'employee']);
