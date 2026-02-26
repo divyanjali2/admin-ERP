@@ -39,4 +39,8 @@ return [
         'key' => env('ERP_SYNC_KEY'),
     ],
 
+    'exploredrive' => [
+        'base_url' => env('EXPLOREDRIVE_BASE_URL', 'https://exploredrive.lk'),
+        'token'    => env('ERP_SYNC_KEY'),
+    ],
 ];

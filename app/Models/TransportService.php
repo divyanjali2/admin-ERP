@@ -10,6 +10,9 @@ class TransportService extends Model
 {
     use SoftDeletes;
 
+    protected $table = 'transport_services';
+    protected $guarded = [];
+
     protected $fillable = [
         'source_id',
         'type',
