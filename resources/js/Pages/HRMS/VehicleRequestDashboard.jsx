@@ -505,9 +505,9 @@ export default function VehicleRequestDashboard({
               <TableHead>
                 <TableRow>
                   <TableCell sx={{ fontWeight: 900 }}>Vehicle</TableCell>
+                  <TableCell sx={{ fontWeight: 900 }}>Trip Code</TableCell>
                   <TableCell sx={{ fontWeight: 900 }}>Employee / Chauffer</TableCell>
                   <TableCell sx={{ fontWeight: 900 }}>Type</TableCell>
-                  <TableCell sx={{ fontWeight: 900 }}>Trip Code</TableCell>
                   <TableCell sx={{ fontWeight: 900 }}>Date</TableCell>
                   <TableCell sx={{ fontWeight: 900 }}>Passengers</TableCell>
                   <TableCell sx={{ fontWeight: 900 }}>Status</TableCell>
@@ -538,15 +538,15 @@ export default function VehicleRequestDashboard({
                         </TableCell>
 
                         <TableCell sx={{ color: "#374151" }}>
+                          {r.trip_code || "—"}
+                        </TableCell>
+
+                        <TableCell sx={{ color: "#374151" }}>
                           {r.employee_name || r.chauffer_name || "Employee"}
                         </TableCell>
 
                         <TableCell sx={{ color: "#374151" }}>
                           {(r.type || "—").toUpperCase()}
-                        </TableCell>
-
-                        <TableCell sx={{ color: "#374151" }}>
-                          {r.trip_code || "—"}
                         </TableCell>
 
                         <TableCell sx={{ color: "#374151" }}>

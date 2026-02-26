@@ -30,7 +30,7 @@ class VehicleRequestController extends Controller
                 'passenger_count' => $ts->passenger_count,
                 'vehicle_no' => $ts->vehicle_no,
 
-                'employee_name' => $ts->employee?->full_name
+                'employee_name' => $ts->employee?->preferred_name
                     ?? $ts->employee?->name
                     ?? ($ts->employee_id ? ('Employee #' . $ts->employee_id) : ''),
 
