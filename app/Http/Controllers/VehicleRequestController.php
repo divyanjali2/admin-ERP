@@ -28,6 +28,7 @@ class VehicleRequestController extends Controller
                 'type' => $ts->type,
                 'passenger_count' => $ts->passenger_count,
                 'vehicle_no' => $ts->vehicle_no,
+
                 'employee_name' => $ts->employee?->full_name
                     ?? $ts->employee?->name
                     ?? ($ts->employee_id ? ('Employee #' . $ts->employee_id) : ''),
@@ -56,7 +57,7 @@ class VehicleRequestController extends Controller
 
                 'created_at' => optional($ts->created_at)->toDateString(),
 
-                // ✅ Odometer modal data (latest trip)
+                // Odometer modal data (latest trip)
                 'trip_details' => $latestTrip ? [
                     'trip_detail_id' => $latestTrip->trip_detail_id,
                     'trip_start_datetime' => optional($latestTrip->trip_start_datetime)->toDateTimeString(),
@@ -71,34 +72,42 @@ class VehicleRequestController extends Controller
             ];
         };
 
-        // Base query (eager load tripDetails; add employee only if you actually have it)
-        $base = TransportService::with(['tripDetails']); // add 'employee' if exists: ->with(['tripDetails','employee'])
+        // Base query (eager load relations)
+        $base = TransportService::with(['tripDetails', 'employee']);
 
-        // OUT TODAY = approved + start today
+        // OUT TODAY = active statuses + start today
         $vehiclesToBeOutToday = (clone $base)
-            ->where('status', 'APPROVED')
+            ->whereIn('status', ['ASSIGNED', 'START_TRIP', 'IN_PROGRESS'])
             ->whereDate('assigned_start_at', $today)
             ->orderByDesc('assigned_start_at')
             ->get()
             ->map($format)
             ->values();
 
-        $pendingRequests = (clone $base)
-            ->where('status', 'PENDING')
+        // Buckets by your real statuses
+        $assignedRequests = (clone $base)
+            ->where('status', 'ASSIGNED')
             ->orderByDesc('assigned_start_at')
             ->get()
             ->map($format)
             ->values();
 
-        $approvedRequests = (clone $base)
-            ->where('status', 'APPROVED')
+        $startTripRequests = (clone $base)
+            ->where('status', 'START_TRIP')
             ->orderByDesc('assigned_start_at')
             ->get()
             ->map($format)
             ->values();
 
-        $rejectedRequests = (clone $base)
-            ->where('status', 'REJECTED')
+        $inProgressRequests = (clone $base)
+            ->where('status', 'IN_PROGRESS')
+            ->orderByDesc('assigned_start_at')
+            ->get()
+            ->map($format)
+            ->values();
+
+        $completedRequests = (clone $base)
+            ->where('status', 'COMPLETED')
             ->orderByDesc('assigned_start_at')
             ->get()
             ->map($format)
@@ -124,17 +133,20 @@ class VehicleRequestController extends Controller
                 ->values();
         }
 
-        // Stats
+        // Stats (your real statuses)
         $totalRequests = TransportService::count();
-        $approvedCount = TransportService::where('status', 'APPROVED')->count();
-        $pendingCount  = TransportService::where('status', 'PENDING')->count();
-        $rejectedCount = TransportService::where('status', 'REJECTED')->count();
+        $assignedCount = TransportService::where('status', 'ASSIGNED')->count();
+        $startTripCount = TransportService::where('status', 'START_TRIP')->count();
+        $inProgressCount = TransportService::where('status', 'IN_PROGRESS')->count();
+        $completedCount = TransportService::where('status', 'COMPLETED')->count();
 
         return Inertia::render('HRMS/VehicleRequestDashboard', [
             'vehiclesToBeOutToday' => $vehiclesToBeOutToday,
-            'pendingRequests' => $pendingRequests,
-            'approvedRequests' => $approvedRequests,
-            'rejectedRequests' => $rejectedRequests,
+
+            'assignedRequests' => $assignedRequests,
+            'startTripRequests' => $startTripRequests,
+            'inProgressRequests' => $inProgressRequests,
+            'completedRequests' => $completedRequests,
 
             'searchedVehicle' => $vehicleNo,
             'currentTrips' => $currentTrips,
@@ -142,9 +154,10 @@ class VehicleRequestController extends Controller
 
             'stats' => [
                 'totalRequests' => $totalRequests,
-                'approved' => $approvedCount,
-                'pending' => $pendingCount,
-                'rejected' => $rejectedCount,
+                'assigned' => $assignedCount,
+                'startTrip' => $startTripCount,
+                'inProgress' => $inProgressCount,
+                'completed' => $completedCount,
                 'vehiclesToBeOutToday' => $vehiclesToBeOutToday->count(),
             ],
         ]);

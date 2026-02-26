@@ -1,12 +1,12 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, router } from "@inertiajs/react";
 
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import HourglassEmptyOutlinedIcon from "@mui/icons-material/HourglassEmptyOutlined";
 import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
-import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import DirectionsCarOutlinedIcon from "@mui/icons-material/DirectionsCarOutlined";
+import PlayCircleOutlineOutlinedIcon from "@mui/icons-material/PlayCircleOutlineOutlined";
 
 import {
   Box,
@@ -38,7 +38,11 @@ import {
 
 const formatDate = (d) =>
   d
-    ? new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })
+    ? new Date(d).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
     : "";
 
 const getDateDisplay = (r) => {
@@ -79,10 +83,10 @@ const StatCard = ({ icon: Icon, label, value }) => (
 );
 
 const statusStyles = {
-  pending: { label: "Pending", bg: "#f1f5f9", color: "#334155" },
-  approved: { label: "Approved", bg: "#ecfdf5", color: "#047857" },
-  rejected: { label: "Rejected", bg: "#fef2f2", color: "#b91c1c" },
-  cancelled: { label: "Cancelled", bg: "#f3f4f6", color: "#374151" },
+  assigned: { label: "Assigned", bg: "#f1f5f9", color: "#334155" },
+  start_trip: { label: "Start Trip", bg: "#e0f2fe", color: "#075985" },
+  in_progress: { label: "In Progress", bg: "#fef9c3", color: "#854d0e" },
+  completed: { label: "Completed", bg: "#ecfdf5", color: "#047857" },
 };
 
 const Row = ({ label, value }) => (
@@ -90,7 +94,11 @@ const Row = ({ label, value }) => (
     <Typography variant="body2" sx={{ color: "#6b7280" }}>
       {label}
     </Typography>
-    <Typography variant="body2" fontWeight={700} sx={{ color: "#111827", textAlign: "right" }}>
+    <Typography
+      variant="body2"
+      fontWeight={700}
+      sx={{ color: "#111827", textAlign: "right" }}
+    >
       {value}
     </Typography>
   </Stack>
@@ -109,15 +117,25 @@ const DetailsDialog = ({ open, onClose, data, statusLabel }) => {
 
       <DialogContent dividers>
         <Stack spacing={1.25}>
-          <Row label="Employee" value={data.employee_name || data.chauffer_name || "—"} />
+          <Row
+            label="Employee"
+            value={data.employee_name || data.chauffer_name || "—"}
+          />
           <Row label="Trip Code" value={data.trip_code || "—"} />
           <Row label="Type" value={(data.type || "—").toUpperCase()} />
           <Row label="Passengers" value={data.passenger_count ?? "—"} />
-          <Row label="Start Destination" value={data.start_destinations || "—"} />
+          <Row
+            label="Start Destination"
+            value={data.start_destinations || "—"}
+          />
           <Row label="End Destination" value={data.destinations || "—"} />
           <Row label="Date" value={dateDisplay} />
-          {data.created_at && <Row label="Requested On" value={formatDate(data.created_at)} />}
-          {data.reject_reason && <Row label="Reject Reason" value={data.reject_reason} />}
+          {data.created_at && (
+            <Row label="Requested On" value={formatDate(data.created_at)} />
+          )}
+          {data.reject_reason && (
+            <Row label="Reject Reason" value={data.reject_reason} />
+          )}
         </Stack>
       </DialogContent>
 
@@ -210,9 +228,7 @@ const OdometerDialog = ({ open, onClose, data }) => {
             <Row label="Start Fuel %" value={data.start_trip_fuel ?? "—"} />
             <Row label="End Fuel %" value={data.end_trip_fuel ?? "—"} />
 
-            {/* Thumbnails */}
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 1 }}>
-              {/* Start Photo */}
               <Box sx={{ flex: 1 }}>
                 <Typography fontWeight={900} sx={{ mb: 1, color: "#111827" }}>
                   Start Odometer Photo
@@ -229,10 +245,10 @@ const OdometerDialog = ({ open, onClose, data }) => {
                     sx={{
                       width: "100%",
                       maxWidth: 260,
-                      height: 160,              // ✅ fixed size
+                      height: 160,
                       borderRadius: 2,
                       border: "1px solid #e5e7eb",
-                      objectFit: "cover",       // ✅ crop nicely
+                      objectFit: "cover",
                       cursor: "pointer",
                       "&:hover": { opacity: 0.9 },
                     }}
@@ -242,7 +258,6 @@ const OdometerDialog = ({ open, onClose, data }) => {
                 )}
               </Box>
 
-              {/* End Photo */}
               <Box sx={{ flex: 1 }}>
                 <Typography fontWeight={900} sx={{ mb: 1, color: "#111827" }}>
                   End Odometer Photo
@@ -259,7 +274,7 @@ const OdometerDialog = ({ open, onClose, data }) => {
                     sx={{
                       width: "100%",
                       maxWidth: 260,
-                      height: 160,              // ✅ fixed size
+                      height: 160,
                       borderRadius: 2,
                       border: "1px solid #e5e7eb",
                       objectFit: "cover",
@@ -282,7 +297,6 @@ const OdometerDialog = ({ open, onClose, data }) => {
         </DialogActions>
       </Dialog>
 
-      {/* Preview modal */}
       <ImagePreviewDialog
         open={previewOpen}
         onClose={() => setPreviewOpen(false)}
@@ -293,36 +307,37 @@ const OdometerDialog = ({ open, onClose, data }) => {
   );
 };
 
-const statusToKey = (s) => (s ? String(s).toLowerCase() : "pending");
+const statusToKey = (s) => (s ? String(s).toLowerCase() : "assigned");
 
 export default function VehicleRequestDashboard({
   auth,
   vehiclesToBeOutToday = [],
-  pendingRequests = [],
-  approvedRequests = [],
-  rejectedRequests = [],
+
+  assignedRequests = [],
+  startTripRequests = [],
+  inProgressRequests = [],
+  completedRequests = [],
 
   searchedVehicle = "",
   currentTrips = [],
   pastTrips = [],
 }) {
-  const [vehicleSearch, setVehicleSearch] = useState(searchedVehicle || "");
-
   // modal
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(null);
   const [selectedStatusLabel, setSelectedStatusLabel] = useState("");
+
   const [odoOpen, setOdoOpen] = useState(false);
   const [odoData, setOdoData] = useState(null);
 
   const onOdometerView = (item) => {
-      setOdoData(item.trip_details || null);
-      setOdoOpen(true);
+    setOdoData(item.trip_details || null);
+    setOdoOpen(true);
   };
 
   const onView = (item) => {
     const sKey = statusToKey(item.status);
-    const label = statusStyles[sKey]?.label || "Pending";
+    const label = statusStyles[sKey]?.label || "Assigned";
     setSelected(item);
     setSelectedStatusLabel(label);
     setOpen(true);
@@ -332,9 +347,10 @@ export default function VehicleRequestDashboard({
   const allRequests = useMemo(() => {
     const merged = [
       ...vehiclesToBeOutToday,
-      ...pendingRequests,
-      ...approvedRequests,
-      ...rejectedRequests,
+      ...assignedRequests,
+      ...startTripRequests,
+      ...inProgressRequests,
+      ...completedRequests,
       ...currentTrips,
       ...pastTrips,
     ];
@@ -345,7 +361,15 @@ export default function VehicleRequestDashboard({
       map.set(x.vehicle_request_id, x);
     });
     return Array.from(map.values());
-  }, [vehiclesToBeOutToday, pendingRequests, approvedRequests, rejectedRequests, currentTrips, pastTrips]);
+  }, [
+    vehiclesToBeOutToday,
+    assignedRequests,
+    startTripRequests,
+    inProgressRequests,
+    completedRequests,
+    currentTrips,
+    pastTrips,
+  ]);
 
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [q, setQ] = useState("");
@@ -376,7 +400,6 @@ export default function VehicleRequestDashboard({
         return fields.includes(needle);
       })
       .sort((a, b) => {
-        // sort by start_date desc
         const da = a.start_date ? new Date(a.start_date).getTime() : 0;
         const db = b.start_date ? new Date(b.start_date).getTime() : 0;
         return db - da;
@@ -388,7 +411,7 @@ export default function VehicleRequestDashboard({
       <Head title="Vehicle Request Dashboard" />
 
       <Box sx={{ minHeight: "100vh", bgcolor: "#f8fafc", p: { xs: 2, sm: 3, lg: 4 } }}>
-        {/* HEADER + SEARCH */}
+        {/* HEADER */}
         <Stack
           direction={{ xs: "column", md: "row" }}
           justifyContent="space-between"
@@ -420,14 +443,20 @@ export default function VehicleRequestDashboard({
             <StatCard icon={CalendarTodayIcon} label="Out Today" value={vehiclesToBeOutToday.length} />
           </Grid>
           <Grid item xs={12} sm={6} lg={3}>
-            <StatCard icon={HourglassEmptyOutlinedIcon} label="Pending" value={pendingRequests.length} />
+            <StatCard icon={HourglassEmptyOutlinedIcon} label="Assigned" value={assignedRequests.length} />
           </Grid>
           <Grid item xs={12} sm={6} lg={3}>
-            <StatCard icon={CheckCircleOutlinedIcon} label="Approved" value={approvedRequests.length} />
+            <StatCard icon={PlayCircleOutlineOutlinedIcon} label="Start Trip" value={startTripRequests.length} />
           </Grid>
           <Grid item xs={12} sm={6} lg={3}>
-            <StatCard icon={CancelOutlinedIcon} label="Rejected" value={rejectedRequests.length} />
+            <StatCard icon={DirectionsCarOutlinedIcon} label="In Progress" value={inProgressRequests.length} />
           </Grid>
+
+          {/* If you want Completed as a 5th card, add another Grid item.
+              Or replace one of the above cards with Completed. */}
+          {/* <Grid item xs={12} sm={6} lg={3}>
+            <StatCard icon={CheckCircleOutlinedIcon} label="Completed" value={completedRequests.length} />
+          </Grid> */}
         </Grid>
 
         {/* ALL REQUESTS TABLE */}
@@ -450,16 +479,12 @@ export default function VehicleRequestDashboard({
             <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
               <FormControl size="small" sx={{ minWidth: 200 }}>
                 <InputLabel>Status</InputLabel>
-                <Select
-                  value={statusFilter}
-                  label="Status"
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                >
+                <Select value={statusFilter} label="Status" onChange={(e) => setStatusFilter(e.target.value)}>
                   <MenuItem value="ALL">All</MenuItem>
-                  <MenuItem value="PENDING">Pending</MenuItem>
-                  <MenuItem value="APPROVED">Approved</MenuItem>
-                  <MenuItem value="REJECTED">Rejected</MenuItem>
-                  <MenuItem value="CANCELLED">Cancelled</MenuItem>
+                  <MenuItem value="ASSIGNED">Assigned</MenuItem>
+                  <MenuItem value="START_TRIP">Start Trip</MenuItem>
+                  <MenuItem value="IN_PROGRESS">In Progress</MenuItem>
+                  <MenuItem value="COMPLETED">Completed</MenuItem>
                 </Select>
               </FormControl>
 
@@ -504,55 +529,70 @@ export default function VehicleRequestDashboard({
                 ) : (
                   filtered.map((r) => {
                     const sKey = statusToKey(r.status);
-                    const s = statusStyles[sKey] || statusStyles.pending;
+                    const s = statusStyles[sKey] || statusStyles.assigned;
 
                     return (
                       <TableRow key={r.vehicle_request_id} hover>
                         <TableCell sx={{ fontWeight: 800, color: "#111827" }}>
                           {r.vehicle_no || "—"}
                         </TableCell>
+
                         <TableCell sx={{ color: "#374151" }}>
                           {r.employee_name || r.chauffer_name || "Employee"}
                         </TableCell>
+
                         <TableCell sx={{ color: "#374151" }}>
                           {(r.type || "—").toUpperCase()}
                         </TableCell>
+
                         <TableCell sx={{ color: "#374151" }}>
                           {r.trip_code || "—"}
                         </TableCell>
+
                         <TableCell sx={{ color: "#374151" }}>
                           {getDateDisplay(r)}
                         </TableCell>
+
                         <TableCell sx={{ color: "#374151" }}>
                           {r.passenger_count ?? "—"}
                         </TableCell>
+
                         <TableCell>
                           <Chip
                             size="small"
                             label={s.label}
-                            sx={{ bgcolor: s.bg, color: s.color, fontWeight: 800, borderRadius: 1 }}
+                            sx={{
+                              bgcolor: s.bg,
+                              color: s.color,
+                              fontWeight: 800,
+                              borderRadius: 1,
+                            }}
                           />
                         </TableCell>
-                        <Stack direction="row" spacing={1} justifyContent="flex-end">
-                          <Button
-                            size="small"
-                            variant="outlined"
-                            onClick={() => onView(r)}
-                            sx={{ textTransform: "none", fontWeight: 800 }}
-                          >
-                            View
-                          </Button>
 
-                          <Button
-                            size="small"
-                            variant="contained"
-                            color="secondary"
-                            onClick={() => onOdometerView(r)}
-                            sx={{ textTransform: "none", fontWeight: 800 }}
-                          >
-                            Odometer
-                          </Button>
-                        </Stack>
+                        {/* ✅ FIX: actions must be inside a TableCell */}
+                        <TableCell align="right">
+                          <Stack direction="row" spacing={1} justifyContent="flex-end">
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              onClick={() => onView(r)}
+                              sx={{ textTransform: "none", fontWeight: 800 }}
+                            >
+                              View
+                            </Button>
+
+                            <Button
+                              size="small"
+                              variant="contained"
+                              color="secondary"
+                              onClick={() => onOdometerView(r)}
+                              sx={{ textTransform: "none", fontWeight: 800 }}
+                            >
+                              Odometer
+                            </Button>
+                          </Stack>
+                        </TableCell>
                       </TableRow>
                     );
                   })
@@ -562,18 +602,19 @@ export default function VehicleRequestDashboard({
           </TableContainer>
         </Paper>
 
-        {/* MODAL */}
+        {/* MODALS */}
         <DetailsDialog
           open={open}
           onClose={() => setOpen(false)}
           data={selected}
           statusLabel={selectedStatusLabel}
         />
+
         <OdometerDialog
-  open={odoOpen}
-  onClose={() => setOdoOpen(false)}
-  data={odoData}
-/>
+          open={odoOpen}
+          onClose={() => setOdoOpen(false)}
+          data={odoData}
+        />
       </Box>
     </AuthenticatedLayout>
   );
