@@ -30,49 +30,48 @@ class TransportServiceVehicleDetailsController extends Controller
 
         $cacheKey = 'drive_vehicle:' . $vehicleNo;
 
-        $veh = Cache::remember($cacheKey, now()->addMinutes(30), function () use ($vehicleNo) {
-            $base = rtrim(config('services.exploredrive.base_url'), '/');
-            $token = config('services.exploredrive.token');
+        // ✅ Use cache only if we already have a successful payload
+        $veh = Cache::get($cacheKey);
 
-            $req = Http::acceptJson()
-                ->timeout(2)
-                ->connectTimeout(1);
+        if (!$veh) {
+            $base  = rtrim((string) config('services.exploredrive.base_url'), '/');
+            $token = trim((string) config('services.exploredrive.token'));
 
-            if ($token) {
-                $req = $req->withToken($token);
-            }
-
-            $resp = $req->get($base . '/api/vehicles/by-reg-no', [
-                'reg_no' => $vehicleNo,
-            ]);
+            $resp = Http::acceptJson()
+                ->connectTimeout(3)
+                ->timeout(8)
+                ->when($token !== '', fn ($req) => $req->withHeaders(['X-ERP-KEY' => $token]))
+                ->get($base . '/api/vehicles/by-reg-no', [
+                    'reg_no' => $vehicleNo,
+                ]);
 
             if ($resp->successful()) {
-                return $resp->json(); // reg_no, make, model
+                $veh = $resp->json();
+                Cache::put($cacheKey, $veh, now()->addMinutes(30)); // ✅ cache only success
+            } else {
+                // ❌ Don't cache failures; return real downstream error
+                return response()->json([
+                    'error'        => 'drive_api_failed',
+                    'vehicle_no'   => $vehicleNo,
+                    'drive_status' => $resp->status(),
+                    'drive_body'   => $resp->json(),
+                ], $resp->status() === 404 ? 404 : 502);
             }
+        }
 
-            if ($resp->status() === 404) {
-                return ['error' => 'vehicle_not_found'];
-            }
-
-            return ['error' => 'drive_api_failed', 'status' => $resp->status()];
-        });
-
-        if (!is_array($veh) || isset($veh['error'])) {
-            $err = $veh['error'] ?? 'drive_api_failed';
-            $code = ($err === 'vehicle_not_found') ? 404 : 502;
-
+        if (!is_array($veh) || !isset($veh['make'], $veh['model'])) {
             return response()->json([
-                'error' => $err,
+                'error'      => 'drive_payload_invalid',
                 'vehicle_no' => $vehicleNo,
-            ], $code);
+                'payload'    => $veh,
+            ], 502);
         }
 
         return response()->json([
             'transport_service_id' => (int) $ts->id,
             'vehicle_no' => $vehicleNo,
-            'make' => $veh['make'] ?? null,
-            'model' => $veh['model'] ?? null,
+            'make' => $veh['make'],
+            'model' => $veh['model'],
         ]);
     }
 }
-
