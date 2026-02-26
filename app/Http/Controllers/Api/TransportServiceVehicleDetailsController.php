@@ -75,3 +75,4 @@ class TransportServiceVehicleDetailsController extends Controller
         ]);
     }
 }
+
