@@ -18,6 +18,7 @@ class TransportService extends Model
         'type',
         'vehicle_no',
         'chauffer_phone',
+        'employee_id',
         'chauffer_name',
         'assigned_start_at',
         'assigned_end_at',

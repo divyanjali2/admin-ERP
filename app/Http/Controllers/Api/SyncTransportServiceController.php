@@ -22,6 +22,7 @@ class SyncTransportServiceController extends Controller
             'source_id' => 'required|integer',
             'type' => 'required|in:shuttle,transfers,office,personal',
             'vehicle_no' => 'nullable|string|max:50',
+            'employee_id' => 'required|integer', 
             'chauffer_phone' => 'nullable|string|max:20',
             'chauffer_name' => 'nullable|string|max:255',
             'assigned_start_at' => 'required|date',
@@ -46,6 +47,7 @@ class SyncTransportServiceController extends Controller
         $data = $request->validate([
             'type' => 'required|in:shuttle,transfers,office,personal',
             'vehicle_no' => 'nullable|string|max:50',
+            'employee_id' => 'required|integer', 
             'chauffer_phone' => 'nullable|string|max:20',
             'chauffer_name' => 'nullable|string|max:255',
             'assigned_start_at' => 'required|date',

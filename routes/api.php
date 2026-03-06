@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\SyncChaufferController;
 use App\Http\Controllers\Api\SyncTransportServiceController;
 use App\Http\Controllers\Api\TransportServiceVehicleDetailsController;
+use App\Http\Controllers\Api\ChaufferApiController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -19,3 +20,8 @@ Route::put('/sync/transport-services/{source_id}', [SyncTransportServiceControll
 Route::delete('/sync/transport-services/{source_id}', [SyncTransportServiceController::class, 'destroy']);
 
 Route::get('/transport-services/{id}/vehicle-details', [TransportServiceVehicleDetailsController::class, 'show']);
+
+
+
+
+Route::get('/chauffers', [ChaufferApiController::class, 'index']);
