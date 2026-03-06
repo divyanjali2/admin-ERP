@@ -66,7 +66,7 @@ const SUITE_SETS = {
     },
   ],
 
-  IT: [
+  "IT Department": [
     {
       key: "it",
       title: "IT SUITE",
