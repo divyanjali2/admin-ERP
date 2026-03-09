@@ -21,7 +21,4 @@ Route::delete('/sync/transport-services/{source_id}', [SyncTransportServiceContr
 
 Route::get('/transport-services/{id}/vehicle-details', [TransportServiceVehicleDetailsController::class, 'show']);
 
-
-
-
 Route::get('/chauffers', [ChaufferApiController::class, 'index']);
