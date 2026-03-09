@@ -30,7 +30,6 @@ class TransportServiceVehicleDetailsController extends Controller
 
         $cacheKey = 'drive_vehicle:' . $vehicleNo;
 
-        // ✅ Use cache only if we already have a successful payload
         $veh = Cache::get($cacheKey);
 
         if (!$veh) {
@@ -47,9 +46,8 @@ class TransportServiceVehicleDetailsController extends Controller
 
             if ($resp->successful()) {
                 $veh = $resp->json();
-                Cache::put($cacheKey, $veh, now()->addMinutes(30)); // ✅ cache only success
+                Cache::put($cacheKey, $veh, now()->addMinutes(30)); 
             } else {
-                // ❌ Don't cache failures; return real downstream error
                 return response()->json([
                     'error'        => 'drive_api_failed',
                     'vehicle_no'   => $vehicleNo,
